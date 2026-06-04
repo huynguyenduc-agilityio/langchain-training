@@ -26,6 +26,9 @@ importers:
       '@ag-ui/langgraph':
         specifier: ^0.0.36
         version: 0.0.36(@ag-ui/client@0.0.53)(@ag-ui/core@0.0.55)(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))
+      '@copilotkit/sdk-js':
+        specifier: ^1.59.3
+        version: 1.59.3(@ag-ui/client@0.0.53)(@ag-ui/core@0.0.55)(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(@langchain/langgraph@1.3.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(zod-to-json-schema@3.25.2(zod@3.25.76))(zod@3.25.76))(@opentelemetry/api@1.9.1)(langchain@1.4.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76)))(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))(zod@3.25.76)
       '@langchain/core':
         specifier: ^1.1.48
         version: 1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0)
@@ -78,6 +81,12 @@ importers:
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
+      react-icons:
+        specifier: ^5.6.0
+        version: 5.6.0(react@19.2.4)
+      zod:
+        specifier: ^3.25.0
+        version: 3.25.76
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4
@@ -391,8 +400,22 @@ packages:
       openai:
         optional: true
 
+  '@copilotkit/sdk-js@1.59.3':
+    resolution: {integrity: sha512-9ZmjHqB0hmG2MJn8soCMrlb3hgh6jHNHKYzB0h1u7BUgQ2nZIXIRkoI6IGATGTJwd/w6U3hXPiEkqdE2HGae8A==}
+    peerDependencies:
+      '@langchain/core': '>=0.4.0 <2.0.0'
+      '@langchain/langgraph': '>=0.4.0 <2.0.0'
+      langchain: '>=1.0.0'
+      typescript: ^5.2.3
+      zod: ^3.23.3 || ^3.24.0 || ^3.25.0
+
   '@copilotkit/shared@1.59.2':
     resolution: {integrity: sha512-W5YUsIBwe0utd8kX50cqt8X+nSvd3PnKXqgE5pfq9DdmoNYsiNNYyNiq8ENOsxgEUXzFG+itfI2WlJzxcdGJGQ==}
+    peerDependencies:
+      '@ag-ui/core': '>=0.0.48'
+
+  '@copilotkit/shared@1.59.3':
+    resolution: {integrity: sha512-Q2FXKha5y/PkWe9xPLWRSi28iMDNVG3lMvARwKOA5esvaf1gsxBr5B6pKdtWOOoy/03Yk/hmAEFxlhBE56vi7g==}
     peerDependencies:
       '@ag-ui/core': '>=0.0.48'
 
@@ -4618,6 +4641,11 @@ packages:
     peerDependencies:
       react: ^19.2.4
 
+  react-icons@5.6.0:
+    resolution: {integrity: sha512-RH93p5ki6LfOiIt0UtDyNg/cee+HLVR6cHHtW3wALfo+eOHTp8RnU2kRkI6E+H19zMIs03DyxUG/GfZMOGvmiA==}
+    peerDependencies:
+      react: '*'
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -5505,6 +5533,27 @@ snapshots:
       - ws
       - zod-to-json-schema
 
+  '@ag-ui/langgraph@0.0.34(@ag-ui/client@0.0.53)(@ag-ui/core@0.0.55)(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))':
+    dependencies:
+      '@ag-ui/client': 0.0.53
+      '@ag-ui/core': 0.0.55
+      '@langchain/core': 1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0)
+      '@langchain/langgraph-sdk': 1.9.13(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      langchain: 1.4.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))
+      partial-json: 0.1.7
+      rxjs: 7.8.1
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - '@opentelemetry/exporter-trace-otlp-proto'
+      - '@opentelemetry/sdk-trace-base'
+      - openai
+      - react
+      - react-dom
+      - svelte
+      - vue
+      - ws
+      - zod-to-json-schema
+
   '@ag-ui/langgraph@0.0.36(@ag-ui/client@0.0.53)(@ag-ui/core@0.0.55)(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))':
     dependencies:
       '@ag-ui/a2ui-toolkit': 0.0.1-alpha.3
@@ -5914,10 +5963,50 @@ snapshots:
       - vue
       - zod-to-json-schema
 
+  '@copilotkit/sdk-js@1.59.3(@ag-ui/client@0.0.53)(@ag-ui/core@0.0.55)(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(@langchain/langgraph@1.3.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(zod-to-json-schema@3.25.2(zod@3.25.76))(zod@3.25.76))(@opentelemetry/api@1.9.1)(langchain@1.4.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76)))(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))(zod@3.25.76)':
+    dependencies:
+      '@ag-ui/langgraph': 0.0.34(@ag-ui/client@0.0.53)(@ag-ui/core@0.0.55)(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))
+      '@copilotkit/shared': 1.59.3(@ag-ui/core@0.0.55)
+      '@langchain/core': 1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0)
+      '@langchain/langgraph': 1.3.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(zod-to-json-schema@3.25.2(zod@3.25.76))(zod@3.25.76)
+      langchain: 1.4.4(@langchain/core@1.1.48(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(ws@8.21.0))(@opentelemetry/api@1.9.1)(openai@6.41.0(ws@8.21.0)(zod@3.25.76))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@3.25.76))
+      typescript: 5.9.3
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - '@ag-ui/client'
+      - '@ag-ui/core'
+      - '@opentelemetry/api'
+      - '@opentelemetry/exporter-trace-otlp-proto'
+      - '@opentelemetry/sdk-trace-base'
+      - encoding
+      - openai
+      - react
+      - react-dom
+      - svelte
+      - vue
+      - ws
+      - zod-to-json-schema
+
   '@copilotkit/shared@1.59.2(@ag-ui/core@0.0.53)':
     dependencies:
       '@ag-ui/client': 0.0.53
       '@ag-ui/core': 0.0.53
+      '@copilotkit/license-verifier': 0.4.2
+      '@segment/analytics-node': 2.3.0
+      '@standard-schema/spec': 1.1.0
+      chalk: 4.1.2
+      graphql: 16.14.1
+      partial-json: 0.1.7
+      uuid: 11.1.1
+      zod: 3.25.76
+      zod-to-json-schema: 3.25.2(zod@3.25.76)
+    transitivePeerDependencies:
+      - encoding
+
+  '@copilotkit/shared@1.59.3(@ag-ui/core@0.0.55)':
+    dependencies:
+      '@ag-ui/client': 0.0.53
+      '@ag-ui/core': 0.0.55
       '@copilotkit/license-verifier': 0.4.2
       '@segment/analytics-node': 2.3.0
       '@standard-schema/spec': 1.1.0
@@ -8388,7 +8477,7 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.7
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react: 7.37.5(eslint@9.39.4(jiti@2.7.0))
@@ -8411,7 +8500,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -8426,14 +8515,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.13.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0)):
+  eslint-module-utils@2.13.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -8448,7 +8537,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.13.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
+      eslint-module-utils: 2.13.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.60.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
       hasown: 2.0.4
       is-core-module: 2.16.2
       is-glob: 4.0.3
@@ -10583,6 +10672,10 @@ snapshots:
     dependencies:
       react: 19.2.4
       scheduler: 0.27.0
+
+  react-icons@5.6.0(react@19.2.4):
+    dependencies:
+      react: 19.2.4
 
   react-is@16.13.1: {}
 
