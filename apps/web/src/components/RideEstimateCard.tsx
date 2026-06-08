@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Clock, MapPin, ArrowRight, ChevronRight, Navigation } from 'lucide-react';
-import type { VehicleType, RideEstimate } from '@/types';
+import type { VehicleType } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -87,13 +87,13 @@ export function RideEstimateCard({
       {options.map((opt) => (
         <Card
           key={opt.vehicleType}
-          className="group rounded-2xl overflow-hidden cursor-pointer bg-gray-900 border-gray-850 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-950/20 transition-all duration-300 border-solid"
+          className="group rounded-2xl overflow-hidden cursor-pointer bg-gray-900 border-gray-855 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-950/20 transition-all duration-300 border-solid"
           onClick={() => onSelectVehicle?.(opt.vehicleType)}
         >
           <CardContent className="p-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               {/* Vehicle icon */}
-              <div className="w-10 h-10 rounded-xl bg-gray-950 border border-gray-850 flex items-center justify-center text-lg shrink-0 border-solid">
+              <div className="w-10 h-10 rounded-xl bg-gray-955 border border-gray-855 flex items-center justify-center text-lg shrink-0 border-solid">
                 {VEHICLE_EMOJI[opt.vehicleType] || '🚗'}
               </div>
 
@@ -102,7 +102,7 @@ export function RideEstimateCard({
                 <span className="font-bold text-xs text-gray-100 block truncate">
                   {VEHICLE_NAMES[opt.vehicleType]}
                 </span>
-                <span className="text-[10px] text-gray-500 font-semibold block mt-0.5">
+                <span className="text-[10px] text-gray-550 font-semibold block mt-0.5">
                   Intra-city ride in Da Nang
                 </span>
               </div>
