@@ -1,31 +1,591 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Emerald Dark Theme (Theme C) ── */
+
+  /* Base */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #1c2333;
+  --bg-elevated: #21283b;
+  --bg-hover: #2a3245;
+
+  /* Surfaces */
+  --surface-card: #161b22;
+  --surface-card-hover: #1c2333;
+  --surface-overlay: rgba(13, 17, 23, 0.85);
+
+  /* Borders */
+  --border-primary: #30363d;
+  --border-subtle: #21283b;
+  --border-accent: #10b981;
+  --border-accent-subtle: rgba(16, 185, 129, 0.25);
+
+  /* Text */
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+  --text-accent: #10b981;
+  --text-on-accent: #ffffff;
+
+  /* Accent — Emerald */
+  --accent-primary: #10b981;
+  --accent-secondary: #14b8a6;
+  --accent-hover: #34d399;
+  --accent-muted: rgba(16, 185, 129, 0.15);
+  --accent-glow: rgba(16, 185, 129, 0.35);
+
+  /* Status */
+  --status-confirmed: #10b981;
+  --status-confirmed-bg: rgba(16, 185, 129, 0.12);
+  --status-cancelled: #f87171;
+  --status-cancelled-bg: rgba(248, 113, 113, 0.12);
+  --status-pending: #fbbf24;
+  --status-pending-bg: rgba(251, 191, 36, 0.12);
+  --status-departed: #6366f1;
+  --status-departed-bg: rgba(99, 102, 241, 0.12);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Font */
+  --font-family: 'Inter', var(--font-geist-sans), system-ui, sans-serif;
+  --background: #0d1117;
+  --foreground: #f0f6fc;
+  --card: #161b22;
+  --card-foreground: #f0f6fc;
+  --popover: #161b22;
+  --popover-foreground: #f0f6fc;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --secondary: #21283b;
+  --secondary-foreground: #f0f6fc;
+  --muted: #1c2333;
+  --muted-foreground: #8b949e;
+  --accent: #21283b;
+  --accent-foreground: #10b981;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #30363d;
+  --input: #21283b;
+  --ring: #10b981;
+  --chart-1: #10b981;
+  --chart-2: #14b8a6;
+  --chart-3: #6366f1;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+  --radius: 0.625rem;
+  --sidebar: #161b22;
+  --sidebar-foreground: #f0f6fc;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #21283b;
+  --sidebar-accent-foreground: #10b981;
+  --sidebar-border: #30363d;
+  --sidebar-ring: #10b981;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base Styles ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-primary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-body,
-html {
-  height: 100%;
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--transition-base) ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-base) ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-fast) ease-out;
+}
+
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary) 0%,
+    var(--accent-secondary) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.animate-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animate-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animate-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animate-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animate-delay-500 {
+  animation-delay: 500ms;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── CopilotKit v2 Sidebar Override (Emerald Dark) ── */
+/* CopilotKit v2 uses cpk: prefixed Tailwind that reads standard
+   CSS custom properties scoped under [data-copilotkit] / .copilotKitSidebar */
+.copilotKitSidebar,
+.copilotKitWindow,
+[data-copilotkit] {
+  --background: var(--bg-secondary);
+  --foreground: var(--text-primary);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-tertiary);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-primary);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg-tertiary);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-tertiary);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--bg-elevated);
+  --accent-foreground: var(--text-accent);
+  --border: var(--border-primary);
+  --input: var(--bg-elevated);
+  --ring: var(--accent-primary);
+  --destructive: var(--status-cancelled);
+}
+
+/* Ensure sidebar body-margin offset doesn't cause double layout */
+.copilotKitSidebar {
+  --sidebar-width: 400px;
+}
+
+/* Override toggle button to match Emerald theme */
+.copilotKitButton {
+  --primary: var(--accent-primary) !important;
+  --primary-foreground: #ffffff !important;
+}
+
+/* ── Assistant Message: avatar + bubble ── */
+.copilotKitAssistantMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.copilotKitAssistantMessage::before {
+  content: '';
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='16' height='16'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h-2v-2h2v2zm0-4h-2V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z'/%3E%3C/svg%3E");
+  background-size:
+    16px 16px,
+    100% 100%;
+  background-position: center, center;
+  background-repeat: no-repeat;
+  margin-top: 2px;
+}
+
+/* Bubble styling for assistant message content */
+.copilotKitAssistantMessage > div:first-of-type {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  border-top-left-radius: 4px;
+  padding: 10px 14px;
+  max-width: 85%;
+}
+
+/* ── User Message: primary color background ── */
+.copilotKitUserMessage [class*='bg-muted'] {
+  background-color: var(--accent-primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Override prose dark mode for user message to keep text white */
+.copilotKitUserMessage .prose {
+  --tw-prose-body: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* ── Welcome Screen (Sidebar): top-left chat bubble (not centered) ── */
+/* The sidebar welcome screen is: .copilotKitChat > div (h-full flex flex-col) 
+   > div:first-child (flex-1 items-center justify-center) > h1 */
+.copilotKitSidebar .copilotKitChat > div:not([style]) > div:first-child {
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  padding-top: 16px !important;
+}
+
+/* Welcome message: small bubble like assistant, not big centered text */
+.copilotKitSidebar .copilotKitChat h1 {
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  text-align: left !important;
+  line-height: 1.5 !important;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  border-top-left-radius: 4px;
+  padding: 10px 14px;
+  max-width: 85%;
+  margin-left: 38px;
+  position: relative;
+}
+
+/* Avatar pseudo-element for welcome message */
+.copilotKitSidebar .copilotKitChat h1::before {
+  content: '';
+  position: absolute;
+  left: -38px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+}
+
+/* Reduce excessive px-8 pb-4 padding on suggestions/input area */
+.copilotKitSidebar .copilotKitChat > div:not([style]) > div:last-child {
+  padding: 0 !important;
+}
+
+/* ── Suggestion pills: left-aligned chips above input ── */
+/* Align suggestions flush-left with the input field */
+.copilotKitSidebar [data-testid='copilot-suggestions'] {
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  margin: 0 16px 16px !important;
+}
+
+/* Chip-style suggestion pills with accent border */
+.copilotKitSidebar [data-slot='suggestion-pill'] {
+  background: var(--accent-muted) !important;
+  border: 1px solid var(--border-accent-subtle) !important;
+  color: var(--text-accent) !important;
+  border-radius: 8px !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  height: auto !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.copilotKitSidebar [data-slot='suggestion-pill']:hover {
+  background: var(--accent-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-primary) !important;
+}
+
+/* Reduce gap between suggestions and input — the div wrapping suggestions has cpk:mb-4 cpk:flex cpk:justify-center */
+.copilotKitSidebar
+  .copilotKitChat
+  > div:not([style])
+  > div:last-child
+  > div
+  > div:first-child {
+  margin-bottom: 0 !important;
+  justify-content: flex-start !important;
+}
+
+/* Also override via :has for specificity */
+.copilotKitSidebar div:has(> [data-testid='copilot-suggestions']) {
+  justify-content: flex-start !important;
+  margin-bottom: 0 !important;
+}
+
+/* ── Hide "+" add-menu button in chat input ── */
+.copilotKitSidebar [data-testid='copilot-add-menu-button'] {
+  display: none !important;
+}
+
+/* ── Hide disclaimer text ── */
+.copilotKitSidebar .copilotKitInput + div,
+.copilotKitSidebar [data-testid='copilot-chat-input'] ~ div {
+  display: none !important;
+}
+
+/* Match input padding with suggestions — override cpk:px-8 for sidebar context */
+.copilotKitSidebar [data-testid='copilot-chat-input'] {
+  margin: 0 16px !important;
+  width: calc(100% - 32px) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+/* Reduce input internal grid sizing */
+.copilotKitSidebar [data-testid='copilot-chat-input'] > div {
+  padding: 4px 16px !important;
+  gap: 2px !important;
+}
+
+/* Smaller textarea container */
+.copilotKitSidebar
+  [data-testid='copilot-chat-input']
+  [data-testid='copilot-chat-textarea'] {
+  font-size: 13px !important;
+  min-height: unset !important;
+}
+
+/* Reduce textarea container min-height */
+.copilotKitSidebar [data-testid='copilot-chat-input'] > div > div:nth-child(2) {
+  min-height: 28px !important;
+}
+
+/* Smaller send button */
+.copilotKitSidebar [data-testid='copilot-send-button'] {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+/* Remove mr-[10px] on send button wrapper div */
+.copilotKitSidebar div:has(> [data-testid='copilot-send-button']) {
+  margin-right: 0 !important;
+}
+
+/* Override inner input container's px-8 padding in sidebar */
+.copilotKitSidebar [data-copilotkit] > div:has(> .copilotKitInput) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.dark {
+  --background: #0d1117;
+  --foreground: #f0f6fc;
+  --card: #161b22;
+  --card-foreground: #f0f6fc;
+  --popover: #161b22;
+  --popover-foreground: #f0f6fc;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --secondary: #21283b;
+  --secondary-foreground: #f0f6fc;
+  --muted: #1c2333;
+  --muted-foreground: #8b949e;
+  --accent: #21283b;
+  --accent-foreground: #10b981;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #30363d;
+  --input: #21283b;
+  --ring: #10b981;
+  --chart-1: #10b981;
+  --chart-2: #14b8a6;
+  --chart-3: #6366f1;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+  --sidebar: #161b22;
+  --sidebar-foreground: #f0f6fc;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #21283b;
+  --sidebar-accent-foreground: #10b981;
+  --sidebar-border: #30363d;
+  --sidebar-ring: #10b981;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
+
+/* ── Radix UI Scroll Lock / CopilotKit Layout Conflict Fix ── */
+body[data-scroll-locked],
+[data-scroll-locked] {
+  padding-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
 }
