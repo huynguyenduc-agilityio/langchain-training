@@ -1,1 +1,1 @@
-export * from './servicePricing';
+export * from './className';

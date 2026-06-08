@@ -1,93 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   CopilotSidebar,
   useConfigureSuggestions,
 } from '@copilotkit/react-core/v2';
-import { CustomerProvider, useCustomers } from '@/hooks';
-import { TopHeader } from '@/components/TopHeader';
-import { CustomerCard } from '@/components/CustomerCard';
-import { CustomerHealthCard } from '@/components/CustomerHealthCard';
-import CopilotKitTools from '@/components/copilotkit/CopilotKitTools';
+import { AppHeader } from '@/components/AppHeader';
+import { TripDashboard } from '@/components/TripDashboard';
+import { SAMPLE_TRIPS } from '@/lib/data/sampleTrips';
+import type { Trip } from '@/types';
 
-export default function CustomerSupportPage() {
+export default function RideBookingPage() {
+  const [trips, setTrips] = useState<Trip[]>(SAMPLE_TRIPS);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(true);
+
+  const handleCancelTrip = (tripId: string) => {
+    setTrips((prev) =>
+      prev.map((t) =>
+        t.id === tripId
+          ? {
+              ...t,
+              status: 'cancelled',
+              cancelledAt: new Date().toISOString(),
+              cancellationFee: t.driver ? 1.0 : 0, // Apply fee if driver already matched
+            }
+          : t,
+      ),
+    );
+  };
+
+  const handleEstimateRide = (pickup: string, destination: string) => {
+    if (!pickup || !destination) return;
+    const query = `Estimate a ride from ${pickup} to ${destination}`;
+    console.log('Estimating ride via CopilotKit:', query);
+
+    // Copy the query message to the clipboard to assist the user in sending it easily
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(query);
+    }
+  };
+
   return (
-    <CustomerProvider>
-      <CopilotKitTools />
-      <div className="flex h-screen overflow-hidden">
-        <MainContent />
-        <SidebarWithSuggestions />
-      </div>
-    </CustomerProvider>
+    <div className="flex flex-col min-h-screen bg-background text-gray-100">
+      <AppHeader />
+      <main className="flex-1 overflow-y-auto">
+        <TripDashboard
+          trips={trips}
+          onCancelTrip={handleCancelTrip}
+          onEstimateRide={handleEstimateRide}
+        />
+      </main>
+
+      {/* CopilotSidebar: renders as position:fixed and auto-manages body margin */}
+      <ChatSidebar defaultOpen={isChatOpen} />
+    </div>
   );
 }
 
-function SidebarWithSuggestions() {
+function ChatSidebar({ defaultOpen }: { defaultOpen: boolean }) {
   useConfigureSuggestions({
     suggestions: [
       {
-        title: 'Check my services',
-        message:
-          'Hi, I want to know about my services for customer ID: 5575-GNVDE',
+        title: 'View my trips',
+        message: 'Show me my trip history',
       },
       {
-        title: 'Report an outage',
-        message:
-          'My internet has been down for 2 hours! Customer ID: 7590-VHVEG',
+        title: 'Cancel a trip',
+        message: 'I want to cancel a trip',
       },
     ],
   });
 
   return (
     <CopilotSidebar
-      defaultOpen={true}
+      defaultOpen={defaultOpen}
       labels={{
-        modalHeaderTitle: 'Telecom Support Assistant',
-        welcomeMessageText:
-          "Hi! 👋 I'm here to assist you with your telecom support needs. I can help you manage your account, troubleshoot issues, or provide information about your services.",
+        modalHeaderTitle: 'CityRide AI',
+        welcomeMessageText: 'Hello! 👋. Where would you like to go today?',
+        chatDisclaimerText: '',
+        chatInputPlaceholder: 'Type a message...',
       }}
     />
   );
 }
-
-function MainContent() {
-  const {
-    customers,
-    getCustomerByCustomerId,
-    addAddon,
-    removeAddon,
-    updateCustomer,
-  } = useCustomers();
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
-  const selectedCustomer = selectedCustomerId
-    ? getCustomerByCustomerId(selectedCustomerId)
-    : null;
-
-  return (
-    <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
-      <TopHeader
-        customers={customers}
-        selectedCustomerId={selectedCustomerId}
-        onCustomerChange={setSelectedCustomerId}
-      />
-
-      <div className="flex-1 overflow-auto p-6">
-        <CustomerCard
-          customer={selectedCustomer}
-          addAddon={addAddon}
-          removeAddon={removeAddon}
-          updateCustomer={updateCustomer}
-        />
-
-        {/* Customer Health Card — shows risk/health score */}
-        {selectedCustomer && (
-          <div className="max-w-5xl mx-auto mt-6">
-            <CustomerHealthCard customer={selectedCustomer} />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
