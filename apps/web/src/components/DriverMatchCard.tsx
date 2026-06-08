@@ -20,7 +20,7 @@ export function DriverMatchCard({
   return (
     <Card className="rounded-2xl overflow-hidden my-2 border-solid bg-gray-900 border-emerald-950/40 shadow-lg shadow-emerald-950/5">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center gap-2 border-b border-solid border-gray-850 bg-emerald-950/15">
+      <div className="px-4 py-3 flex items-center gap-2 border-b border-solid border-gray-855 bg-emerald-950/15">
         <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
         <span className="font-bold text-xs text-emerald-400">
           Driver Found!
@@ -37,7 +37,7 @@ export function DriverMatchCard({
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gray-950 border border-gray-800 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gray-955 border border-gray-800 flex items-center justify-center text-emerald-400 shrink-0">
               <Car className="w-6 h-6" />
             </div>
             <div>
@@ -65,7 +65,7 @@ export function DriverMatchCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[9px] text-emerald-500/80 font-bold pt-1.5 border-t border-gray-850/30">
+        <div className="flex items-center gap-1 text-[9px] text-emerald-500/80 font-bold pt-1.5 border-t border-gray-855/30">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
           <span>Driver has been verified and approved by the system.</span>
         </div>

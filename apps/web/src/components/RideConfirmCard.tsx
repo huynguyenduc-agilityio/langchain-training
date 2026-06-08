@@ -115,17 +115,17 @@ export function RideConfirmCard({
 
         {/* Passenger */}
         <DetailRow
-          icon={<User className="w-3.5 h-3.5 text-gray-500" />}
+          icon={<User className="w-3.5 h-3.5 text-gray-550" />}
           label="Passenger"
           value={passengerName}
         />
         <DetailRow
-          icon={<Phone className="w-3.5 h-3.5 text-gray-500" />}
+          icon={<Phone className="w-3.5 h-3.5 text-gray-550" />}
           label="Phone"
           value={passengerPhone}
         />
 
-        <Separator className="bg-gray-850 my-1" />
+        <Separator className="bg-gray-855 my-1" />
 
         {/* Price */}
         <div className="flex items-center justify-between pt-1">
@@ -181,7 +181,7 @@ export function RideConfirmCard({
               id="btn-cancel-ride"
               onClick={handleCancel}
               variant="outline"
-              className="flex-1 bg-gray-955 border-gray-850 hover:bg-gray-850 text-gray-400 hover:text-red-400 rounded-xl h-10 border-solid flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 bg-gray-955 border-gray-855 hover:bg-gray-855 text-gray-400 hover:text-red-400 rounded-xl h-10 border-solid flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <X className="w-4 h-4" />
               Cancel

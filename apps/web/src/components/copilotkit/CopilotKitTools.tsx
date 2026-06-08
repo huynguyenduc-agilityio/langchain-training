@@ -1,6 +1,36 @@
-// Re-export all CopilotKit tool components for city ride booking
-// These will be wired with useFrontendTool / useHumanInTheLoop once the agent is connected
-export { RideEstimateCard } from './tools/RideEstimateCard';
-export { RideConfirmCard } from './tools/RideConfirmCard';
-export { DriverMatchCard } from './tools/DriverMatchCard';
-export { CancelTripCard } from './tools/CancelTripCard';
+'use client';
+
+import React from 'react';
+import type { Trip, VehicleType } from '@/types';
+import { ActiveTripsReadable } from './readables/ActiveTripsReadable';
+import { RideEstimateFrontendTool } from './tools/RideEstimateFrontendTool';
+import { RideConfirmFrontendTool } from './tools/RideConfirmFrontendTool';
+import { DriverMatchFrontendTool } from './tools/DriverMatchFrontendTool';
+import { CancelConfirmFrontendTool } from './tools/CancelConfirmFrontendTool';
+
+interface CopilotKitToolsProps {
+  trips: Trip[];
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+  onSelectVehicle?: (vehicleType: VehicleType) => void;
+}
+
+export function CopilotKitTools({
+  trips,
+  setTrips,
+  onSelectVehicle,
+}: CopilotKitToolsProps) {
+  return (
+    <>
+      {/* Readables */}
+      <ActiveTripsReadable trips={trips} />
+
+      {/* Frontend Tools */}
+      <RideEstimateFrontendTool onSelectVehicle={onSelectVehicle} />
+      <RideConfirmFrontendTool trips={trips} setTrips={setTrips} />
+      <DriverMatchFrontendTool />
+      <CancelConfirmFrontendTool setTrips={setTrips} />
+    </>
+  );
+}
+
+export default CopilotKitTools;

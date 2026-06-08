@@ -5,14 +5,15 @@ import {
   CopilotSidebar,
   useConfigureSuggestions,
 } from '@copilotkit/react-core/v2';
+
 import { AppHeader } from '@/components/AppHeader';
 import { TripDashboard } from '@/components/TripDashboard';
 import { SAMPLE_TRIPS } from '@/lib/data/sampleTrips';
+import { CopilotKitTools } from '@/components/copilotkit/CopilotKitTools';
 import type { Trip } from '@/types';
 
 export default function RideBookingPage() {
   const [trips, setTrips] = useState<Trip[]>(SAMPLE_TRIPS);
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(true);
 
   const handleCancelTrip = (tripId: string) => {
     setTrips((prev) =>
@@ -51,13 +52,16 @@ export default function RideBookingPage() {
         />
       </main>
 
+      {/* CopilotKit Tools for agent/frontend interaction */}
+      <CopilotKitTools trips={trips} setTrips={setTrips} />
+
       {/* CopilotSidebar: renders as position:fixed and auto-manages body margin */}
-      <ChatSidebar defaultOpen={isChatOpen} />
+      <ChatSidebar />
     </div>
   );
 }
 
-function ChatSidebar({ defaultOpen }: { defaultOpen: boolean }) {
+function ChatSidebar() {
   useConfigureSuggestions({
     suggestions: [
       {
@@ -73,7 +77,7 @@ function ChatSidebar({ defaultOpen }: { defaultOpen: boolean }) {
 
   return (
     <CopilotSidebar
-      defaultOpen={defaultOpen}
+      defaultOpen={true}
       labels={{
         modalHeaderTitle: 'CityRide AI',
         welcomeMessageText: 'Hello! 👋. Where would you like to go today?',
