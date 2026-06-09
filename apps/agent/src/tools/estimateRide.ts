@@ -1,12 +1,15 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { getCoords } from '../services';
+import { isCoordsInServiceArea } from '../utils/validation';
 import {
   API_ENDPOINTS,
   PRICING_CONFIG,
   VEHICLE_BIKE,
   VEHICLE_CAR4,
   VEHICLE_CAR7,
+  ACTIVE_CITY,
+  BUSINESS_RULES,
 } from '../constants';
 
 export const estimateRideTool = tool(
@@ -18,6 +21,15 @@ export const estimateRideTool = tool(
 
     const startCoords = await getCoords(pickup, apiKey);
     const endCoords = await getCoords(destination, apiKey);
+
+    // Validate if coordinates exist and are within service area boundary
+    if (startCoords && !isCoordsInServiceArea(startCoords[1], startCoords[0])) {
+      return { error: 'outside_service_area', location: pickup } as any;
+    }
+
+    if (endCoords && !isCoordsInServiceArea(endCoords[1], endCoords[0])) {
+      return { error: 'outside_service_area', location: destination } as any;
+    }
 
     if (startCoords && endCoords) {
       try {
@@ -51,6 +63,11 @@ export const estimateRideTool = tool(
       const seed = ((pickup.length + destination.length) % 20) + 3;
       distance = parseFloat(seed.toFixed(1));
       duration = Math.round(distance * 1.5 + 5);
+    }
+
+    // Validate distance boundary (max distance)
+    if (distance > BUSINESS_RULES.MAX_RIDE_DISTANCE_KM) {
+      return { error: 'distance_limit_exceeded', distance } as any;
     }
 
     // Calculate rates (USD) using config:
@@ -90,10 +107,11 @@ export const estimateRideTool = tool(
     description:
       'Calculate ride distance, duration, and price estimates between pickup and destination.',
     schema: z.object({
-      pickup: z.string().describe('Pickup location name (must be in Da Nang)'),
+      pickup: z.string().describe(`Pickup location name (must be in ${ACTIVE_CITY.englishName})`),
       destination: z
         .string()
-        .describe('Destination location name (must be in Da Nang)'),
+        .describe(`Destination location name (must be in ${ACTIVE_CITY.englishName})`),
     }),
   },
 );
+

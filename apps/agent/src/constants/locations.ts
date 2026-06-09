@@ -1,33 +1,19 @@
-// Popular Da Nang landmarks and keywords
-export const DA_NANG_LANDMARKS = [
-  'dragon bridge',
-  'da nang',
-  'airport',
-  'marble mountain',
-  'linh ung',
-  'han river',
-  'son tra',
-  'thuan phuoc',
-  'my khe',
-  'han market',
-  'cham museum',
-  'asia park',
-];
-
-// Explicit locations outside Da Nang
-export const OUTSIDE_DA_NANG = [
-  'ha noi',
-  'hanoi',
-  'ho chi minh',
-  'saigon',
-  'hue',
-  'nha trang',
-  'da lat',
-  'dalat',
-];
-
-// Geographical coordinates
-export const COORDINATES = {
-  DEFAULT_DA_NANG: { latitude: 16.0544, longitude: 108.2022 },
-  MOCK_DESTINATION: { latitude: 16.0782, longitude: 108.2123 },
+export const ACTIVE_CITY = {
+  name: 'Đà Nẵng',
+  englishName: 'Da Nang',
+  timezoneOffset: 7,
+  bounds: {
+    minLat: 15.9,
+    maxLat: 16.3,
+    minLng: 107.8,
+    maxLng: 108.6,
+  },
+  defaultCoords: { latitude: 16.0544, longitude: 108.2022 },
+  mockDestination: { latitude: 16.0782, longitude: 108.2123 },
 };
+
+export const COORDINATES = {
+  DEFAULT_CITY: ACTIVE_CITY.defaultCoords,
+  MOCK_DESTINATION: ACTIVE_CITY.mockDestination,
+};
+

@@ -1,0 +1,8 @@
+export const BUSINESS_RULES = {
+  MAX_RIDE_DISTANCE_KM: 50,
+  MAX_ACTIVE_TRIPS: 3,
+  OPERATING_HOURS: {
+    START: 5,
+    END: 23,
+  },
+};
