@@ -5,17 +5,21 @@ import { RunnableConfig } from '@langchain/core/runnables';
 import { RideBookingState } from '../state/state';
 import { INFO_AGENT_SYSTEM_PROMPT } from '../prompts/index';
 import { lookupTripsTool } from '../tools/index';
+import { LLM_CONFIG } from '../constants';
 
-export async function infoAgentNode(state: RideBookingState, config: RunnableConfig) {
-  console.log('\n=== INFO AGENT NODE ===');
-
+export async function infoAgentNode(
+  state: RideBookingState,
+  config: RunnableConfig,
+) {
   const model = new ChatOpenAI({
-    model: 'gpt-4o-mini',
-    temperature: 0,
+    model: LLM_CONFIG.DEFAULT_MODEL,
+    temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
   const backendTools = [lookupTripsTool];
-  const frontendActions = convertActionsToDynamicStructuredTools(state.copilotkit?.actions ?? []);
+  const frontendActions = convertActionsToDynamicStructuredTools(
+    state.copilotkit?.actions ?? [],
+  );
 
   const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
 
@@ -25,7 +29,7 @@ export async function infoAgentNode(state: RideBookingState, config: RunnableCon
 
   const response = await modelWithTools.invoke(
     [systemMessage, ...state.messages],
-    config
+    config,
   );
 
   return {

@@ -1,49 +1,13 @@
 import { Annotation } from '@langchain/langgraph';
 import { CopilotKitStateAnnotation } from '@copilotkit/sdk-js/langgraph';
-
-export type TripStatus = 'searching' | 'matched' | 'picked_up' | 'completed' | 'cancelled';
-export type VehicleType = 'bike' | 'car4' | 'car7';
-
-export interface Driver {
-  name: string;
-  phone: string;
-  vehicleInfo: string;
-  licensePlate: string;
-  rating: number;
-}
-
-export interface Trip {
-  id: string;
-  pickup: string;
-  destination: string;
-  distance: number;
-  duration: number;
-  vehicleType: VehicleType;
-  passengerName: string;
-  passengerPhone: string;
-  price: number;
-  status: TripStatus;
-  driver?: Driver | null;
-  createdAt: string;
-  cancelledAt?: string;
-  cancellationFee?: number;
-}
-
-export interface RideEstimate {
-  pickup: string;
-  destination: string;
-  distance: number;
-  duration: number;
-  options: {
-    vehicleType: VehicleType;
-    price: number;
-  }[];
-}
-
-export interface RideIntent {
-  category: 'estimate' | 'request' | 'cancel' | 'view_trips' | 'faq' | 'unknown';
-  confidence: number;
-}
+import {
+  TripStatus,
+  VehicleType,
+  Driver,
+  Trip,
+  RideEstimate,
+  RideIntent,
+} from '../types';
 
 export const RideBookingStateAnnotation = Annotation.Root({
   ...CopilotKitStateAnnotation.spec,

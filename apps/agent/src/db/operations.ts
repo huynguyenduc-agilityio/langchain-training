@@ -1,32 +1,8 @@
-import { db } from '../db/index';
-import { trips, drivers } from '../db/schema';
+import { db } from './index';
+import { trips, drivers } from './schema';
 import { eq } from 'drizzle-orm';
-import { Trip, Driver } from '../state/state';
-
-// Standard drivers list
-export const MOCK_DRIVERS: Driver[] = [
-  {
-    name: 'Nguyen Van A',
-    phone: '+84905123456',
-    vehicleInfo: 'Honda Vision (Black)',
-    licensePlate: '43A-999.99',
-    rating: 4.9,
-  },
-  {
-    name: 'Tran Van B',
-    phone: '+84905987654',
-    vehicleInfo: 'Toyota Vios (Silver)',
-    licensePlate: '43B-777.77',
-    rating: 4.8,
-  },
-  {
-    name: 'Le Van C',
-    phone: '+84905555555',
-    vehicleInfo: 'Mitsubishi Xpander (White)',
-    licensePlate: '43C-888.88',
-    rating: 5.0,
-  },
-];
+import { Trip, Driver } from '../types';
+import { MOCK_DRIVERS, COORDINATES } from '../constants';
 
 /**
  * Seed drivers in the PostgreSQL database if the table is empty.
@@ -35,42 +11,32 @@ export async function seedDriversIfNeeded() {
   try {
     const existing = await db.select().from(drivers).limit(1);
     if (existing.length === 0) {
-      console.log('[DB] Seeding standard drivers in Da Nang...');
-      await db.insert(drivers).values([
-        {
-          id: 'DRV-001',
-          name: 'Nguyen Van A',
-          phone: '+84905123456',
-          vehicleInfo: 'Honda Vision (Black)',
-          licensePlate: '43A-999.99',
-          rating: 4.9,
-          latitude: 16.0544,
-          longitude: 108.2022,
+      const driverValues = MOCK_DRIVERS.map((driver, index) => {
+        let latitude = COORDINATES.DEFAULT_DA_NANG.latitude;
+        let longitude = COORDINATES.DEFAULT_DA_NANG.longitude;
+
+        if (index === 1) {
+          latitude = COORDINATES.MOCK_DESTINATION.latitude;
+          longitude = COORDINATES.MOCK_DESTINATION.longitude;
+        } else if (index === 2) {
+          latitude = 16.0464; // Custom coordinate for Driver C
+          longitude = 108.2208;
+        }
+
+        return {
+          id: `DRV-00${index + 1}`,
+          name: driver.name,
+          phone: driver.phone,
+          vehicleInfo: driver.vehicleInfo,
+          licensePlate: driver.licensePlate,
+          rating: driver.rating,
+          latitude,
+          longitude,
           isAvailable: 'true',
-        },
-        {
-          id: 'DRV-002',
-          name: 'Tran Van B',
-          phone: '+84905987654',
-          vehicleInfo: 'Toyota Vios (Silver)',
-          licensePlate: '43B-777.77',
-          rating: 4.8,
-          latitude: 16.0782,
-          longitude: 108.2123,
-          isAvailable: 'true',
-        },
-        {
-          id: 'DRV-003',
-          name: 'Le Van C',
-          phone: '+84905555555',
-          vehicleInfo: 'Mitsubishi Xpander (White)',
-          licensePlate: '43C-888.88',
-          rating: 5.0,
-          latitude: 16.0464,
-          longitude: 108.2208,
-          isAvailable: 'true',
-        },
-      ]);
+        };
+      });
+
+      await db.insert(drivers).values(driverValues);
     }
   } catch (error) {
     console.error('[DB] Error seeding drivers:', error);
@@ -177,9 +143,6 @@ export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
   }
 }
 
-/**
- * Add a new trip record to the database.
- */
 export async function addTripToDb(trip: Trip): Promise<void> {
   try {
     await seedDriversIfNeeded();
@@ -187,11 +150,11 @@ export async function addTripToDb(trip: Trip): Promise<void> {
     await db.insert(trips).values({
       id: trip.id,
       pickup: trip.pickup,
-      pickupLat: 16.0544, // Default Da Nang center latitude
-      pickupLng: 108.2022, // Default Da Nang center longitude
+      pickupLat: COORDINATES.DEFAULT_DA_NANG.latitude,
+      pickupLng: COORDINATES.DEFAULT_DA_NANG.longitude,
       destination: trip.destination,
-      destLat: 16.0782,
-      destLng: 108.2123,
+      destLat: COORDINATES.MOCK_DESTINATION.latitude,
+      destLng: COORDINATES.MOCK_DESTINATION.longitude,
       distance: trip.distance,
       duration: trip.duration,
       price: trip.price,
