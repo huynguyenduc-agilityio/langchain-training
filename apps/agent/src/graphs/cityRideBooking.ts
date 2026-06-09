@@ -18,7 +18,6 @@ import { tools } from '../tools/index';
  * Error response node for validation guardrail failures
  */
 async function errorResponseNode(state: RideBookingState) {
-  console.log('\n=== ERROR RESPONSE NODE ===');
   return {
     messages: [
       new AIMessage({

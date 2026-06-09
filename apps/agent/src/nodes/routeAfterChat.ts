@@ -16,8 +16,6 @@ export function routeAfterChat(state: RideBookingState) {
     const actions = state.copilotkit?.actions;
     const toolCallName = lastMessage.tool_calls[0].name;
 
-    console.log(`[RouteAfterChat] Agent requested tool call: ${toolCallName}`);
-
     // If it's a frontend action, CopilotKit will execute it on the client side.
     // We only route to tool_node if it's a backend tool.
     if (!actions || actions.every((action) => action.name !== toolCallName)) {

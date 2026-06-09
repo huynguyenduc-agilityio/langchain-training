@@ -1,6 +1,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { updateTripInDb, MOCK_DRIVERS } from '../utils';
+import { updateTripInDb } from '../db/operations';
+import { MOCK_DRIVERS } from '../constants';
 
 export const matchDriverTool = tool(
   async ({ tripId, vehicleType }) => {

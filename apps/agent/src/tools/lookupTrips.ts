@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { getTripsByPhoneFromDb } from '../utils';
+import { getTripsByPhoneFromDb } from '../db/operations';
 
 export const lookupTripsTool = tool(
   async ({ passengerPhone }) => {

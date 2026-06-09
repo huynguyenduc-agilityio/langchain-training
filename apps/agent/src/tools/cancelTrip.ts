@@ -1,12 +1,13 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { updateTripInDb } from '../utils';
+import { updateTripInDb } from '../db/operations';
+import { CANCELLATION_FEE_CONFIG } from '../constants';
 
 export const cancelTripTool = tool(
   async ({ tripId, driverMatched, vehicleType }) => {
     let cancellationFee = 0;
     if (driverMatched) {
-      cancellationFee = vehicleType === 'bike' ? 0.5 : 1.0;
+      cancellationFee = CANCELLATION_FEE_CONFIG[vehicleType];
     }
 
     // Update in-memory DB status

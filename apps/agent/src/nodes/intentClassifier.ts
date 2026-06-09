@@ -3,13 +3,12 @@ import { z } from 'zod';
 import { SystemMessage } from '@langchain/core/messages';
 import { RideBookingState } from '../state/state';
 import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '../prompts/index';
+import { LLM_CONFIG } from '../constants';
 
 export async function intentClassifierNode(state: RideBookingState) {
-  console.log('\n=== INTENT CLASSIFIER NODE ===');
-
   const model = new ChatOpenAI({
-    model: 'gpt-4o-mini',
-    temperature: 0,
+    model: LLM_CONFIG.DEFAULT_MODEL,
+    temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
   const schema = z.object({
@@ -28,8 +27,6 @@ export async function intentClassifierNode(state: RideBookingState) {
       systemMessage,
       ...state.messages,
     ]);
-
-    console.log(`Classification result: ${response.category} (${response.confidence})`);
 
     return {
       intent: response,

@@ -1,6 +1,7 @@
 import { RunnableConfig } from '@langchain/core/runnables';
-import { RideBookingState, Trip } from '../state/state';
-import { addTripToDb } from '../utils';
+import { RideBookingState } from '../state/state';
+import { Trip } from '../types';
+import { addTripToDb } from '../db/operations';
 
 /**
  * Process Tool Results Node
@@ -19,8 +20,6 @@ export async function processToolResults(
     const toolMessage = lastMessage as any;
     const toolName = toolMessage.name;
     const toolContent = toolMessage.content;
-
-    console.log(`[ProcessToolResults] Processing results from tool: ${toolName}`);
 
     try {
       const parsed = typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
@@ -72,7 +71,6 @@ export async function processToolResults(
       }
 
       if (toolName === 'lookupTrips') {
-        console.log(`[ProcessToolResults] Syncing looked up trips for phone: ${parsed.passengerPhone}`);
         return {
           userTrips: parsed.trips || [],
         };

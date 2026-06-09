@@ -1,31 +1,5 @@
-import { Trip } from '../state';
-
-// Popular Da Nang landmarks and keywords
-const DA_NANG_LANDMARKS = [
-  'dragon bridge',
-  'da nang',
-  'airport',
-  'marble mountain',
-  'linh ung',
-  'han river',
-  'son tra',
-  'thuan phuoc',
-  'my khe',
-  'han market',
-  'cham museum',
-  'asia park',
-];
-
-const OUTSIDE_DA_NANG = [
-  'ha noi',
-  'hanoi',
-  'ho chi minh',
-  'saigon',
-  'hue',
-  'nha trang',
-  'da lat',
-  'dalat',
-];
+import { Trip } from '../types';
+import { DA_NANG_LANDMARKS, OUTSIDE_DA_NANG } from '../constants';
 
 /**
  * Validates if a location name is within the Da Nang service area boundary.

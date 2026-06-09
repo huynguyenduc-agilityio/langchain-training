@@ -33,7 +33,6 @@ export default function RideBookingPage() {
   const handleEstimateRide = (pickup: string, destination: string) => {
     if (!pickup || !destination) return;
     const query = `Estimate a ride from ${pickup} to ${destination}`;
-    console.log('Estimating ride via CopilotKit:', query);
 
     // Copy the query message to the clipboard to assist the user in sending it easily
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
