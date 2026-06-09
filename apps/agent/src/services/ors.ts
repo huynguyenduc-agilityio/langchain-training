@@ -1,19 +1,15 @@
-/**
- * OpenRouteService (ORS) Service
- * Handles external API integration with OpenRouteService for geocoding and routing.
- */
-
-import { API_ENDPOINTS } from '../constants';
+import { API_ENDPOINTS, ACTIVE_CITY } from '../constants';
 
 /**
  * Converts a location name/landmark into [longitude, latitude] coordinates.
  */
 export async function getCoords(location: string, apiKey: string): Promise<[number, number] | null> {
   try {
-    // Append Da Nang, Vietnam to improve query accuracy
-    const query = location.toLowerCase().includes('da nang') 
+    // Append Active City, Vietnam to improve query accuracy
+    const cityLower = ACTIVE_CITY.englishName.toLowerCase();
+    const query = location.toLowerCase().includes(cityLower) 
       ? location 
-      : `${location}, Da Nang, Vietnam`;
+      : `${location}, ${ACTIVE_CITY.englishName}, Vietnam`;
 
     const url = `${API_ENDPOINTS.ORS_GEOCODE_URL}?api_key=${apiKey}&text=${encodeURIComponent(query)}&size=1`;
     const response = await fetch(url);

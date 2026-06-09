@@ -1,4 +1,6 @@
-export const INTENT_CLASSIFIER_SYSTEM_PROMPT = `You are an intent classifier for a Grab-like city ride-hailing application in Đà Nẵng.
+import { ACTIVE_CITY } from '../constants';
+
+export const INTENT_CLASSIFIER_SYSTEM_PROMPT = `You are an intent classifier for a Grab-like city ride-hailing application in ${ACTIVE_CITY.name}.
 Analyze the user's message and determine the category of their request.
 
 Choose exactly one of the following categories:
@@ -10,3 +12,4 @@ Choose exactly one of the following categories:
 - 'unknown': The message is greetings, chitchat, or does not match any category.
 
 Also assign a confidence score between 0.0 and 1.0.`;
+

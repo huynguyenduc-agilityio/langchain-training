@@ -12,8 +12,8 @@ export async function seedDriversIfNeeded() {
     const existing = await db.select().from(drivers).limit(1);
     if (existing.length === 0) {
       const driverValues = MOCK_DRIVERS.map((driver, index) => {
-        let latitude = COORDINATES.DEFAULT_DA_NANG.latitude;
-        let longitude = COORDINATES.DEFAULT_DA_NANG.longitude;
+        let latitude = COORDINATES.DEFAULT_CITY.latitude;
+        let longitude = COORDINATES.DEFAULT_CITY.longitude;
 
         if (index === 1) {
           latitude = COORDINATES.MOCK_DESTINATION.latitude;
@@ -150,8 +150,8 @@ export async function addTripToDb(trip: Trip): Promise<void> {
     await db.insert(trips).values({
       id: trip.id,
       pickup: trip.pickup,
-      pickupLat: COORDINATES.DEFAULT_DA_NANG.latitude,
-      pickupLng: COORDINATES.DEFAULT_DA_NANG.longitude,
+      pickupLat: COORDINATES.DEFAULT_CITY.latitude,
+      pickupLng: COORDINATES.DEFAULT_CITY.longitude,
       destination: trip.destination,
       destLat: COORDINATES.MOCK_DESTINATION.latitude,
       destLng: COORDINATES.MOCK_DESTINATION.longitude,

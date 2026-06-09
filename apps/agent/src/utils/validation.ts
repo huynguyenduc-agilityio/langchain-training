@@ -1,25 +1,5 @@
 import { Trip } from '../types';
-import { DA_NANG_LANDMARKS, OUTSIDE_DA_NANG } from '../constants';
-
-/**
- * Validates if a location name is within the Da Nang service area boundary.
- */
-export function isWithinDaNang(location: string): boolean {
-  const loc = location.toLowerCase();
-
-  // If explicitly outside Da Nang
-  if (OUTSIDE_DA_NANG.some((outside) => loc.includes(outside))) {
-    return false;
-  }
-
-  // If contains Da Nang or a known landmark
-  if (DA_NANG_LANDMARKS.some((landmark) => loc.includes(landmark))) {
-    return true;
-  }
-
-  // By default, since it's a Da Nang local taxi service, we can allow unless they name a city outside
-  return true;
-}
+import { ACTIVE_CITY, BUSINESS_RULES } from '../constants';
 
 /**
  * Validates phone number format (standard international/local format).
@@ -31,25 +11,35 @@ export function isValidPhone(phone: string): boolean {
 }
 
 /**
- * Validates if the request is within operating hours (05:00 to 23:00).
+ * Validates if the request is within operating hours.
  */
 export function isWithinOperatingHours(): boolean {
-  // Get current hour in Da Nang (ICT, UTC+7)
+  // Get current hour in the active city's timezone (using offset)
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const daNangTime = new Date(utc + 3600000 * 7); // Da Nang is UTC+7
-  const hour = daNangTime.getHours();
+  const cityTime = new Date(utc + 3600000 * ACTIVE_CITY.timezoneOffset);
+  const hour = cityTime.getHours();
 
-  return hour >= 5 && hour < 23;
+  return hour >= BUSINESS_RULES.OPERATING_HOURS.START && hour < BUSINESS_RULES.OPERATING_HOURS.END;
 }
 
 /**
- * Validates active trips limit (max 3 active trips).
+ * Validates active trips limit.
  */
 export function hasTooManyActiveTrips(trips: Trip[]): boolean {
   const activeStatuses = ['searching', 'matched', 'picked_up'];
   const activeCount = trips.filter((t) =>
     activeStatuses.includes(t.status),
   ).length;
-  return activeCount >= 3;
+  return activeCount >= BUSINESS_RULES.MAX_ACTIVE_TRIPS;
 }
+
+/**
+ * Validates if coordinates are inside the active city service boundaries (bounding box).
+ */
+export function isCoordsInServiceArea(lat: number, lng: number): boolean {
+  const { minLat, maxLat, minLng, maxLng } = ACTIVE_CITY.bounds;
+  return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
+}
+
+

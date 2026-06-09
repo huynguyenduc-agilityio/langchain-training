@@ -2,6 +2,7 @@ import { RunnableConfig } from '@langchain/core/runnables';
 import { RideBookingState } from '../state/state';
 import { Trip } from '../types';
 import { addTripToDb } from '../db/operations';
+import { VALIDATION_MESSAGES } from '../constants';
 
 /**
  * Process Tool Results Node
@@ -14,7 +15,7 @@ export async function processToolResults(
   _config: RunnableConfig
 ) {
   const messages = state.messages || [];
-  const lastMessage = messages[messages.length - 1];
+  const lastMessage = messages[messages.length - 1] as any;
 
   if (lastMessage && lastMessage._getType() === 'tool') {
     const toolMessage = lastMessage as any;
@@ -25,8 +26,19 @@ export async function processToolResults(
       const parsed = typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
 
       if (toolName === 'estimateRide') {
+        if (parsed.error === 'outside_service_area') {
+          return {
+            validationError: VALIDATION_MESSAGES.OUTSIDE_SERVICE_AREA_ERROR,
+          };
+        }
+        if (parsed.error === 'distance_limit_exceeded') {
+          return {
+            validationError: VALIDATION_MESSAGES.DISTANCE_LIMIT_ERROR,
+          };
+        }
         return {
           rideEstimate: parsed,
+          validationError: null,
         };
       }
 
