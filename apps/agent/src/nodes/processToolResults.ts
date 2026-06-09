@@ -1,75 +1,140 @@
 import { RunnableConfig } from '@langchain/core/runnables';
-import { CustomerSupportState } from '../state/index';
+import { RideBookingState, Trip } from '../state/state';
+import { addTripToDb } from '../utils';
 
 /**
- * Process tool results and update state
+ * Process Tool Results Node
  *
- * Parses tool output and updates the appropriate state fields
- * (intent, currentCustomer, reply, escalation).
+ * Inspects the last message in the state. If it's a ToolMessage,
+ * parses its content and updates state attributes appropriately.
  */
 export async function processToolResults(
-  state: CustomerSupportState,
-  _config: RunnableConfig,
+  state: RideBookingState,
+  _config: RunnableConfig
 ) {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
 
-  if (lastMessage._getType() === 'tool') {
+  if (lastMessage && lastMessage._getType() === 'tool') {
     const toolMessage = lastMessage as any;
     const toolName = toolMessage.name;
     const toolContent = toolMessage.content;
 
-    console.log(`Processing result from: ${toolName}`);
+    console.log(`[ProcessToolResults] Processing results from tool: ${toolName}`);
 
     try {
-      // Update state based on which tool was called
-      if (toolName === 'classifyIntent') {
-        const intent = JSON.parse(toolContent);
-        console.log(`Intent: ${intent.category} (${intent.urgency})`);
+      const parsed = typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
+
+      if (toolName === 'estimateRide') {
         return {
-          ...state,
-          intent,
+          rideEstimate: parsed,
         };
       }
 
-      if (toolName === 'lookupCustomer') {
-        const lookupResult = JSON.parse(toolContent);
-        if (lookupResult.found) {
-          console.log(`Customer found: ${lookupResult.customerId}`);
+      if (toolName === 'requestRide') {
+        return {
+          tripDraft: parsed.tripDraft,
+        };
+      }
+
+      if (toolName === 'matchDriver') {
+        const updatedTrips = state.userTrips.map((trip) => {
+          if (trip.id === parsed.tripId) {
+            return {
+              ...trip,
+              status: parsed.status,
+              driver: parsed.driver,
+            };
+          }
+          return trip;
+        });
+        return {
+          userTrips: updatedTrips,
+          tripDraft: null, // Clear draft as matching is complete
+        };
+      }
+
+      if (toolName === 'cancelTrip') {
+        const updatedTrips = state.userTrips.map((trip) => {
+          if (trip.id === parsed.tripId) {
+            return {
+              ...trip,
+              status: parsed.status,
+              cancellationFee: parsed.cancellationFee,
+              cancelledAt: parsed.cancelledAt,
+            };
+          }
+          return trip;
+        });
+        return {
+          userTrips: updatedTrips,
+        };
+      }
+
+      if (toolName === 'lookupTrips') {
+        console.log(`[ProcessToolResults] Syncing looked up trips for phone: ${parsed.passengerPhone}`);
+        return {
+          userTrips: parsed.trips || [],
+        };
+      }
+
+      // Handle frontend CopilotKit actions responses:
+      if (toolName === 'showRideEstimate') {
+        const selectedType = parsed.selectedVehicleType;
+        if (state.rideEstimate && selectedType) {
+          const option = state.rideEstimate.options.find(
+            (o) => o.vehicleType === selectedType
+          );
+          const price = option ? option.price : 0;
           return {
-            ...state,
-            currentCustomer: {
-              id: lookupResult.customerId,
-              found: true,
-              data: lookupResult.data,
+            tripDraft: {
+              pickup: state.rideEstimate.pickup,
+              destination: state.rideEstimate.destination,
+              distance: state.rideEstimate.distance,
+              duration: state.rideEstimate.duration,
+              vehicleType: selectedType,
+              price: price,
+              status: 'searching',
             },
           };
         }
       }
 
-      if (toolName === 'generateReply') {
-        const reply = JSON.parse(toolContent);
-        console.log('Reply generated');
-        return {
-          ...state,
-          reply,
-        };
-      }
+      if (toolName === 'showRideConfirm') {
+        if (parsed.approved && state.tripDraft) {
+          const newTrip: Trip = {
+            id: parsed.tripId || `TRP-${Date.now()}`,
+            pickup: state.tripDraft.pickup || '',
+            destination: state.tripDraft.destination || '',
+            distance: state.tripDraft.distance || 0,
+            duration: state.tripDraft.duration || 0,
+            vehicleType: state.tripDraft.vehicleType || 'bike',
+            passengerName: state.tripDraft.passengerName || '',
+            passengerPhone: state.tripDraft.passengerPhone || '',
+            price: state.tripDraft.price || 0,
+            status: 'searching',
+            createdAt: new Date().toISOString(),
+          };
+          
+          // Persist the trip to the database
+          await addTripToDb(newTrip);
 
-      if (toolName === 'checkEscalation') {
-        const escalation = JSON.parse(toolContent);
-        if (escalation.required) {
-          console.log(`Escalation: ${escalation.ticketId}`);
+          return {
+            userTrips: [newTrip, ...state.userTrips],
+            tripDraft: newTrip, // Keep reference in draft for driver matching
+          };
+        } else {
+          // Reset if rejected
+          return {
+            tripDraft: null,
+            rideEstimate: null,
+          };
         }
-        return {
-          ...state,
-          escalation,
-        };
       }
     } catch (error) {
-      console.error(`Error processing ${toolName}:`, error);
+      console.error(`[ProcessToolResults] Error parsing tool response from ${toolName}:`, error);
     }
   }
 
-  return { ...state };
+  return {};
 }
