@@ -1,27 +1,9 @@
 import { RideBookingState } from '../state/state';
 
 /**
- * Supervisor Router function
- * Inspects the classified intent and determines which sub-agent should run.
+ * Supervisor node that acts as a central control router/anchor.
+ * Returns empty object as it is a pass-through node for conditional routing.
  */
-export function supervisorRouter(state: RideBookingState) {
-  const category = state.intent?.category || 'unknown';
-
-  if (state.validationError) {
-    return 'error_response';
-  }
-
-  switch (category) {
-    case 'estimate':
-    case 'request':
-      return 'ride_agent';
-    case 'cancel':
-      return 'management_agent';
-    case 'view_trips':
-    case 'faq':
-      return 'info_agent';
-    case 'unknown':
-    default:
-      return 'info_agent'; // Default info agent to handle chitchat or help
-  }
+export async function supervisorNode(state: RideBookingState) {
+  return {};
 }
