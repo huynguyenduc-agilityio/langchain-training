@@ -49,6 +49,11 @@ export async function processToolResults(
       }
 
       if (toolName === 'matchDriver') {
+        if (parsed.success === false) {
+          // If matching failed, do not update userTrips or clear draft in graph state.
+          // Allow the LLM to get the error tool output and handle it.
+          return {};
+        }
         const updatedTrips = state.userTrips.map((trip) => {
           if (trip.id === parsed.tripId) {
             return {
@@ -86,60 +91,6 @@ export async function processToolResults(
         return {
           userTrips: parsed.trips || [],
         };
-      }
-
-      // Handle frontend CopilotKit actions responses:
-      if (toolName === 'showRideEstimate') {
-        const selectedType = parsed.selectedVehicleType;
-        if (state.rideEstimate && selectedType) {
-          const option = state.rideEstimate.options.find(
-            (o) => o.vehicleType === selectedType
-          );
-          const price = option ? option.price : 0;
-          return {
-            tripDraft: {
-              pickup: state.rideEstimate.pickup,
-              destination: state.rideEstimate.destination,
-              distance: state.rideEstimate.distance,
-              duration: state.rideEstimate.duration,
-              vehicleType: selectedType,
-              price: price,
-              status: 'searching',
-            },
-          };
-        }
-      }
-
-      if (toolName === 'showRideConfirm') {
-        if (parsed.approved && state.tripDraft) {
-          const newTrip: Trip = {
-            id: parsed.tripId || `TRP-${Date.now()}`,
-            pickup: state.tripDraft.pickup || '',
-            destination: state.tripDraft.destination || '',
-            distance: state.tripDraft.distance || 0,
-            duration: state.tripDraft.duration || 0,
-            vehicleType: state.tripDraft.vehicleType || 'bike',
-            passengerName: state.tripDraft.passengerName || '',
-            passengerPhone: state.tripDraft.passengerPhone || '',
-            price: state.tripDraft.price || 0,
-            status: 'searching',
-            createdAt: new Date().toISOString(),
-          };
-          
-          // Persist the trip to the database
-          await addTripToDb(newTrip);
-
-          return {
-            userTrips: [newTrip, ...state.userTrips],
-            tripDraft: newTrip, // Keep reference in draft for driver matching
-          };
-        } else {
-          // Reset if rejected
-          return {
-            tripDraft: null,
-            rideEstimate: null,
-          };
-        }
       }
     } catch (error) {
       console.error(`[ProcessToolResults] Error parsing tool response from ${toolName}:`, error);

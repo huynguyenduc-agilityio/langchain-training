@@ -4,6 +4,8 @@ import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RideBookingState } from '../state/state';
 import { addTripToDb } from '../db/operations';
 import { Trip } from '../types';
+import { isWithinOperatingHours, hasTooManyActiveTrips } from '../utils/validation';
+import { VALIDATION_MESSAGES } from '../constants';
 
 /**
  * Ride Confirmation Node
@@ -22,6 +24,25 @@ export async function rideConfirmNode(state: RideBookingState) {
   }) as any;
 
   if (result && result.approved) {
+    // Re-validate business rules at resumption step (concurrent conflict prevention)
+    if (!isWithinOperatingHours()) {
+      return new Command({
+        update: {
+          validationError: VALIDATION_MESSAGES.OPERATING_HOURS_ERROR,
+        },
+        goto: 'error_response',
+      });
+    }
+
+    if (hasTooManyActiveTrips(state.userTrips)) {
+      return new Command({
+        update: {
+          validationError: VALIDATION_MESSAGES.ACTIVE_TRIPS_LIMIT_ERROR,
+        },
+        goto: 'error_response',
+      });
+    }
+
     const newTripId = result.tripId || `TRP-${Date.now()}`;
     const newTrip: Trip = {
       id: newTripId,
@@ -71,3 +92,4 @@ export async function rideConfirmNode(state: RideBookingState) {
     });
   }
 }
+
