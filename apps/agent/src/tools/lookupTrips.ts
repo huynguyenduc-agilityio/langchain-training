@@ -1,22 +1,33 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { getTripsByPhoneFromDb } from '../db/operations';
+import { getTripsByPhoneFromDb, getTripsByUserIdFromDb } from '../db/operations';
 
 export const lookupTripsTool = tool(
-  async ({ passengerPhone }) => {
-    const trips = await getTripsByPhoneFromDb(passengerPhone);
+  async ({ passengerPhone, userId }, config) => {
+    const finalUserId = userId || config?.configurable?.copilotkit_properties?.userId || config?.configurable?.userId;
+    
+    let trips = [];
+    if (finalUserId) {
+      trips = await getTripsByUserIdFromDb(finalUserId);
+    } else if (passengerPhone) {
+      trips = await getTripsByPhoneFromDb(passengerPhone);
+    }
+
     return {
       success: true,
-      passengerPhone,
+      passengerPhone: passengerPhone || 'N/A',
       trips,
-      message: `Retrieved ${trips.length} trips for phone number ${passengerPhone}.`,
+      message: finalUserId 
+        ? `Retrieved ${trips.length} trips for the current authenticated user.`
+        : `Retrieved ${trips.length} trips for phone number ${passengerPhone}.`,
     };
   },
   {
     name: 'lookupTrips',
-    description: 'Lookup a user\'s trips using their phone number.',
+    description: 'Lookup the current authenticated user\'s trips, or search by passenger phone number.',
     schema: z.object({
-      passengerPhone: z.string().describe('The passenger\'s phone number to lookup'),
+      passengerPhone: z.string().optional().describe('Optional passenger\'s phone number to lookup'),
+      userId: z.string().optional().describe('The ID of the currently authenticated user (retrieved from the user profile context)'),
     }),
   }
 );

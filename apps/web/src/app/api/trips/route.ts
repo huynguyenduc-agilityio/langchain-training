@@ -3,10 +3,22 @@ import { db, schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import type { Trip, Driver } from '@/types';
 
-// GET: Retrieve all trips from database, sorted by newest first
-export async function GET() {
+// GET: Retrieve all trips from database for a specific user, sorted by newest first
+export async function GET(req: NextRequest) {
   try {
-    const allTrips = await db.select().from(schema.trips).orderBy(desc(schema.trips.createdAt));
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'Missing userId parameter' }, { status: 400 });
+    }
+
+    const allTrips = await db
+      .select()
+      .from(schema.trips)
+      .where(eq(schema.trips.userId, userId))
+      .orderBy(desc(schema.trips.createdAt));
+      
     const resultTrips: Trip[] = [];
 
     for (const row of allTrips) {
@@ -26,6 +38,7 @@ export async function GET() {
 
       resultTrips.push({
         id: row.id,
+        userId: row.userId,
         pickup: row.pickup,
         destination: row.destination,
         distance: row.distance,
@@ -55,6 +68,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       id,
+      userId,
       pickup,
       destination,
       distance,
@@ -66,12 +80,23 @@ export async function POST(req: NextRequest) {
       status,
     } = body;
 
-    if (!id || !pickup || !destination || !passengerName || !passengerPhone) {
+    if (!id || !userId || !pickup || !destination || !passengerName || !passengerPhone) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Upsert the user first to avoid foreign key violations
+    await db
+      .insert(schema.users)
+      .values({
+        id: userId,
+        name: passengerName,
+        email: body.email || '',
+      })
+      .onConflictDoNothing();
+
     await db.insert(schema.trips).values({
       id,
+      userId,
       pickup,
       pickupLat: 16.0544,
       pickupLng: 108.2022,
@@ -94,14 +119,29 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PATCH: Update trip status, driver, or cancellation details
+// PATCH: Update trip status, driver, or cancellation details with owner verification
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { tripId, updates } = body;
+    const { tripId, userId, updates } = body;
 
-    if (!tripId || !updates) {
-      return NextResponse.json({ success: false, error: 'Missing tripId or updates' }, { status: 400 });
+    if (!tripId || !userId || !updates) {
+      return NextResponse.json({ success: false, error: 'Missing tripId, userId, or updates' }, { status: 400 });
+    }
+
+    const existing = await db
+      .select()
+      .from(schema.trips)
+      .where(eq(schema.trips.id, tripId))
+      .limit(1);
+
+    if (existing.length === 0) {
+      return NextResponse.json({ success: false, error: 'Trip not found' }, { status: 404 });
+    }
+
+    // Security check: ensure user owns the trip being updated
+    if (existing[0].userId !== userId) {
+      return NextResponse.json({ success: false, error: 'Unauthorized: Trip does not belong to this user' }, { status: 403 });
     }
 
     const updateData: any = {};
@@ -120,23 +160,12 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    // Fetch the existing trip to know the driverId before we change anything
-    let oldDriverId: string | null = null;
-    if (updates.status === 'cancelled' || updates.status === 'completed') {
-      const existing = await db
-        .select()
-        .from(schema.trips)
-        .where(eq(schema.trips.id, tripId))
-        .limit(1);
-      if (existing.length > 0) {
-        oldDriverId = existing[0].driverId;
-      }
-    }
+    const oldDriverId = existing[0].driverId;
 
     await db.update(schema.trips).set(updateData).where(eq(schema.trips.id, tripId));
 
     // If the trip is completed or cancelled, release the driver to be available again
-    if (oldDriverId) {
+    if ((updates.status === 'cancelled' || updates.status === 'completed') && oldDriverId) {
       await db.update(schema.drivers).set({ isAvailable: true }).where(eq(schema.drivers.id, oldDriverId));
     }
 

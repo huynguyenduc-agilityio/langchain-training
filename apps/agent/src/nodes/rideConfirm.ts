@@ -1,5 +1,6 @@
 import { Command, interrupt } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
+import { RunnableConfig } from '@langchain/core/runnables';
 
 import { RideBookingState } from '../state/state';
 import { addTripToDb } from '../db/operations';
@@ -12,7 +13,7 @@ import { VALIDATION_MESSAGES } from '../constants';
  * Pauses graph execution using native interrupt, waits for approval/cancellation,
  * and updates state using the Command pattern.
  */
-export async function rideConfirmNode(state: RideBookingState) {
+export async function rideConfirmNode(state: RideBookingState, config?: RunnableConfig) {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1] as AIMessage;
   const toolCall = lastMessage.tool_calls?.[0];
@@ -43,9 +44,30 @@ export async function rideConfirmNode(state: RideBookingState) {
       });
     }
 
+    const contextUser = state.copilotkit?.context?.find(
+      (c: any) => c.description === 'The profile information of the currently authenticated user'
+    )?.value;
+
+    let contextUserId: string | undefined;
+    if (contextUser) {
+      if (typeof contextUser === 'string') {
+        try {
+          const parsed = JSON.parse(contextUser);
+          contextUserId = parsed.id || parsed.uid;
+        } catch (e) {
+          contextUserId = contextUser;
+        }
+      } else if (typeof contextUser === 'object') {
+        contextUserId = (contextUser as any).id || (contextUser as any).uid;
+      }
+    }
+
+    const userId = contextUserId || config?.configurable?.copilotkit_properties?.userId || config?.configurable?.userId || 'mock-google-user-123';
+
     const newTripId = result.tripId || `TRP-${Date.now()}`;
     const newTrip: Trip = {
       id: newTripId,
+      userId,
       pickup: state.tripDraft?.pickup || '',
       destination: state.tripDraft?.destination || '',
       distance: state.tripDraft?.distance || 0,

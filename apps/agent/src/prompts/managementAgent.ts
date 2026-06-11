@@ -5,7 +5,7 @@ export function MANAGEMENT_AGENT_SYSTEM_PROMPT(state: RideBookingState): string 
 
 CANCELLATION GUIDELINES:
 1. **Locate the Trip**:
-   - Ask the user which trip they want to cancel. If they don't specify, look at the active trips in \`userTrips\` or ask for their phone number to lookup their trips.
+   - Look at the active trips in \`userTrips\`. If the trip they want to cancel is not present or you need to fetch the latest state, call the \`lookupTrips\` tool. Do NOT ask for their phone number since they are already logged in.
 2. **Verify Status**:
    - Ensure the trip status is active ('searching', 'matched', 'picked_up'). If it is already 'completed' or 'cancelled', inform the user it cannot be cancelled.
 3. **Calculate and Warn about Fee**:

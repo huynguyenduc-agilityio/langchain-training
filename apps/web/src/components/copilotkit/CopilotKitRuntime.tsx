@@ -5,7 +5,9 @@ import { API_ROUTES } from '@/constants';
 
 function CopilotKitRuntime({ children }: { children: ReactNode }) {
   return (
-    <CopilotKit runtimeUrl={API_ROUTES.COPILOTKIT}>
+    <CopilotKit
+      runtimeUrl={API_ROUTES.COPILOTKIT}
+    >
       <Suspense fallback={null}>{children}</Suspense>
     </CopilotKit>
   );

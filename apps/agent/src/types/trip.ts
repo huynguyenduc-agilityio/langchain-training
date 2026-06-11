@@ -13,6 +13,7 @@ export interface Driver {
 
 export interface Trip {
   id: string;
+  userId: string;
   pickup: string;
   destination: string;
   distance: number;

@@ -1,6 +1,6 @@
 import { db } from './index';
 import { trips, drivers } from './schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { Trip, Driver } from '../types';
 import { COORDINATES } from '../constants';
 
@@ -31,6 +31,7 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
 
     return {
       id: row.id,
+      userId: row.userId,
       pickup: row.pickup,
       destination: row.destination,
       distance: row.distance,
@@ -48,6 +49,60 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
   } catch (error) {
     console.error('[DB] Error getting trip:', error);
     return undefined;
+  }
+}
+
+/**
+ * Retrieve all trips filtered by user ID from the database.
+ */
+export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
+  try {
+    const result = await db
+      .select()
+      .from(trips)
+      .where(eq(trips.userId as any, userId as any) as any)
+      .orderBy(desc(trips.createdAt));
+    
+    const resultTrips: Trip[] = [];
+
+    for (const row of result) {
+      let driver: Driver | undefined = undefined;
+      if (row.driverId) {
+        const dRes = await db.select().from(drivers).where(eq(drivers.id as any, row.driverId as any) as any).limit(1);
+        if (dRes.length > 0) {
+          driver = {
+            name: dRes[0].name,
+            phone: dRes[0].phone,
+            vehicleInfo: dRes[0].vehicleInfo,
+            licensePlate: dRes[0].licensePlate,
+            rating: dRes[0].rating || 5.0,
+          };
+        }
+      }
+
+      resultTrips.push({
+        id: row.id,
+        userId: row.userId,
+        pickup: row.pickup,
+        destination: row.destination,
+        distance: row.distance,
+        duration: row.duration,
+        vehicleType: row.vehicleType as any,
+        passengerName: row.passengerName,
+        passengerPhone: row.passengerPhone,
+        price: row.price,
+        status: row.status as any,
+        createdAt: row.createdAt ? row.createdAt.toISOString() : new Date().toISOString(),
+        cancelledAt: row.cancelledAt ? row.cancelledAt.toISOString() : undefined,
+        cancellationFee: row.cancellationFee || undefined,
+        driver,
+      });
+    }
+
+    return resultTrips;
+  } catch (error) {
+    console.error('[DB] Error getting trips by userId:', error);
+    return [];
   }
 }
 
@@ -81,6 +136,7 @@ export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
 
       resultTrips.push({
         id: row.id,
+        userId: row.userId,
         pickup: row.pickup,
         destination: row.destination,
         distance: row.distance,
@@ -108,6 +164,7 @@ export async function addTripToDb(trip: Trip): Promise<void> {
   try {
     await db.insert(trips).values({
       id: trip.id,
+      userId: trip.userId || 'mock-google-user-123',
       pickup: trip.pickup,
       pickupLat: COORDINATES.DEFAULT_CITY.latitude,
       pickupLng: COORDINATES.DEFAULT_CITY.longitude,

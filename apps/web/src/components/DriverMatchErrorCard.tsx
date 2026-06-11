@@ -4,33 +4,41 @@ import React, { useState } from 'react';
 import { AlertTriangle, RefreshCw, XCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useCopilotChat } from '@copilotkit/react-core';
+import { useAgent, useCopilotKit } from '@copilotkit/react-core/v2';
 
 interface DriverMatchErrorCardProps {
   tripId: string;
   reason: string;
 }
 
-export function DriverMatchErrorCard({ tripId, reason }: DriverMatchErrorCardProps) {
-  const { appendMessage } = useCopilotChat();
-  const [actionSelected, setActionSelected] = useState<'retry' | 'cancel' | null>(null);
+export function DriverMatchErrorCard({
+  tripId,
+  reason,
+}: DriverMatchErrorCardProps) {
+  const { agent } = useAgent({ agentId: 'default' });
+  const { copilotkit } = useCopilotKit();
+  const [actionSelected, setActionSelected] = useState<
+    'retry' | 'cancel' | null
+  >(null);
 
   const handleRetry = async () => {
     setActionSelected('retry');
-    await appendMessage({
-      parentId: `msg-retry-${Date.now()}`,
+    agent.addMessage({
+      id: `msg-retry-${Date.now()}`,
       role: 'user',
       content: `Retry driver matching for trip ${tripId}`,
-    } as any);
+    });
+    await copilotkit.runAgent({ agent });
   };
 
   const handleCancel = async () => {
     setActionSelected('cancel');
-    await appendMessage({
-      parentId: `msg-cancel-${Date.now()}`,
+    agent.addMessage({
+      id: `msg-cancel-${Date.now()}`,
       role: 'user',
       content: `Cancel trip ${tripId}`,
-    } as any);
+    });
+    await copilotkit.runAgent({ agent });
   };
 
   return (
@@ -46,13 +54,16 @@ export function DriverMatchErrorCard({ tripId, reason }: DriverMatchErrorCardPro
       {/* Content */}
       <CardContent className="p-4 space-y-3">
         <p className="text-xs text-gray-300 leading-relaxed">
-          {reason || 'We couldn\'t find any drivers matching your vehicle type nearby. All matching drivers are currently busy.'}
+          {reason ||
+            "We couldn't find any drivers matching your vehicle type nearby. All matching drivers are currently busy."}
         </p>
 
         {actionSelected ? (
           <div className="w-full text-center py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-gray-955 border border-gray-855 border-solid text-gray-400">
             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-            {actionSelected === 'retry' ? 'Retrying match...' : 'Cancelling booking...'}
+            {actionSelected === 'retry'
+              ? 'Retrying match...'
+              : 'Cancelling booking...'}
           </div>
         ) : (
           <div className="flex gap-2 pt-1">
