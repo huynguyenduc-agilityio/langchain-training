@@ -3,6 +3,7 @@ import { Inter, Geist } from 'next/font/google';
 
 import CopilotKitRuntime from '@/components/copilotkit/CopilotKitRuntime';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthProvider } from '@/features/auth/auth-context';
 import './globals.css';
 import { cn } from "@/utils";
 
@@ -12,7 +13,7 @@ const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
-});
+  });
 
 export const metadata: Metadata = {
   title: 'CityRide — Intra-city Ride Booking',
@@ -36,7 +37,9 @@ export default function RootLayout({
         }}
       >
         <TooltipProvider>
-          <CopilotKitRuntime>{children}</CopilotKitRuntime>
+          <AuthProvider>
+            <CopilotKitRuntime>{children}</CopilotKitRuntime>
+          </AuthProvider>
         </TooltipProvider>
       </body>
     </html>

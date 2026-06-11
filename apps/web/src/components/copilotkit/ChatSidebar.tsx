@@ -1,7 +1,26 @@
 'use client';
 
-import React from 'react';
-import { CopilotSidebar, useConfigureSuggestions } from '@copilotkit/react-core/v2';
+import React, { useEffect, useRef } from 'react';
+import {
+  CopilotSidebar,
+  useConfigureSuggestions,
+  useCopilotChatConfiguration,
+  CopilotModalHeader,
+} from '@copilotkit/react-core/v2';
+
+function CustomHeader(props: any) {
+  const config = useCopilotChatConfiguration();
+  const hasClosed = useRef(false);
+
+  useEffect(() => {
+    if (config && !hasClosed.current) {
+      config.setModalOpen(false);
+      hasClosed.current = true;
+    }
+  }, [config]);
+
+  return <CopilotModalHeader {...props} />;
+}
 
 export function ChatSidebar() {
   useConfigureSuggestions({
@@ -19,7 +38,8 @@ export function ChatSidebar() {
 
   return (
     <CopilotSidebar
-      defaultOpen={true}
+      defaultOpen={false}
+      header={CustomHeader as any}
       labels={{
         modalHeaderTitle: 'CityRide AI',
         welcomeMessageText: 'Hello! 👋. Where would you like to go today?',

@@ -1,9 +1,11 @@
 import { CopilotKit } from '@copilotkit/react-core/v2';
 import { Suspense, type ReactNode } from 'react';
 
+import { API_ROUTES } from '@/constants';
+
 function CopilotKitRuntime({ children }: { children: ReactNode }) {
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit">
+    <CopilotKit runtimeUrl={API_ROUTES.COPILOTKIT}>
       <Suspense fallback={null}>{children}</Suspense>
     </CopilotKit>
   );

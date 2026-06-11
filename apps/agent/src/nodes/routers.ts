@@ -27,7 +27,13 @@ export function supervisorRouter(state: RideBookingState) {
   // Prevent infinite loops when subgraphs loop back to the supervisor
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
-  if (lastMessage && lastMessage instanceof AIMessage) {
+  if (
+    lastMessage &&
+    (lastMessage instanceof AIMessage ||
+      (lastMessage as any).type === 'ai' ||
+      (lastMessage as any)._getType?.() === 'ai' ||
+      lastMessage.constructor?.name === 'AIMessage')
+  ) {
     return '__end__';
   }
 
