@@ -28,7 +28,7 @@ export function CopilotKitTools({
       <RideEstimateFrontendTool onSelectVehicle={onSelectVehicle} />
       <RideConfirmFrontendTool trips={trips} setTrips={setTrips} />
       <DriverMatchFrontendTool />
-      <CancelConfirmFrontendTool setTrips={setTrips} />
+      <CancelConfirmFrontendTool trips={trips} setTrips={setTrips} />
     </>
   );
 }

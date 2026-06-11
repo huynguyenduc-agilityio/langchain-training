@@ -4,6 +4,7 @@ import React from 'react';
 import { useFrontendTool } from '@copilotkit/react-core/v2';
 import { z } from 'zod';
 import { DriverMatchCard } from '@/components/DriverMatchCard';
+import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 
 export function DriverMatchFrontendTool() {
   useFrontendTool({
@@ -30,6 +31,26 @@ export function DriverMatchFrontendTool() {
           tripId={args.tripId || ''}
           driver={args.driver}
           etaMinutes={args.etaMinutes || 3}
+        />
+      );
+    },
+  });
+
+  useFrontendTool({
+    name: 'showDriverMatchError',
+    description: 'Display a card indicating that no driver was matched, with options to retry or cancel.',
+    parameters: z.object({
+      tripId: z.string().describe('The trip ID'),
+      reason: z.string().describe('The reason for matching failure (e.g. no drivers available)'),
+    }),
+    handler: async (args) => {
+      return 'Displayed driver match error card';
+    },
+    render: ({ args }) => {
+      return (
+        <DriverMatchErrorCard
+          tripId={args.tripId || ''}
+          reason={args.reason || ''}
         />
       );
     },

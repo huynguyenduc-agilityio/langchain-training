@@ -21,12 +21,14 @@ interface TripDashboardProps {
   trips: Trip[];
   onCancelTrip?: (tripId: string) => void;
   onEstimateRide?: (pickup: string, destination: string) => void;
+  onRefresh?: () => void;
 }
 
 export function TripDashboard({
   trips,
   onCancelTrip,
   onEstimateRide,
+  onRefresh,
 }: TripDashboardProps) {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'cancelled'>('all');
   const [sortBy, setSortBy] = useState<string>('date-desc');
@@ -90,7 +92,7 @@ export function TripDashboard({
               size="sm"
               className="bg-gray-900 border-gray-800 hover:bg-gray-850 text-gray-300 hover:text-emerald-400 h-9 rounded-xl flex items-center gap-1.5 transition-all text-xs font-semibold cursor-pointer border-solid"
               onClick={() => {
-                // Refresh action placeholder
+                if (onRefresh) onRefresh();
               }}
             >
               <RefreshCw className="w-3.5 h-3.5" />
