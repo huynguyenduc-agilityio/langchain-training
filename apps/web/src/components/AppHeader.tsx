@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Car, Bell } from 'lucide-react';
+import { Car, Bell, LogOut, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/features/auth/auth-context';
 import {
   Tooltip,
   TooltipContent,
@@ -25,6 +26,7 @@ interface NotificationItem {
 }
 
 export function AppHeader() {
+  const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: '1',
@@ -85,7 +87,7 @@ export function AppHeader() {
       </div>
 
       {/* Right side: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {/* Notifications Dropdown */}
         <DropdownMenu>
           <Tooltip>
@@ -152,6 +154,51 @@ export function AppHeader() {
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* User Profile Dropdown */}
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center justify-center w-9 h-9 rounded-lg overflow-hidden bg-gray-900 border border-gray-850 hover:border-emerald-500/50 transition-all cursor-pointer">
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || 'User'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs font-bold text-emerald-400">
+                    {user.displayName ? (
+                      user.displayName.charAt(0).toUpperCase()
+                    ) : (
+                      <UserIcon className="w-4 h-4" />
+                    )}
+                  </span>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-gray-950 border border-gray-800 text-gray-100 rounded-xl p-1 shadow-lg shadow-black/50"
+            >
+              <div className="px-3 py-2 text-xs border-b border-gray-900 mb-1">
+                <p className="font-semibold text-gray-200 truncate">
+                  {user.displayName || 'User'}
+                </p>
+                <p className="text-[10px] text-gray-500 truncate">
+                  {user.email}
+                </p>
+              </div>
+              <DropdownMenuItem
+                onClick={logout}
+                className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 focus:bg-red-950/20 focus:text-red-400 cursor-pointer rounded-lg p-2 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </header>
   );

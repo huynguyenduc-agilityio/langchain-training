@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { TripDashboard } from '@/components/TripDashboard';
 import type { Trip } from '@/types';
 import { http } from '@/lib/http';
+import { API_ROUTES } from '@/constants';
 
 interface RideBookingContainerProps {
   trips: Trip[];
@@ -15,7 +16,7 @@ export function RideBookingContainer({
   setTrips,
 }: RideBookingContainerProps) {
   const fetchTrips = () => {
-    http<{ success: boolean; trips: Trip[] }>('/api/trips')
+    http<{ success: boolean; trips: Trip[] }>(API_ROUTES.TRIPS)
       .then((data) => {
         if (data.success && data.trips) {
           setTrips(data.trips);
@@ -24,19 +25,35 @@ export function RideBookingContainer({
       .catch((err) => console.error('Error fetching trips:', err));
   };
 
-  // Fetch on mount and set up polling every 3 seconds to sync with Supabase / Agent
-  // useEffect(() => {
-  //   fetchTrips();
-  //   const interval = setInterval(fetchTrips, 3000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  // Fetch on mount and subscribe to real-time events via Server-Sent Events (SSE)
+  useEffect(() => {
+    fetchTrips();
+
+    const eventSource = new EventSource(API_ROUTES.TRIPS_STREAM);
+
+    eventSource.onmessage = (event) => {
+      if (event.data === 'connected') {
+        return;
+      }
+      // When any database update occurs, refresh the trips list
+      fetchTrips();
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('[SSE] Connection error, reconnecting...', err);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
 
   const handleCancelTrip = (tripId: string) => {
     const trip = trips.find((t) => t.id === tripId);
     const cancellationFee = trip?.driver ? 1.0 : 0;
     const cancelledAt = new Date().toISOString();
 
-    http<{ success: boolean }>('/api/trips', {
+    http<{ success: boolean }>(API_ROUTES.TRIPS, {
       method: 'PATCH',
       body: JSON.stringify({
         tripId,

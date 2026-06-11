@@ -1,9 +1,5 @@
-type ApiFetchOptions = RequestInit & {
-  baseUrl?: string;
-  token?: string;
-};
-
-const ABSOLUTE_URL_PATTERN = /^https?:\/\//i;
+import { ApiFetchOptions } from '@/types';
+import { ABSOLUTE_URL_PATTERN } from '@/constants';
 
 const getRequestUrl = (path: string, baseUrl: string) => {
   return ABSOLUTE_URL_PATTERN.test(path) ? path : `${baseUrl}${path}`;
