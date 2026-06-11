@@ -7,21 +7,18 @@ import type { Trip } from '@/types';
 import { CancelTripCard } from '@/components/CancelTripCard';
 
 interface CancelConfirmFrontendToolProps {
+  trips: Trip[];
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
 }
 
-export function CancelConfirmFrontendTool({ setTrips }: CancelConfirmFrontendToolProps) {
+export function CancelConfirmFrontendTool({ trips, setTrips }: CancelConfirmFrontendToolProps) {
   const resolveRef = useRef<((value: any) => void) | null>(null);
 
   useFrontendTool({
     name: 'showCancelConfirm',
-    description: 'Display the cancellation confirmation details with the trip ID and fee warnings to the user.',
+    description: 'Display the cancellation confirmation details for a trip using the trip ID.',
     parameters: z.object({
       tripId: z.string().describe('The trip ID to cancel'),
-      pickup: z.string().describe('The pickup location name'),
-      destination: z.string().describe('The destination location name'),
-      driverName: z.string().optional().describe('Name of the driver, if matched'),
-      cancellationFee: z.number().optional().describe('Cancellation fee if applicable'),
     }),
     handler: async (args) => {
       return new Promise((resolve) => {
@@ -29,13 +26,19 @@ export function CancelConfirmFrontendTool({ setTrips }: CancelConfirmFrontendToo
       });
     },
     render: ({ args }) => {
+      const trip = trips.find((t) => t.id === args.tripId);
+      if (!trip) return null;
+
+      const driverMatched = !!trip.driver;
+      const cancellationFee = driverMatched ? (trip.vehicleType === 'bike' ? 0.5 : 1.0) : 0;
+
       return (
         <CancelTripCard
           tripId={args.tripId || ''}
-          pickup={args.pickup || ''}
-          destination={args.destination || ''}
-          driverName={args.driverName}
-          cancellationFee={args.cancellationFee}
+          pickup={trip.pickup || ''}
+          destination={trip.destination || ''}
+          driverName={trip.driver?.name}
+          cancellationFee={cancellationFee}
           onConfirm={() => {
             // Cancel trip in state
             setTrips((prev) =>
@@ -45,7 +48,7 @@ export function CancelConfirmFrontendTool({ setTrips }: CancelConfirmFrontendToo
                       ...t,
                       status: 'cancelled',
                       cancelledAt: new Date().toISOString(),
-                      cancellationFee: args.cancellationFee || 0,
+                      cancellationFee: cancellationFee,
                     }
                   : t
               )
