@@ -5,6 +5,7 @@ import { TripDashboard } from '@/components/TripDashboard';
 import type { Trip } from '@/types';
 import { http } from '@/lib/http';
 import { API_ROUTES } from '@/constants';
+import { useAuth } from '@/features/auth/auth-context';
 
 interface RideBookingContainerProps {
   trips: Trip[];
@@ -15,8 +16,13 @@ export function RideBookingContainer({
   trips,
   setTrips,
 }: RideBookingContainerProps) {
+  const { user } = useAuth();
+
   const fetchTrips = () => {
-    http<{ success: boolean; trips: Trip[] }>(API_ROUTES.TRIPS)
+    if (!user?.uid) return;
+    http<{ success: boolean; trips: Trip[] }>(
+      `${API_ROUTES.TRIPS}?userId=${user.uid}`,
+    )
       .then((data) => {
         if (data.success && data.trips) {
           setTrips(data.trips);
@@ -25,8 +31,10 @@ export function RideBookingContainer({
       .catch((err) => console.error('Error fetching trips:', err));
   };
 
-  // Fetch on mount and subscribe to real-time events via Server-Sent Events (SSE)
+  // Fetch on mount/user change and subscribe to real-time events via Server-Sent Events (SSE)
   useEffect(() => {
+    if (!user?.uid) return;
+
     fetchTrips();
 
     const eventSource = new EventSource(API_ROUTES.TRIPS_STREAM);
@@ -46,9 +54,10 @@ export function RideBookingContainer({
     return () => {
       eventSource.close();
     };
-  }, []);
+  }, [user?.uid]);
 
   const handleCancelTrip = (tripId: string) => {
+    if (!user?.uid) return;
     const trip = trips.find((t) => t.id === tripId);
     const cancellationFee = trip?.driver ? 1.0 : 0;
     const cancelledAt = new Date().toISOString();
@@ -57,6 +66,7 @@ export function RideBookingContainer({
       method: 'PATCH',
       body: JSON.stringify({
         tripId,
+        userId: user.uid,
         updates: {
           status: 'cancelled',
           cancellationFee,

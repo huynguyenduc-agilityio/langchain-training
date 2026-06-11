@@ -374,20 +374,19 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
   border-top-left-radius: 4px;
-  padding: 10px 14px;
+  padding: 0px 14px;
   max-width: 85%;
 }
 
 /* ── User Message: primary color background ── */
 .copilotKitUserMessage [class*='bg-muted'] {
   background-color: var(--accent-primary) !important;
-  color: var(--primary-foreground) !important;
+  color: #ffffff !important;
 }
 
-/* Override prose dark mode for user message to keep text white */
-.copilotKitUserMessage .prose {
-  --tw-prose-body: #ffffff !important;
+.copilotKitUserMessage [class*='bg-muted'] * {
   color: #ffffff !important;
+  --tw-prose-body: #ffffff !important;
 }
 
 /* ── Welcome Screen (Sidebar): top-left chat bubble (not centered) ── */

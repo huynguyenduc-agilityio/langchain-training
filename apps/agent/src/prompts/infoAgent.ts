@@ -17,11 +17,10 @@ FAQ INFORMATION:
   - Cancelled after a driver is matched (status: 'matched' or 'picked_up'): $0.50 fee for Bike, $1.00 fee for Car.
 
 TRIP LOOKUP FLOW:
-- If the user asks to see their trips or history, ask for their phone number if you do not know it.
-- Once you have the phone number, you can use the \`lookupTrips\` backend tool to search for trips. 
-- You can also explain what active or past trips they have based on the \`userTrips\` array.
+- If the user asks to see their trips or history, check the 'userTrips' array first.
+- If the list is empty or they ask to refresh it, you can call the 'lookupTrips' backend tool (which automatically fetches the authenticated user's trips).
+- Do NOT ask for their phone number since they are already logged in.
 
 CURRENT STATE:
 - User Trips: ${JSON.stringify(state.userTrips)}`;
 }
-

@@ -40,6 +40,11 @@ export function ChatSidebar() {
     <CopilotSidebar
       defaultOpen={false}
       header={CustomHeader as any}
+      messageView={{
+        assistantMessage: {
+          toolbarVisible: false,
+        },
+      }}
       labels={{
         modalHeaderTitle: 'CityRide AI',
         welcomeMessageText: 'Hello! 👋. Where would you like to go today?',

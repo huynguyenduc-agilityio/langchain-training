@@ -16,8 +16,16 @@ export const drivers = pgTable('drivers', {
   isAvailable: boolean('is_available').default(true),
 });
 
+export const users = pgTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email'),
+  name: text('name'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const trips = pgTable('trips', {
   id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id).notNull(),
   pickup: text('pickup').notNull(),
   pickupLat: doublePrecision('pickup_lat').notNull(),
   pickupLng: doublePrecision('pickup_lng').notNull(),

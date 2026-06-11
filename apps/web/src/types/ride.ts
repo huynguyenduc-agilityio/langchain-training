@@ -11,6 +11,7 @@ export interface Driver {
 
 export interface Trip {
   id: string;              // "TRP-20260608-001"
+  userId: string;
   pickup: string;
   destination: string;
   distance: number;        // km

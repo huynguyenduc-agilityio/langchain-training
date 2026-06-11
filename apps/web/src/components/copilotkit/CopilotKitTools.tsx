@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Trip, VehicleType } from '@/types';
 import { ActiveTripsReadable } from './readables/ActiveTripsReadable';
+import { UserReadable } from './readables/UserReadable';
 import { RideEstimateFrontendTool } from './tools/RideEstimateFrontendTool';
 import { RideConfirmFrontendTool } from './tools/RideConfirmFrontendTool';
 import { DriverMatchFrontendTool } from './tools/DriverMatchFrontendTool';
@@ -22,6 +23,7 @@ export function CopilotKitTools({
   return (
     <>
       {/* Readables */}
+      <UserReadable />
       <ActiveTripsReadable trips={trips} />
 
       {/* Frontend Tools */}
