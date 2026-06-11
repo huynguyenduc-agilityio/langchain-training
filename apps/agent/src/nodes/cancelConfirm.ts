@@ -1,6 +1,8 @@
 import { Command, interrupt } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RideBookingState } from '../state/state';
+import { updateTripInDb } from '../db/operations';
+import { CANCELLATION_FEE_CONFIG } from '../constants';
 
 /**
  * Cancellation Confirmation Node
@@ -11,20 +13,45 @@ export async function cancelConfirmNode(state: RideBookingState) {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1] as AIMessage;
   const toolCall = lastMessage.tool_calls?.[0];
+  const tripId = toolCall?.args?.tripId;
+
+  // Lookup trip details from state
+  const trip = state.userTrips.find((t) => t.id === tripId);
+  const driverMatched = !!trip?.driver;
+  const vehicleType = trip?.vehicleType || 'bike';
+  const cancellationFee = driverMatched ? CANCELLATION_FEE_CONFIG[vehicleType] : 0;
 
   // Throws GraphInterrupt to pause execution, returns resume payload when resumed
   const result = interrupt({
     type: 'cancel_confirm',
     data: {
-      tripId: toolCall?.args?.tripId,
-      pickup: toolCall?.args?.pickup,
-      destination: toolCall?.args?.destination,
-      driverName: toolCall?.args?.driverName,
-      cancellationFee: toolCall?.args?.cancellationFee,
+      tripId,
+      pickup: trip?.pickup || '',
+      destination: trip?.destination || '',
+      driverName: trip?.driver?.name,
+      cancellationFee,
     },
   }) as any;
 
-  if (result && result.approved) {
+  if (result && result.approved && tripId) {
+    // Mutate DB immediately in the node to ensure state consistency
+    const updatedTrip = await updateTripInDb(tripId, {
+      status: 'cancelled',
+      cancellationFee,
+      cancelledAt: new Date().toISOString(),
+    });
+
+    const updatedUserTrips = state.userTrips.map((t) =>
+      t.id === tripId
+        ? {
+            ...t,
+            status: 'cancelled' as const,
+            cancellationFee,
+            cancelledAt: new Date().toISOString(),
+          }
+        : t
+    );
+
     return new Command({
       update: {
         messages: [
@@ -34,6 +61,7 @@ export async function cancelConfirmNode(state: RideBookingState) {
             tool_call_id: toolCall?.id || '',
           }),
         ],
+        userTrips: updatedUserTrips,
       },
       goto: 'agent',
     });
@@ -52,3 +80,4 @@ export async function cancelConfirmNode(state: RideBookingState) {
     });
   }
 }
+

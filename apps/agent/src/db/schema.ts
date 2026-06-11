@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, doublePrecision, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, doublePrecision, pgEnum, boolean } from 'drizzle-orm/pg-core';
 
 export const tripStatusEnum = pgEnum('trip_status', ['searching', 'matched', 'picked_up', 'completed', 'cancelled']);
 export const vehicleTypeEnum = pgEnum('vehicle_type', ['bike', 'car4', 'car7']);
@@ -8,11 +8,12 @@ export const drivers = pgTable('drivers', {
   name: text('name').notNull(),
   phone: text('phone').notNull(),
   vehicleInfo: text('vehicle_info').notNull(),
+  vehicleType: vehicleTypeEnum('vehicle_type').notNull(),
   licensePlate: text('license_plate').notNull(),
   rating: doublePrecision('rating').default(5.0),
   latitude: doublePrecision('latitude').notNull(),
   longitude: doublePrecision('longitude').notNull(),
-  isAvailable: text('is_available').default('true'),
+  isAvailable: boolean('is_available').default(true),
 });
 
 export const trips = pgTable('trips', {

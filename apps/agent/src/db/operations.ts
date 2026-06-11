@@ -2,46 +2,7 @@ import { db } from './index';
 import { trips, drivers } from './schema';
 import { eq } from 'drizzle-orm';
 import { Trip, Driver } from '../types';
-import { MOCK_DRIVERS, COORDINATES } from '../constants';
-
-/**
- * Seed drivers in the PostgreSQL database if the table is empty.
- */
-export async function seedDriversIfNeeded() {
-  try {
-    const existing = await db.select().from(drivers).limit(1);
-    if (existing.length === 0) {
-      const driverValues = MOCK_DRIVERS.map((driver, index) => {
-        let latitude = COORDINATES.DEFAULT_CITY.latitude;
-        let longitude = COORDINATES.DEFAULT_CITY.longitude;
-
-        if (index === 1) {
-          latitude = COORDINATES.MOCK_DESTINATION.latitude;
-          longitude = COORDINATES.MOCK_DESTINATION.longitude;
-        } else if (index === 2) {
-          latitude = 16.0464; // Custom coordinate for Driver C
-          longitude = 108.2208;
-        }
-
-        return {
-          id: `DRV-00${index + 1}`,
-          name: driver.name,
-          phone: driver.phone,
-          vehicleInfo: driver.vehicleInfo,
-          licensePlate: driver.licensePlate,
-          rating: driver.rating,
-          latitude,
-          longitude,
-          isAvailable: 'true',
-        };
-      });
-
-      await db.insert(drivers).values(driverValues);
-    }
-  } catch (error) {
-    console.error('[DB] Error seeding drivers:', error);
-  }
-}
+import { COORDINATES } from '../constants';
 
 /**
  * Fetch a trip from the database and resolve driver info if present.
@@ -145,8 +106,6 @@ export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
 
 export async function addTripToDb(trip: Trip): Promise<void> {
   try {
-    await seedDriversIfNeeded();
-
     await db.insert(trips).values({
       id: trip.id,
       pickup: trip.pickup,
@@ -188,7 +147,22 @@ export async function updateTripInDb(
       }
     }
 
+    // Fetch the existing trip to know the driverId before we change anything
+    let oldDriverId: string | null = null;
+    if (updates.status === 'cancelled' || updates.status === 'completed') {
+      const existing = await db.select().from(trips).where(eq(trips.id as any, tripId as any) as any).limit(1);
+      if (existing.length > 0) {
+        oldDriverId = existing[0].driverId;
+      }
+    }
+
     await db.update(trips).set(updateData).where(eq(trips.id as any, tripId as any) as any);
+
+    // If the trip is completed or cancelled, release the driver to be available again
+    if (oldDriverId) {
+      await db.update(drivers).set({ isAvailable: true }).where(eq(drivers.id, oldDriverId));
+    }
+
     return getTripFromDb(tripId);
   } catch (error) {
     console.error('[DB] Error updating trip:', error);

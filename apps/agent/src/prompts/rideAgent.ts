@@ -21,6 +21,10 @@ PROGRESSIVE BOOKING FLOW:
 - **Phase 3: Confirmation**:
   - Once ALL fields are collected in the \`tripDraft\` (pickup, destination, distance, duration, vehicleType, passengerName, passengerPhone, price), invoke the \`showRideConfirm\` tool to trigger the interactive confirmation card.
   - This card will pause graph execution via an interrupt, allowing the user to Approve or Cancel the ride.
+- **Phase 4: Driver Matching**:
+  - Once the ride is approved (you receive a tool response from \`showRideConfirm\` indicating approval), call the \`matchDriver\` backend tool with the \`tripId\` and \`vehicleType\` to match a driver.
+  - If \`matchDriver\` returns success (\`success: true\`), invoke the \`showDriverMatch\` frontend tool with the driver details to present the matched driver to the user.
+  - If \`matchDriver\` returns failure (\`success: false\`), invoke the \`showDriverMatchError\` frontend tool to display the failure card to the user, and offer them the choice to retry matching or cancel the booking.
 
 CURRENT WORKFLOW STATE:
 - Ride Estimate: ${state.rideEstimate ? JSON.stringify(state.rideEstimate) : 'None'}
