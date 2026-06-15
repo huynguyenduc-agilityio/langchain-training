@@ -8,6 +8,8 @@ import { RideEstimateFrontendTool } from './tools/RideEstimateFrontendTool';
 import { RideConfirmFrontendTool } from './tools/RideConfirmFrontendTool';
 import { DriverMatchFrontendTool } from './tools/DriverMatchFrontendTool';
 import { CancelConfirmFrontendTool } from './tools/CancelConfirmFrontendTool';
+import { SuccessFrontendTool } from './tools/SuccessFrontendTool';
+import { CancelErrorFrontendTool } from './tools/CancelErrorFrontendTool';
 
 interface CopilotKitToolsProps {
   trips: Trip[];
@@ -31,6 +33,8 @@ export function CopilotKitTools({
       <RideConfirmFrontendTool trips={trips} setTrips={setTrips} />
       <DriverMatchFrontendTool />
       <CancelConfirmFrontendTool trips={trips} setTrips={setTrips} />
+      <SuccessFrontendTool />
+      <CancelErrorFrontendTool />
     </>
   );
 }

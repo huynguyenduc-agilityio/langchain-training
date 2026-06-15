@@ -12,7 +12,7 @@ import { VALIDATION_MESSAGES } from '../constants';
  */
 export async function processToolResults(
   state: RideBookingState,
-  _config: RunnableConfig
+  _config: RunnableConfig,
 ) {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1] as any;
@@ -23,7 +23,8 @@ export async function processToolResults(
     const toolContent = toolMessage.content;
 
     try {
-      const parsed = typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
+      const parsed =
+        typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
 
       if (toolName === 'estimateRide') {
         if (parsed.error === 'outside_service_area') {
@@ -35,6 +36,10 @@ export async function processToolResults(
           return {
             validationError: VALIDATION_MESSAGES.DISTANCE_LIMIT_ERROR,
           };
+        }
+        if (parsed.error === 'ambiguous_location') {
+          // Let the LLM see the error message and ask the user for clarification
+          return {};
         }
         return {
           rideEstimate: parsed,
@@ -93,7 +98,10 @@ export async function processToolResults(
         };
       }
     } catch (error) {
-      console.error(`[ProcessToolResults] Error parsing tool response from ${toolName}:`, error);
+      console.error(
+        `[ProcessToolResults] Error parsing tool response from ${toolName}:`,
+        error,
+      );
     }
   }
 

@@ -27,4 +27,8 @@ export interface Trip {
   createdAt: string;
   cancelledAt?: string;
   cancellationFee?: number;
+  pickupLat?: number;
+  pickupLng?: number;
+  destLat?: number;
+  destLng?: number;
 }

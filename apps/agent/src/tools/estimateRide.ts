@@ -59,9 +59,37 @@ export const estimateRideTool = tool(
     }
 
     if (fallbackUsed) {
-      // Generate simulated distance (e.g. 3 to 23 km based on names length)
-      const seed = ((pickup.length + destination.length) % 20) + 3;
-      distance = parseFloat(seed.toFixed(1));
+      // If geocoding failed for either location, ask user to clarify instead of guessing
+      if (!startCoords && !endCoords) {
+        return {
+          error: 'ambiguous_location',
+          message: `Could not find either location: "${pickup}" and "${destination}". Please provide more specific addresses or landmarks.`,
+        } as any;
+      }
+      if (!startCoords) {
+        return {
+          error: 'ambiguous_location',
+          message: `Could not find pickup location: "${pickup}". Please provide a more specific address or landmark.`,
+        } as any;
+      }
+      if (!endCoords) {
+        return {
+          error: 'ambiguous_location',
+          message: `Could not find destination: "${destination}". Please provide a more specific address or landmark.`,
+        } as any;
+      }
+      // Geocoding succeeded but directions API failed — estimate from coords
+      const R = 6371; // Earth radius in km
+      const dLat = ((endCoords[1] - startCoords[1]) * Math.PI) / 180;
+      const dLon = ((endCoords[0] - startCoords[0]) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((startCoords[1] * Math.PI) / 180) *
+          Math.cos((endCoords[1] * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      distance = parseFloat((R * c * 1.3).toFixed(1)); // 1.3x for road distance estimate
       duration = Math.round(distance * 1.5 + 5);
     }
 
@@ -95,6 +123,10 @@ export const estimateRideTool = tool(
       destination,
       distance,
       duration,
+      pickupLat: startCoords ? startCoords[1] : undefined,
+      pickupLng: startCoords ? startCoords[0] : undefined,
+      destLat: endCoords ? endCoords[1] : undefined,
+      destLng: endCoords ? endCoords[0] : undefined,
       options: [
         { vehicleType: VEHICLE_BIKE, price: bikePrice },
         { vehicleType: VEHICLE_CAR4, price: car4Price },

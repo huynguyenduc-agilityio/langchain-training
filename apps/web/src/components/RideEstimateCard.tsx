@@ -30,7 +30,8 @@ const VEHICLE_NAMES: Record<VehicleType, string> = {
   car7: 'Car (7-seat)',
 };
 
-function formatPrice(amount: number) {
+function formatPrice(amount: number | undefined | null) {
+  if (amount == null || isNaN(amount)) return '$0.00';
   return '$' + amount.toFixed(2);
 }
 

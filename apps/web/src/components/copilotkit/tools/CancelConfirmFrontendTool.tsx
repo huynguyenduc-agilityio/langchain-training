@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { useFrontendTool } from '@copilotkit/react-core/v2';
-import { z } from 'zod';
+import React from 'react';
+import { useInterrupt } from '@copilotkit/react-core/v2';
 import type { Trip } from '@/types';
 import { CancelTripCard } from '@/components/CancelTripCard';
 
@@ -12,38 +11,33 @@ interface CancelConfirmFrontendToolProps {
 }
 
 export function CancelConfirmFrontendTool({ trips, setTrips }: CancelConfirmFrontendToolProps) {
-  const resolveRef = useRef<((value: any) => void) | null>(null);
+  useInterrupt({
+    render: ({ event, resolve }) => {
+      // Only handle cancel_confirm interrupt events
+      if (event.value?.type !== 'cancel_confirm') return <></>;
 
-  useFrontendTool({
-    name: 'showCancelConfirm',
-    description: 'Display the cancellation confirmation details for a trip using the trip ID.',
-    parameters: z.object({
-      tripId: z.string().describe('The trip ID to cancel'),
-    }),
-    handler: async (args) => {
-      return new Promise((resolve) => {
-        resolveRef.current = resolve;
-      });
-    },
-    render: ({ args }) => {
-      const trip = trips.find((t) => t.id === args.tripId);
-      if (!trip) return null;
+      const data = event.value.data;
+      if (!data) return <></>;
 
-      const driverMatched = !!trip.driver;
-      const cancellationFee = driverMatched ? (trip.vehicleType === 'bike' ? 0.5 : 1.0) : 0;
+      const trip = trips.find((t) => t.id === data.tripId);
+      if (!trip) return <></>;
+      const pickup = trip?.pickup || data.pickup || '';
+      const destination = trip?.destination || data.destination || '';
+      const driverName = trip?.driver?.name || data.driverName;
+      const cancellationFee = data.cancellationFee ?? 0;
 
       return (
         <CancelTripCard
-          tripId={args.tripId || ''}
-          pickup={trip.pickup || ''}
-          destination={trip.destination || ''}
-          driverName={trip.driver?.name}
+          tripId={data.tripId || ''}
+          pickup={pickup}
+          destination={destination}
+          driverName={driverName}
           cancellationFee={cancellationFee}
           onConfirm={() => {
             // Cancel trip in state
             setTrips((prev) =>
               prev.map((t) =>
-                t.id === args.tripId
+                t.id === data.tripId
                   ? {
                       ...t,
                       status: 'cancelled',
@@ -54,16 +48,11 @@ export function CancelConfirmFrontendTool({ trips, setTrips }: CancelConfirmFron
               )
             );
 
-            if (resolveRef.current) {
-              resolveRef.current({ approved: true });
-              resolveRef.current = null;
-            }
+            // Resolve interrupt back to agent
+            resolve({ approved: true });
           }}
           onReject={() => {
-            if (resolveRef.current) {
-              resolveRef.current({ approved: false });
-              resolveRef.current = null;
-            }
+            resolve({ approved: false });
           }}
         />
       );
