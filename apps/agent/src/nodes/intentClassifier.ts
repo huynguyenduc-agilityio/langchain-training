@@ -1,6 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { z } from 'zod';
-import { SystemMessage } from '@langchain/core/messages';
+import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { RideBookingState } from '../state/state';
 import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '../prompts/index';
 import { LLM_CONFIG } from '../constants';
@@ -22,10 +22,27 @@ export async function intentClassifierNode(state: RideBookingState) {
     content: INTENT_CLASSIFIER_SYSTEM_PROMPT,
   });
 
+  // Extract only the last user message for classification.
+  // Using the full conversation history (which includes tool calls, tool results,
+  // and AI responses) confuses the classifier on subsequent requests.
+  const messages = state.messages || [];
+  const lastUserMessage = [...messages]
+    .reverse()
+    .find(
+      (m) =>
+        m instanceof HumanMessage ||
+        (m as any)._getType?.() === 'human' ||
+        (m as any).type === 'human'
+    );
+
+  const classificationMessages = lastUserMessage
+    ? [lastUserMessage]
+    : messages.slice(-1);
+
   try {
     const response = await modelWithStructuredOutput.invoke([
       systemMessage,
-      ...state.messages,
+      ...classificationMessages,
     ]);
 
     return {
@@ -41,3 +58,4 @@ export async function intentClassifierNode(state: RideBookingState) {
     };
   }
 }
+

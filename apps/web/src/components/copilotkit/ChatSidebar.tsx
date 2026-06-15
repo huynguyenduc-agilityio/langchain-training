@@ -26,6 +26,10 @@ export function ChatSidebar() {
   useConfigureSuggestions({
     suggestions: [
       {
+        title: 'Request a ride',
+        message: 'I want to request a ride',
+      },
+      {
         title: 'View my trips',
         message: 'Show me my trip history',
       },

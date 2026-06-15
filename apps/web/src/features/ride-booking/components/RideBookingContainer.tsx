@@ -59,7 +59,10 @@ export function RideBookingContainer({
   const handleCancelTrip = (tripId: string) => {
     if (!user?.uid) return;
     const trip = trips.find((t) => t.id === tripId);
-    const cancellationFee = trip?.driver ? 1.0 : 0;
+    const CANCELLATION_FEES: Record<string, number> = { bike: 0.5, car4: 1.0, car7: 1.0 };
+    const cancellationFee = trip?.driver
+      ? (CANCELLATION_FEES[trip.vehicleType] ?? 1.0)
+      : 0;
     const cancelledAt = new Date().toISOString();
 
     http<{ success: boolean }>(API_ROUTES.TRIPS, {

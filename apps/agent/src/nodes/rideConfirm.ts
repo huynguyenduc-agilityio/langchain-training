@@ -18,10 +18,23 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
   const lastMessage = messages[messages.length - 1] as AIMessage;
   const toolCall = lastMessage.tool_calls?.[0];
 
+  // Fallback to tool call arguments if tripDraft is null
+  const draft = state.tripDraft || (toolCall ? {
+    pickup: toolCall.args.pickup,
+    destination: toolCall.args.destination,
+    distance: toolCall.args.distance,
+    duration: toolCall.args.duration,
+    vehicleType: toolCall.args.vehicleType,
+    passengerName: toolCall.args.passengerName,
+    passengerPhone: toolCall.args.passengerPhone,
+    price: toolCall.args.price,
+    status: 'searching',
+  } : null);
+
   // Throws GraphInterrupt to pause execution, returns resume payload when resumed
   const result = interrupt({
     type: 'ride_confirm',
-    data: state.tripDraft,
+    data: draft,
   }) as any;
 
   if (result && result.approved) {
@@ -68,16 +81,20 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
     const newTrip: Trip = {
       id: newTripId,
       userId,
-      pickup: state.tripDraft?.pickup || '',
-      destination: state.tripDraft?.destination || '',
-      distance: state.tripDraft?.distance || 0,
-      duration: state.tripDraft?.duration || 0,
-      vehicleType: state.tripDraft?.vehicleType || 'bike',
-      passengerName: state.tripDraft?.passengerName || '',
-      passengerPhone: state.tripDraft?.passengerPhone || '',
-      price: state.tripDraft?.price || 0,
+      pickup: draft?.pickup || '',
+      destination: draft?.destination || '',
+      distance: draft?.distance || 0,
+      duration: draft?.duration || 0,
+      vehicleType: draft?.vehicleType || 'bike',
+      passengerName: draft?.passengerName || '',
+      passengerPhone: draft?.passengerPhone || '',
+      price: draft?.price || 0,
       status: 'searching',
       createdAt: new Date().toISOString(),
+      pickupLat: state.rideEstimate?.pickupLat || (toolCall?.args as any)?.pickupLat,
+      pickupLng: state.rideEstimate?.pickupLng || (toolCall?.args as any)?.pickupLng,
+      destLat: state.rideEstimate?.destLat || (toolCall?.args as any)?.destLat,
+      destLng: state.rideEstimate?.destLng || (toolCall?.args as any)?.destLng,
     };
 
     // Save trip to database

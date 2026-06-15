@@ -18,23 +18,50 @@ export function inputValidationRouter(state: RideBookingState) {
  * Inspects the classified intent and determines which sub-agent should run.
  */
 export function supervisorRouter(state: RideBookingState) {
-  const category = state.intent?.category || 'unknown';
+  let category = state.intent?.category || 'unknown';
 
   if (state.validationError) {
     return 'error_response';
   }
 
-  // Prevent infinite loops when subgraphs loop back to the supervisor
+  // State-aware context routing: if we have an active trip draft or ride estimate in progress
+  // and the user input is classified as unknown/chitchat (e.g. providing name, phone, or saying "yes"),
+  // force route it to ride_agent to avoid losing the booking context.
+  if ((state.tripDraft !== null || state.rideEstimate !== null) && category === 'unknown') {
+    category = 'request';
+  }
+
+
+  // Prevent infinite loops: if the last message is an AI response without tool calls,
+  // or with only frontend action tool calls (already handled by CopilotKit client-side),
+  // a subgraph has finished responding to the user — end the conversation turn.
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
-  if (
-    lastMessage &&
-    (lastMessage instanceof AIMessage ||
+  if (lastMessage) {
+    const isAI =
+      lastMessage instanceof AIMessage ||
       (lastMessage as any).type === 'ai' ||
       (lastMessage as any)._getType?.() === 'ai' ||
-      lastMessage.constructor?.name === 'AIMessage')
-  ) {
-    return '__end__';
+      lastMessage.constructor?.name === 'AIMessage';
+
+    const toolCalls = (lastMessage as any).tool_calls || [];
+    const hasToolCalls = toolCalls.length > 0;
+
+    if (isAI && !hasToolCalls) {
+      return '__end__';
+    }
+
+    // If all tool_calls are frontend actions (handled by CopilotKit), treat as end.
+    if (isAI && hasToolCalls) {
+      const actions = state.copilotkit?.actions || [];
+      const frontendActionNames = new Set(actions.map((a: any) => a.name));
+      const allAreFrontendActions = toolCalls.every((tc: any) =>
+        frontendActionNames.has(tc.name)
+      );
+      if (allAreFrontendActions) {
+        return '__end__';
+      }
+    }
   }
 
   switch (category) {

@@ -1,10 +1,11 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { convertActionsToDynamicStructuredTools } from '@copilotkit/sdk-js/langgraph';
-import { SystemMessage } from '@langchain/core/messages';
+import { SystemMessage, AIMessage } from '@langchain/core/messages';
+import { sanitizeMessages, getFrontendActionNames } from '../utils/sanitizeMessages';
 import { RunnableConfig } from '@langchain/core/runnables';
 import { RideBookingState } from '../state/state';
 import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '../prompts/index';
-import { cancelTripTool, lookupTripsTool } from '../tools/index';
+import { cancelTripTool, lookupTripsTool, dummyCancelConfirmTool } from '../tools/index';
 import { LLM_CONFIG } from '../constants';
 
 export async function managementAgentNode(state: RideBookingState, config: RunnableConfig) {
@@ -13,7 +14,7 @@ export async function managementAgentNode(state: RideBookingState, config: Runna
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
-  const backendTools = [cancelTripTool, lookupTripsTool];
+  const backendTools = [cancelTripTool, lookupTripsTool, dummyCancelConfirmTool];
   const frontendActions = convertActionsToDynamicStructuredTools(state.copilotkit?.actions ?? []);
 
   const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
@@ -22,12 +23,26 @@ export async function managementAgentNode(state: RideBookingState, config: Runna
     content: MANAGEMENT_AGENT_SYSTEM_PROMPT(state),
   });
 
-  const response = await modelWithTools.invoke(
-    [systemMessage, ...state.messages],
-    config
-  );
+  try {
+    const sanitizedMessages = sanitizeMessages(
+      state.messages || [],
+      getFrontendActionNames(state),
+    );
 
-  return {
-    messages: response,
-  };
+    const response = await modelWithTools.invoke(
+      [systemMessage, ...sanitizedMessages],
+      config
+    );
+
+    return {
+      messages: response,
+    };
+  } catch (error) {
+    console.error('[ManagementAgent] Error during LLM invocation:', error);
+    return {
+      messages: new AIMessage({
+        content: 'I\'m sorry, I encountered an error processing your cancellation request. Please try again in a moment.',
+      }),
+    };
+  }
 }
