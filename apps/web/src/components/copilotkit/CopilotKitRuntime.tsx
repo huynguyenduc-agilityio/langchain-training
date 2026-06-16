@@ -7,6 +7,7 @@ function CopilotKitRuntime({ children }: { children: ReactNode }) {
   return (
     <CopilotKit
       runtimeUrl={API_ROUTES.COPILOTKIT}
+      useSingleEndpoint={false}
     >
       <Suspense fallback={null}>{children}</Suspense>
     </CopilotKit>

@@ -62,16 +62,25 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
     )?.value;
 
     let contextUserId: string | undefined;
+    let userName: string | undefined;
+    let userEmail: string | undefined;
+
     if (contextUser) {
+      let parsedUser: any = null;
       if (typeof contextUser === 'string') {
         try {
-          const parsed = JSON.parse(contextUser);
-          contextUserId = parsed.id || parsed.uid;
+          parsedUser = JSON.parse(contextUser);
         } catch (e) {
           contextUserId = contextUser;
         }
       } else if (typeof contextUser === 'object') {
-        contextUserId = (contextUser as any).id || (contextUser as any).uid;
+        parsedUser = contextUser;
+      }
+
+      if (parsedUser) {
+        contextUserId = parsedUser.id || parsedUser.uid;
+        userName = parsedUser.name || parsedUser.displayName;
+        userEmail = parsedUser.email;
       }
     }
 
@@ -98,7 +107,7 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
     };
 
     // Save trip to database
-    await addTripToDb(newTrip);
+    await addTripToDb(newTrip, userName, userEmail);
 
     return new Command({
       update: {

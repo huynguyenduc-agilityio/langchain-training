@@ -5,10 +5,9 @@ import type { Trip, VehicleType } from '@/types';
 import { ActiveTripsReadable } from './readables/ActiveTripsReadable';
 import { UserReadable } from './readables/UserReadable';
 import { RideEstimateFrontendTool } from './tools/RideEstimateFrontendTool';
-import { RideConfirmFrontendTool } from './tools/RideConfirmFrontendTool';
-import { DriverMatchFrontendTool } from './tools/DriverMatchFrontendTool';
-import { CancelConfirmFrontendTool } from './tools/CancelConfirmFrontendTool';
-import { SuccessFrontendTool } from './tools/SuccessFrontendTool';
+import { InterruptFrontendTool } from './tools/InterruptFrontendTool';
+import { DriverMatchRenderTool } from './renderTools/DriverMatchRenderTool';
+import { CancelSuccessFrontendTool } from './tools/CancelSuccessFrontendTool';
 import { CancelErrorFrontendTool } from './tools/CancelErrorFrontendTool';
 
 interface CopilotKitToolsProps {
@@ -30,10 +29,9 @@ export function CopilotKitTools({
 
       {/* Frontend Tools */}
       <RideEstimateFrontendTool onSelectVehicle={onSelectVehicle} />
-      <RideConfirmFrontendTool trips={trips} setTrips={setTrips} />
-      <DriverMatchFrontendTool />
-      <CancelConfirmFrontendTool trips={trips} setTrips={setTrips} />
-      <SuccessFrontendTool />
+      <InterruptFrontendTool trips={trips} setTrips={setTrips} />
+      <DriverMatchRenderTool />
+      <CancelSuccessFrontendTool />
       <CancelErrorFrontendTool />
     </>
   );
