@@ -3,6 +3,8 @@ import { db, schema } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 import type { Trip, Driver } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Retrieve all trips from database for a specific user, sorted by newest first
 export async function GET(req: NextRequest) {
   try {

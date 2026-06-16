@@ -4,22 +4,39 @@ import { SystemMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 import { RideBookingState } from '../state/state';
 import { RIDE_AGENT_SYSTEM_PROMPT } from '../prompts/index';
-import { estimateRideTool, requestRideTool, matchDriverTool, dummyRideConfirmTool } from '../tools/index';
+import {
+  estimateRideTool,
+  requestRideTool,
+  matchDriverTool,
+  dummyRideConfirmTool,
+} from '../tools/index';
 import { LLM_CONFIG } from '../constants';
-import { sanitizeMessages, getFrontendActionNames } from '../utils/sanitizeMessages';
+import {
+  sanitizeMessages,
+  getFrontendActionNames,
+} from '../utils/sanitizeMessages';
 
-export async function rideAgentNode(state: RideBookingState, config: RunnableConfig) {
+export async function rideAgentNode(
+  state: RideBookingState,
+  config: RunnableConfig,
+) {
   const model = new ChatOpenAI({
     model: LLM_CONFIG.DEFAULT_MODEL,
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
   const backendTools = [estimateRideTool, requestRideTool, matchDriverTool];
-  if (state.tripDraft && state.tripDraft.passengerName && state.tripDraft.passengerPhone) {
+  if (
+    state.tripDraft &&
+    state.tripDraft.passengerName &&
+    state.tripDraft.passengerPhone
+  ) {
     backendTools.push(dummyRideConfirmTool);
   }
 
-  const frontendActions = convertActionsToDynamicStructuredTools(state.copilotkit?.actions ?? []);
+  const frontendActions = convertActionsToDynamicStructuredTools(
+    state.copilotkit?.actions ?? [],
+  );
 
   const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
 
@@ -35,7 +52,7 @@ export async function rideAgentNode(state: RideBookingState, config: RunnableCon
   try {
     const response = await modelWithTools.invoke(
       [systemMessage, ...sanitizedMessages],
-      config
+      config,
     );
 
     return {
@@ -45,7 +62,8 @@ export async function rideAgentNode(state: RideBookingState, config: RunnableCon
     console.error('[RideAgent] Error during LLM invocation:', error);
     return {
       messages: new AIMessage({
-        content: 'I\'m sorry, I encountered an error processing your ride request. Please try again in a moment.',
+        content:
+          "I'm sorry, I encountered an error processing your ride request. Please try again in a moment.",
       }),
     };
   }

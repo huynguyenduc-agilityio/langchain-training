@@ -39,13 +39,16 @@ export async function supervisorNode(state: RideBookingState) {
     if (isAI) {
       const toolCalls = (msg as any).tool_calls || [];
       for (const tc of toolCalls) {
-        if (frontendActionNames.has(tc.name) && !answeredToolCallIds.has(tc.id)) {
+        if (
+          frontendActionNames.has(tc.name) &&
+          !answeredToolCallIds.has(tc.id)
+        ) {
           syntheticMessages.push(
             new ToolMessage({
               content: JSON.stringify({ status: 'displayed' }),
               tool_call_id: tc.id,
               name: tc.name,
-            })
+            }),
           );
           answeredToolCallIds.add(tc.id);
         }
@@ -59,4 +62,3 @@ export async function supervisorNode(state: RideBookingState) {
 
   return {};
 }
-

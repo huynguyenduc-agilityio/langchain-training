@@ -5,7 +5,7 @@ import CopilotKitRuntime from '@/components/copilotkit/CopilotKitRuntime';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/features/auth/auth-context';
 import './globals.css';
-import { cn } from "@/utils";
+import { cn } from '@/utils';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -13,7 +13,7 @@ const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
-  });
+});
 
 export const metadata: Metadata = {
   title: 'CityRide — Intra-city Ride Booking',
@@ -27,7 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "dark", "antialiased", inter.variable, "font-sans", geist.variable)}>
+    <html
+      lang="en"
+      className={cn(
+        'h-full',
+        'dark',
+        'antialiased',
+        inter.variable,
+        'font-sans',
+        geist.variable,
+      )}
+    >
       <body
         className="min-h-full flex flex-col"
         style={{

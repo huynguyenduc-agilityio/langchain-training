@@ -31,20 +31,29 @@ export async function inputValidationNode(state: RideBookingState) {
   }
 
   // 3. Validate distance limits (max 50 km) — only when estimate/draft exists
-  if (state.tripDraft?.distance && state.tripDraft.distance > BUSINESS_RULES.MAX_RIDE_DISTANCE_KM) {
+  if (
+    state.tripDraft?.distance &&
+    state.tripDraft.distance > BUSINESS_RULES.MAX_RIDE_DISTANCE_KM
+  ) {
     return {
       validationError: VALIDATION_MESSAGES.DISTANCE_LIMIT_ERROR,
     };
   }
 
-  if (state.rideEstimate?.distance && state.rideEstimate.distance > BUSINESS_RULES.MAX_RIDE_DISTANCE_KM) {
+  if (
+    state.rideEstimate?.distance &&
+    state.rideEstimate.distance > BUSINESS_RULES.MAX_RIDE_DISTANCE_KM
+  ) {
     return {
       validationError: VALIDATION_MESSAGES.DISTANCE_LIMIT_ERROR,
     };
   }
 
   // 4. Validate phone format if present in trip draft (booking flow only)
-  if (state.tripDraft?.passengerPhone && !isValidPhone(state.tripDraft.passengerPhone)) {
+  if (
+    state.tripDraft?.passengerPhone &&
+    !isValidPhone(state.tripDraft.passengerPhone)
+  ) {
     return {
       validationError: VALIDATION_MESSAGES.PHONE_FORMAT_ERROR,
     };
@@ -54,5 +63,3 @@ export async function inputValidationNode(state: RideBookingState) {
     validationError: null,
   };
 }
-
-
