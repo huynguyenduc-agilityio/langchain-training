@@ -1,18 +1,18 @@
 import { StateGraph, START } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 
-import { RideBookingStateAnnotation } from '../state/index';
+import { RideBookingStateAnnotation } from '@/state/index';
 import {
   rideAgentNode,
   processToolResults,
   rideConfirmNode,
   routeRideAgent,
-} from '../nodes/index';
+} from '@/nodes/index';
 import {
   estimateRideTool,
   requestRideTool,
   matchDriverTool,
-} from '../tools/index';
+} from '@/tools/index';
 
 const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('agent', rideAgentNode)
@@ -24,7 +24,7 @@ const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('ride_confirm', rideConfirmNode)
 
   .addEdge(START, 'agent')
-  .addConditionalEdges('agent', routeRideAgent as any, {
+  .addConditionalEdges('agent', routeRideAgent, {
     tool_node: 'tool_node',
     ride_confirm: 'ride_confirm',
     __end__: '__end__',

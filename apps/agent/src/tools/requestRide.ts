@@ -1,6 +1,8 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
+import { VEHICLE_TYPES } from '@/constants';
+
 export const requestRideTool = tool(
   async (args) => {
     try {
@@ -20,7 +22,7 @@ export const requestRideTool = tool(
       };
 
       return result;
-    } catch (e: any) {
+    } catch (e) {
       console.error('[requestRideTool] Error:', e);
       throw e;
     }
@@ -34,9 +36,7 @@ export const requestRideTool = tool(
       destination: z.string().describe('The destination location name'),
       distance: z.number().describe('The ride distance in km'),
       duration: z.number().describe('The travel duration in minutes'),
-      vehicleType: z
-        .enum(['bike', 'car4', 'car7'])
-        .describe('The selected vehicle type'),
+      vehicleType: z.enum(VEHICLE_TYPES).describe('The selected vehicle type'),
       passengerName: z.string().describe('The passenger name'),
       passengerPhone: z
         .string()

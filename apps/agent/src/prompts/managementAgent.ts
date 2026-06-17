@@ -1,9 +1,11 @@
-import { RideBookingState } from '../state/state';
-import { getUserFromState } from '../utils/validation';
+import { RideBookingState } from '@/state';
+import { getUserFromState } from '@/utils';
 
-export function MANAGEMENT_AGENT_SYSTEM_PROMPT(state: RideBookingState): string {
+export function MANAGEMENT_AGENT_SYSTEM_PROMPT(
+  state: RideBookingState,
+): string {
   const { userId, name, email } = getUserFromState(state);
-  const userProfile = userId 
+  const userProfile = userId
     ? `ID: ${userId}\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}`
     : 'Not authenticated / Mock User';
 

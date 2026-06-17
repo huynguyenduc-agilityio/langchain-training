@@ -1,21 +1,38 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { convertActionsToDynamicStructuredTools } from '@copilotkit/sdk-js/langgraph';
 import { SystemMessage, AIMessage } from '@langchain/core/messages';
-import { sanitizeMessages, getFrontendActionNames } from '../utils/sanitizeMessages';
 import { RunnableConfig } from '@langchain/core/runnables';
-import { RideBookingState } from '../state/state';
-import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '../prompts/index';
-import { cancelTripTool, lookupTripsTool, dummyCancelConfirmTool } from '../tools/index';
-import { LLM_CONFIG } from '../constants';
 
-export async function managementAgentNode(state: RideBookingState, config: RunnableConfig) {
+import {
+  sanitizeMessages,
+  getFrontendActionNames,
+} from '@/utils/sanitizeMessages';
+import { RideBookingState } from '@/state';
+import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
+import {
+  cancelTripTool,
+  lookupTripsTool,
+  dummyCancelConfirmTool,
+} from '@/tools/index';
+import { LLM_CONFIG } from '@/constants';
+
+export async function managementAgentNode(
+  state: RideBookingState,
+  config: RunnableConfig,
+) {
   const model = new ChatOpenAI({
     model: LLM_CONFIG.DEFAULT_MODEL,
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
-  const backendTools = [cancelTripTool, lookupTripsTool, dummyCancelConfirmTool];
-  const frontendActions = convertActionsToDynamicStructuredTools(state.copilotkit?.actions ?? []);
+  const backendTools = [
+    cancelTripTool,
+    lookupTripsTool,
+    dummyCancelConfirmTool,
+  ];
+  const frontendActions = convertActionsToDynamicStructuredTools(
+    state.copilotkit?.actions ?? [],
+  );
 
   const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
 
@@ -31,7 +48,7 @@ export async function managementAgentNode(state: RideBookingState, config: Runna
 
     const response = await modelWithTools.invoke(
       [systemMessage, ...sanitizedMessages],
-      config
+      config,
     );
 
     return {
@@ -41,7 +58,8 @@ export async function managementAgentNode(state: RideBookingState, config: Runna
     console.error('[ManagementAgent] Error during LLM invocation:', error);
     return {
       messages: new AIMessage({
-        content: 'I\'m sorry, I encountered an error processing your cancellation request. Please try again in a moment.',
+        content:
+          "I'm sorry, I encountered an error processing your cancellation request. Please try again in a moment.",
       }),
     };
   }

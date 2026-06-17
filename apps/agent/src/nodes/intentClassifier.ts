@@ -1,9 +1,14 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { z } from 'zod';
-import { SystemMessage, HumanMessage } from '@langchain/core/messages';
-import { RideBookingState } from '../state/state';
-import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '../prompts/index';
-import { LLM_CONFIG } from '../constants';
+import {
+  SystemMessage,
+  HumanMessage,
+  BaseMessage,
+} from '@langchain/core/messages';
+
+import { RideBookingState } from '@/state';
+import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '@/prompts/index';
+import { LLM_CONFIG } from '@/constants';
 
 export async function intentClassifierNode(state: RideBookingState) {
   const model = new ChatOpenAI({
@@ -12,7 +17,14 @@ export async function intentClassifierNode(state: RideBookingState) {
   });
 
   const schema = z.object({
-    category: z.enum(['estimate', 'request', 'cancel', 'view_trips', 'faq', 'unknown']),
+    category: z.enum([
+      'estimate',
+      'request',
+      'cancel',
+      'view_trips',
+      'faq',
+      'unknown',
+    ]),
     confidence: z.number(),
   });
 
@@ -31,8 +43,8 @@ export async function intentClassifierNode(state: RideBookingState) {
     .find(
       (m) =>
         m instanceof HumanMessage ||
-        (m as any)._getType?.() === 'human' ||
-        (m as any).type === 'human'
+        (m as BaseMessage)._getType() === 'human' ||
+        (m as BaseMessage).type === 'human',
     );
 
   const classificationMessages = lastUserMessage
@@ -58,4 +70,3 @@ export async function intentClassifierNode(state: RideBookingState) {
     };
   }
 }
-
