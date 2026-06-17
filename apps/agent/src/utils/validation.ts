@@ -42,4 +42,38 @@ export function isCoordsInServiceArea(lat: number, lng: number): boolean {
   return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
 }
 
+/**
+ * Extracts the authenticated user from the CopilotKit context in state.
+ */
+export function getUserFromState(state: any) {
+  const contextUser = state.copilotkit?.context?.find(
+    (c: any) => c.description === 'The profile information of the currently authenticated user'
+  )?.value;
+
+  let userId: string | undefined;
+  let name: string | undefined;
+  let email: string | undefined;
+
+  if (contextUser) {
+    let parsedUser: any = null;
+    if (typeof contextUser === 'string') {
+      try {
+        parsedUser = JSON.parse(contextUser);
+      } catch (e) {
+        userId = contextUser;
+      }
+    } else if (typeof contextUser === 'object') {
+      parsedUser = contextUser;
+    }
+
+    if (parsedUser) {
+      userId = parsedUser.id || parsedUser.uid;
+      name = parsedUser.name || parsedUser.displayName;
+      email = parsedUser.email;
+    }
+  }
+
+  return { userId, name, email };
+}
+
 
