@@ -44,6 +44,11 @@ export function supervisorRouter(state: RideBookingState) {
       (lastMessage as any)._getType?.() === 'ai' ||
       lastMessage.constructor?.name === 'AIMessage';
 
+    const isTool =
+      (lastMessage as any).type === 'tool' ||
+      (lastMessage as any)._getType?.() === 'tool' ||
+      lastMessage.constructor?.name === 'ToolMessage';
+
     const toolCalls = (lastMessage as any).tool_calls || [];
     const hasToolCalls = toolCalls.length > 0;
 
@@ -59,6 +64,17 @@ export function supervisorRouter(state: RideBookingState) {
         frontendActionNames.has(tc.name)
       );
       if (allAreFrontendActions) {
+        return '__end__';
+      }
+    }
+
+    // If the last message is a ToolMessage corresponding to a frontend action
+    // (which means it's a synthetic response to a frontend tool call), treat as end.
+    if (isTool) {
+      const toolName = (lastMessage as any).name;
+      const actions = state.copilotkit?.actions || [];
+      const frontendActionNames = new Set(actions.map((a: any) => a.name));
+      if (frontendActionNames.has(toolName)) {
         return '__end__';
       }
     }

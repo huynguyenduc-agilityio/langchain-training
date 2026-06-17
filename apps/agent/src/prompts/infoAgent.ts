@@ -1,7 +1,13 @@
 import { RideBookingState } from '../state/state';
 import { ACTIVE_CITY } from '../constants';
+import { getUserFromState } from '../utils/validation';
 
 export function INFO_AGENT_SYSTEM_PROMPT(state: RideBookingState): string {
+  const { userId, name, email } = getUserFromState(state);
+  const userProfile = userId 
+    ? `ID: ${userId}\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}`
+    : 'Not authenticated / Mock User';
+
   return `You are the Information and FAQ assistant for City Ride Booking in ${ACTIVE_CITY.name}.
 Your job is to answer questions about our service rules and list the user's past trips.
 
@@ -21,8 +27,13 @@ FAQ INFORMATION:
 
 TRIP LOOKUP FLOW:
 - If the user asks to see their trips or history, check the 'userTrips' array first.
-- If the list is empty or they ask to refresh it, you can call the 'lookupTrips' backend tool (which automatically fetches the authenticated user's trips).
+- If the list is empty or they ask to refresh it, you can call the 'lookupTrips' backend tool.
+- When calling 'lookupTrips', you MUST pass the currently logged-in user's ID (from the PROFILE section below) as the 'userId' parameter.
 - Do NOT ask for their phone number since they are already logged in.
+
+PROFILE:
+- Authenticated User:
+${userProfile}
 
 CURRENT STATE:
 - User Trips: ${JSON.stringify(state.userTrips)}`;
