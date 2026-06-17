@@ -1,12 +1,12 @@
 'use client';
 
+import type { TripDashboardProps } from '@/types';
+import { ArrowUpDown, Car, RefreshCw, TicketPlus } from 'lucide-react';
+
 import React, { useState } from 'react';
-import { TicketPlus, ListFilter, ArrowUpDown, RefreshCw, Car } from 'lucide-react';
-import type { Trip } from '@/types';
 import { TripCard } from '@/components/TripCard';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -15,14 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RouteQuickSearch } from './RouteQuickSearch';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-interface TripDashboardProps {
-  trips: Trip[];
-  onCancelTrip?: (tripId: string) => void;
-  onEstimateRide?: (pickup: string, destination: string) => void;
-  onRefresh?: () => void;
-}
+import { RouteQuickSearch } from './RouteQuickSearch';
 
 export function TripDashboard({
   trips,
@@ -30,18 +25,30 @@ export function TripDashboard({
   onEstimateRide,
   onRefresh,
 }: TripDashboardProps) {
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'cancelled'>('all');
+  const [filter, setFilter] = useState<
+    'all' | 'active' | 'completed' | 'cancelled'
+  >('all');
   const [sortBy, setSortBy] = useState<string>('date-desc');
 
   // Stats calculation
-  const activeCount = trips.filter((t) => t.status === 'searching' || t.status === 'matched' || t.status === 'picked_up').length;
+  const activeCount = trips.filter(
+    (t) =>
+      t.status === 'searching' ||
+      t.status === 'matched' ||
+      t.status === 'picked_up',
+  ).length;
   const completedCount = trips.filter((t) => t.status === 'completed').length;
   const cancelledCount = trips.filter((t) => t.status === 'cancelled').length;
 
   // Filter trips
   const filteredTrips = trips.filter((trip) => {
     if (filter === 'all') return true;
-    if (filter === 'active') return trip.status === 'searching' || trip.status === 'matched' || trip.status === 'picked_up';
+    if (filter === 'active')
+      return (
+        trip.status === 'searching' ||
+        trip.status === 'matched' ||
+        trip.status === 'picked_up'
+      );
     if (filter === 'completed') return trip.status === 'completed';
     if (filter === 'cancelled') return trip.status === 'cancelled';
     return true;
@@ -102,7 +109,8 @@ export function TripDashboard({
               size="sm"
               className="bg-gradient-to-br from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-450 text-white! font-semibold h-9 px-4 rounded-xl flex items-center gap-1.5 transition-all text-xs shadow-md shadow-emerald-900/10 border-0 cursor-pointer"
               onClick={() => {
-                if (onEstimateRide) onEstimateRide('Dragon Bridge', 'Da Nang Bus Station');
+                if (onEstimateRide)
+                  onEstimateRide('Dragon Bridge', 'Da Nang Bus Station');
               }}
             >
               <TicketPlus className="w-3.5 h-3.5" />
@@ -117,17 +125,31 @@ export function TripDashboard({
 
       {/* Stats Cards Row */}
       <div className="grid grid-cols-4 gap-4 px-6 py-4">
-        <StatCard label="Total Trips" value={trips.length} color="text-emerald-400" />
+        <StatCard
+          label="Total Trips"
+          value={trips.length}
+          color="text-emerald-400"
+        />
         <StatCard label="Active" value={activeCount} color="text-amber-400" />
-        <StatCard label="Completed" value={completedCount} color="text-teal-400" />
-        <StatCard label="Cancelled" value={cancelledCount} color="text-red-400" />
+        <StatCard
+          label="Completed"
+          value={completedCount}
+          color="text-teal-400"
+        />
+        <StatCard
+          label="Cancelled"
+          value={cancelledCount}
+          color="text-red-400"
+        />
       </div>
 
       {/* Filter & Sort Controls */}
       <div className="flex items-center justify-between px-6 py-3 border-y border-gray-900 bg-gray-950/50">
         <Tabs
           value={filter}
-          onValueChange={(val) => setFilter(val as any)}
+          onValueChange={(val) =>
+            setFilter(val as 'all' | 'active' | 'completed' | 'cancelled')
+          }
           className="w-auto"
         >
           <TabsList className="bg-gray-900 border border-gray-800 p-0.5 rounded-xl h-9 border-solid">
@@ -168,11 +190,36 @@ export function TripDashboard({
               <SelectValue placeholder="Select sort order" />
             </SelectTrigger>
             <SelectContent className="bg-gray-950 border-gray-800 text-gray-250">
-              <SelectItem value="date-desc" className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer">Newest first</SelectItem>
-              <SelectItem value="date-asc" className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer">Oldest first</SelectItem>
-              <SelectItem value="price-desc" className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer">Price high to low</SelectItem>
-              <SelectItem value="price-asc" className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer">Price low to high</SelectItem>
-              <SelectItem value="status" className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer">By status</SelectItem>
+              <SelectItem
+                value="date-desc"
+                className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer"
+              >
+                Newest first
+              </SelectItem>
+              <SelectItem
+                value="date-asc"
+                className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer"
+              >
+                Oldest first
+              </SelectItem>
+              <SelectItem
+                value="price-desc"
+                className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer"
+              >
+                Price high to low
+              </SelectItem>
+              <SelectItem
+                value="price-asc"
+                className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer"
+              >
+                Price low to high
+              </SelectItem>
+              <SelectItem
+                value="status"
+                className="focus:bg-emerald-950/20 focus:text-emerald-400 text-gray-350 text-xs cursor-pointer"
+              >
+                By status
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -190,11 +237,7 @@ export function TripDashboard({
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <TripCard
-                  trip={trip}
-                  index={index}
-                  onCancel={onCancelTrip}
-                />
+                <TripCard trip={trip} index={index} onCancel={onCancelTrip} />
               </div>
             ))
           )}
@@ -235,17 +278,15 @@ function EmptyState({ filter }: { filter: string }) {
       <div className="w-16 h-16 rounded-2xl bg-emerald-950/30 flex items-center justify-center mb-4 border border-emerald-800/10 shadow-inner border-solid">
         <Car className="w-7 h-7 text-emerald-400" />
       </div>
-      <h3 className="text-base font-bold text-gray-200 mb-1">
-        No trips found
-      </h3>
+      <h3 className="text-base font-bold text-gray-200 mb-1">No trips found</h3>
       <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
         {filter === 'all'
           ? 'Use the AI assistant on the right sidebar to estimate fares and book rides!'
           : filter === 'active'
-          ? 'You have no active trips at the moment.'
-          : filter === 'completed'
-          ? 'You haven\'t completed any trips yet.'
-          : 'You haven\'t cancelled any trips.'}
+            ? 'You have no active trips at the moment.'
+            : filter === 'completed'
+              ? "You haven't completed any trips yet."
+              : "You haven't cancelled any trips."}
       </p>
     </div>
   );

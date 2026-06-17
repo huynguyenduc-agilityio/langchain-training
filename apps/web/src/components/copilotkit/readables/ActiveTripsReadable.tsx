@@ -1,11 +1,12 @@
 'use client';
 
-import { useAgentContext } from '@copilotkit/react-core/v2';
 import type { Trip } from '@/types';
 
-interface ActiveTripsReadableProps {
+import { useAgentContext } from '@copilotkit/react-core/v2';
+
+type ActiveTripsReadableProps = {
   trips: Trip[];
-}
+};
 
 export function ActiveTripsReadable({ trips }: ActiveTripsReadableProps) {
   const serializableTrips = trips.map((t) => ({
@@ -35,7 +36,8 @@ export function ActiveTripsReadable({ trips }: ActiveTripsReadableProps) {
   }));
 
   useAgentContext({
-    description: "The list of the user's active and past ride booking trips in Da Nang. Active trip statuses are 'searching', 'matched', 'picked_up'. Completed status is 'completed'. Cancelled status is 'cancelled'. Use this context to answer questions about the user's trip history.",
+    description:
+      "The list of the user's active and past ride booking trips in Da Nang. Active trip statuses are 'searching', 'matched', 'picked_up'. Completed status is 'completed'. Cancelled status is 'cancelled'. Use this context to answer questions about the user's trip history.",
     value: serializableTrips,
   });
   return null;

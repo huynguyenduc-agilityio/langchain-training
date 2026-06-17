@@ -1,5 +1,7 @@
+import process from 'node:process';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
+
 import * as schema from '../../../agent/src/db/schema';
 
 const pool = new pg.Pool({

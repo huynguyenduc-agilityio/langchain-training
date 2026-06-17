@@ -1,13 +1,10 @@
 'use client';
 
-import React from 'react';
+import type { CancelTripErrorCardProps } from '@/types';
 import { AlertTriangle, Search, XCircle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 
-interface CancelTripErrorCardProps {
-  tripId?: string;
-  reason: string;
-}
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function CancelTripErrorCard({
   tripId,
@@ -37,7 +34,8 @@ export function CancelTripErrorCard({
         <div className="flex items-start gap-2 text-xs text-red-300 bg-red-950/10 border border-red-900/10 rounded-xl p-2.5">
           <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            {reason || 'An error occurred while trying to cancel this trip. Please try again.'}
+            {reason ||
+              'An error occurred while trying to cancel this trip. Please try again.'}
           </p>
         </div>
 

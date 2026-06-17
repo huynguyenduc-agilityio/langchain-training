@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
 import { useRenderTool } from '@copilotkit/react-core/v2';
+import { Loader2 } from 'lucide-react';
+import React from 'react';
 import { z } from 'zod';
+
 import { DriverMatchCard } from '@/components/DriverMatchCard';
 import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
 
 function SearchingDriverCard() {
   return (
@@ -30,9 +31,12 @@ function SearchingDriverCard() {
           </div>
         </div>
         <div className="text-center space-y-1">
-          <p className="text-xs font-semibold text-gray-250">Locating nearest available drivers</p>
+          <p className="text-xs font-semibold text-gray-250">
+            Locating nearest available drivers
+          </p>
           <p className="text-[10px] text-gray-400 max-w-[200px] leading-normal mx-auto">
-            Matching you with our driver partner. This will take just a few seconds...
+            Matching you with our driver partner. This will take just a few
+            seconds...
           </p>
         </div>
       </CardContent>
@@ -45,7 +49,9 @@ export function DriverMatchRenderTool() {
     name: 'matchDriver',
     parameters: z.object({
       tripId: z.string().describe('The trip ID to match a driver for'),
-      vehicleType: z.enum(['bike', 'car4', 'car7']).describe('The vehicle type of the request'),
+      vehicleType: z
+        .enum(['bike', 'car4', 'car7'])
+        .describe('The vehicle type of the request'),
       pickupLat: z.number().describe('Latitude of the pickup location'),
       pickupLng: z.number().describe('Longitude of the pickup location'),
     }),
@@ -55,7 +61,8 @@ export function DriverMatchRenderTool() {
       }
       if (status === 'complete' && result) {
         try {
-          const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+          const parsed =
+            typeof result === 'string' ? JSON.parse(result) : result;
           if (parsed.success && parsed.driver) {
             return (
               <DriverMatchCard

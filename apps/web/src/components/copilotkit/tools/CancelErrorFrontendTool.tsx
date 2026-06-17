@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
 import { useFrontendTool } from '@copilotkit/react-core/v2';
+import React from 'react';
 import { z } from 'zod';
+
 import { CancelTripErrorCard } from '@/components/CancelTripErrorCard';
 
 export function CancelErrorFrontendTool() {
@@ -23,10 +24,7 @@ export function CancelErrorFrontendTool() {
     },
     render: ({ args }) => {
       return (
-        <CancelTripErrorCard
-          tripId={args.tripId}
-          reason={args.reason || ''}
-        />
+        <CancelTripErrorCard tripId={args.tripId} reason={args.reason || ''} />
       );
     },
   });

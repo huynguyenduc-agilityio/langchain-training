@@ -1,23 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { AuthContextType, AuthUser } from '@/types';
 import {
-  auth,
-  googleProvider,
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  isFirebaseConfigured,
-} from '@/lib/firebase';
-import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { useRouter, usePathname } from 'next/navigation';
 import { Car } from 'lucide-react';
-import { AuthUser, AuthContextType } from '@/types';
-import { MOCK_USER, MOCK_EMAIL_USER_PREFIX } from '@/constants';
+import { usePathname, useRouter } from 'next/navigation';
+
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { MOCK_EMAIL_USER_PREFIX, MOCK_USER } from '@/constants';
+import {
+  auth,
+  signOut as firebaseSignOut,
+  googleProvider,
+  isFirebaseConfigured,
+  signInWithPopup,
+} from '@/lib/firebase';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (savedUser) {
         try {
           return JSON.parse(savedUser);
-        } catch (e) {
+        } catch {
           localStorage.removeItem('cityride_mock_user');
         }
       }
@@ -128,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         const mockUser: AuthUser = {
           uid: MOCK_EMAIL_USER_PREFIX + email.replace(/[@.]/g, '-'),
-          email: email,
+          email,
           displayName: email.split('@')[0],
           photoURL: null,
         };
@@ -157,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         const mockUser: AuthUser = {
           uid: MOCK_EMAIL_USER_PREFIX + email.replace(/[@.]/g, '-'),
-          email: email,
+          email,
           displayName: name,
           photoURL: null,
         };
@@ -183,7 +184,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isRedirecting = (!user && pathname !== '/login') || (user && pathname === '/login');
+  const isRedirecting =
+    (!user && pathname !== '/login') || (user && pathname === '/login');
 
   if (loading || isRedirecting) {
     return (
@@ -192,9 +194,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           <Car className="w-8 h-8 text-white animate-pulse" />
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div
+            className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"
+            style={{ animationDelay: '0ms' }}
+          />
+          <div
+            className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"
+            style={{ animationDelay: '150ms' }}
+          />
+          <div
+            className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"
+            style={{ animationDelay: '300ms' }}
+          />
         </div>
         <p className="text-xs text-gray-400 mt-2 font-medium tracking-wide">
           Verifying session...
@@ -220,6 +231,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

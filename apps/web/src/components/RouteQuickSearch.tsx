@@ -1,14 +1,12 @@
 'use client';
 
+import type { RouteQuickSearchProps } from '@/types';
+import { Compass, MapPin, Search } from 'lucide-react';
+
 import React, { useState } from 'react';
-import { Search, MapPin, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-
-interface RouteQuickSearchProps {
-  onEstimate?: (pickup: string, destination: string) => void;
-}
 
 export function RouteQuickSearch({ onEstimate }: RouteQuickSearchProps) {
   const [pickup, setPickup] = useState<string>('');
@@ -30,11 +28,15 @@ export function RouteQuickSearch({ onEstimate }: RouteQuickSearchProps) {
       >
         {/* Pickup Input */}
         <div className="w-full md:flex-1 space-y-1.5">
-          <label className="text-xs font-semibold text-gray-400 flex items-center gap-1">
+          <label
+            htmlFor="pickup-input"
+            className="text-xs font-semibold text-gray-400 flex items-center gap-1"
+          >
             <MapPin className="w-3.5 h-3.5 text-emerald-400" />
             Pickup Location
           </label>
           <Input
+            id="pickup-input"
             type="text"
             value={pickup}
             onChange={(e) => setPickup(e.target.value)}
@@ -45,11 +47,15 @@ export function RouteQuickSearch({ onEstimate }: RouteQuickSearchProps) {
 
         {/* Destination Input */}
         <div className="w-full md:flex-1 space-y-1.5">
-          <label className="text-xs font-semibold text-gray-400 flex items-center gap-1">
+          <label
+            htmlFor="destination-input"
+            className="text-xs font-semibold text-gray-400 flex items-center gap-1"
+          >
             <Compass className="w-3.5 h-3.5 text-emerald-400" />
             Destination
           </label>
           <Input
+            id="destination-input"
             type="text"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}

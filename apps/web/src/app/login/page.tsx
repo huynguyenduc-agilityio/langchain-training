@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useAuth } from '@/features/auth/auth-context';
+import { AlertCircle, Car, Compass, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Car, AlertCircle, Sparkles, ShieldCheck, Compass } from 'lucide-react';
+import React, { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
+
+import { useAuth } from '@/features/auth/auth-context';
 
 export default function LoginPage() {
   const { signInWithGoogle } = useAuth();
@@ -19,10 +20,11 @@ export default function LoginPage() {
     try {
       await signInWithGoogle();
       router.push('/');
-    } catch (err: any) {
-      console.error(err);
+    } catch (err) {
+      const errorObj = err as Error;
+      console.error(errorObj);
       setError(
-        err.message || 'Failed to sign in with Google. Please try again.',
+        errorObj.message || 'Failed to sign in with Google. Please try again.',
       );
     } finally {
       setIsSubmitting(false);

@@ -1,16 +1,17 @@
 'use client';
 
+import type { Trip } from '@/types';
+
 import React, { useEffect } from 'react';
 import { TripDashboard } from '@/components/TripDashboard';
-import type { Trip } from '@/types';
-import { http } from '@/lib/http';
-import { API_ROUTES } from '@/constants';
+import { API_ROUTES, CANCELLATION_FEES } from '@/constants';
 import { useAuth } from '@/features/auth/auth-context';
+import { http } from '@/lib/http';
 
-interface RideBookingContainerProps {
+type RideBookingContainerProps = {
   trips: Trip[];
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-}
+};
 
 export function RideBookingContainer({
   trips,
@@ -59,7 +60,6 @@ export function RideBookingContainer({
   const handleCancelTrip = (tripId: string) => {
     if (!user?.uid) return;
     const trip = trips.find((t) => t.id === tripId);
-    const CANCELLATION_FEES: Record<string, number> = { bike: 0.5, car4: 1.0, car7: 1.0 };
     const cancellationFee = trip?.driver
       ? (CANCELLATION_FEES[trip.vehicleType] ?? 1.0)
       : 0;

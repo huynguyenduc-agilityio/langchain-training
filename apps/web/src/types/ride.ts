@@ -1,21 +1,26 @@
-export type TripStatus = 'searching' | 'matched' | 'picked_up' | 'completed' | 'cancelled';
+export type TripStatus =
+  | 'searching'
+  | 'matched'
+  | 'picked_up'
+  | 'completed'
+  | 'cancelled';
 export type VehicleType = 'bike' | 'car4' | 'car7';
 
-export interface Driver {
+export type Driver = {
   name: string;
   phone: string;
   vehicleInfo: string; // e.g. "Yamaha Exciter", "Toyota Vios"
   licensePlate: string;
   rating: number;
-}
+};
 
-export interface Trip {
-  id: string;              // "TRP-20260608-001"
+export type Trip = {
+  id: string; // "TRP-20260608-001"
   userId: string;
   pickup: string;
   destination: string;
-  distance: number;        // km
-  duration: number;        // minutes
+  distance: number; // km
+  duration: number; // minutes
   vehicleType: VehicleType;
   passengerName: string;
   passengerPhone: string;
@@ -25,9 +30,9 @@ export interface Trip {
   createdAt: string;
   cancelledAt?: string;
   cancellationFee?: number;
-}
+};
 
-export interface RideEstimate {
+export type RideEstimate = {
   pickup: string;
   destination: string;
   distance: number;
@@ -36,7 +41,7 @@ export interface RideEstimate {
     vehicleType: VehicleType;
     price: number;
   }[];
-}
+};
 
 // Intent classification
 export type RideIntent =

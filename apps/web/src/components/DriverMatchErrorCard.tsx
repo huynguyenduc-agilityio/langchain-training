@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { AlertTriangle, RefreshCw, XCircle, Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import type { DriverMatchErrorCardProps } from '@/types';
 import { useAgent, useCopilotKit } from '@copilotkit/react-core/v2';
+import { AlertTriangle, Loader2, RefreshCw, XCircle } from 'lucide-react';
 
-interface DriverMatchErrorCardProps {
-  tripId: string;
-  reason: string;
-}
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function DriverMatchErrorCard({
   tripId,

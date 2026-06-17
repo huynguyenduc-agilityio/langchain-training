@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter, Geist } from 'next/font/google';
+import { Geist, Inter } from 'next/font/google';
 
 import CopilotKitRuntime from '@/components/copilotkit/CopilotKitRuntime';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/features/auth/auth-context';
-import './globals.css';
 import { cn } from '@/utils';
+
+import './globals.css';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -15,6 +16,7 @@ const inter = Inter({
   display: 'swap',
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
   title: 'CityRide — Intra-city Ride Booking',
   description:

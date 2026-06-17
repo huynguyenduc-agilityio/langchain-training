@@ -1,31 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import type { CancelTripCardProps } from '@/types';
 import {
-  MapPin,
-  ArrowRight,
   AlertTriangle,
+  ArrowRight,
+  Loader2,
   Trash2,
   Undo2,
-  Loader2,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-
-interface CancelTripCardProps {
-  tripId: string;
-  pickup: string;
-  destination: string;
-  driverName?: string;
-  cancellationFee?: number;
-  onConfirm?: () => void;
-  onReject?: () => void;
-}
-
-function formatPrice(amount: number) {
-  return '$' + amount.toFixed(2);
-}
+import { formatPrice } from '@/utils';
 
 export function CancelTripCard({
   tripId,

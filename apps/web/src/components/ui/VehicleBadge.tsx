@@ -1,18 +1,14 @@
 'use client';
 
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import type { VehicleType } from '@/types';
 
-interface VehicleBadgeProps {
-  type: VehicleType;
-}
+import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { VEHICLE_CONFIG } from '@/constants';
 
-const VEHICLE_CONFIG = {
-  bike: { label: 'Bike', icon: '🏍️' },
-  car4: { label: 'Car (4-seat)', icon: '🚗' },
-  car7: { label: 'Car (7-seat)', icon: '🚙' },
-} as const;
+type VehicleBadgeProps = {
+  type: VehicleType;
+};
 
 export function VehicleBadge({ type }: VehicleBadgeProps) {
   const config = VEHICLE_CONFIG[type] || { label: 'Unknown', icon: '🚗' };
@@ -27,5 +23,3 @@ export function VehicleBadge({ type }: VehicleBadgeProps) {
     </Badge>
   );
 }
-
-export { VEHICLE_CONFIG };

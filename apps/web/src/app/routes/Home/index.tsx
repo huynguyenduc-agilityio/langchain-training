@@ -1,11 +1,12 @@
 'use client';
 
+import type { Trip } from '@/types';
+
 import React, { useState } from 'react';
 import { AppHeader } from '@/components/AppHeader';
-import { RideBookingContainer } from '@/features/ride-booking/components/RideBookingContainer';
-import { CopilotKitTools } from '@/components/copilotkit/CopilotKitTools';
 import { ChatSidebar } from '@/components/copilotkit/ChatSidebar';
-import type { Trip } from '@/types';
+import { CopilotKitTools } from '@/components/copilotkit/CopilotKitTools';
+import { RideBookingContainer } from '@/features/ride-booking/components/RideBookingContainer';
 
 export default function HomePage() {
   const [trips, setTrips] = useState<Trip[]>([]);

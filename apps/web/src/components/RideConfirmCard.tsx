@@ -1,45 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import type { RideConfirmCardProps } from '@/types';
 import {
-  MapPin,
   ArrowRight,
-  Clock,
-  User,
-  Phone,
-  CreditCard,
   Check,
-  X,
+  Clock,
+  CreditCard,
   Loader2,
+  MapPin,
   Navigation,
+  Phone,
+  User,
+  X,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import type { VehicleType } from '@/types';
-
-interface RideConfirmCardProps {
-  pickup: string;
-  destination: string;
-  distance: number;
-  duration: number;
-  vehicleType: VehicleType;
-  passengerName: string;
-  passengerPhone: string;
-  price: number;
-  onConfirm?: () => void;
-  onCancel?: () => void;
-}
-
-const VEHICLE_NAMES: Record<VehicleType, string> = {
-  bike: 'Bike',
-  car4: 'Car (4-seat)',
-  car7: 'Car (7-seat)',
-};
-
-function formatPrice(amount: number) {
-  return '$' + amount.toFixed(2);
-}
+import { VEHICLE_NAMES } from '@/constants';
+import { formatPrice } from '@/utils';
 
 export function RideConfirmCard({
   pickup,
@@ -54,7 +34,9 @@ export function RideConfirmCard({
   onCancel,
 }: RideConfirmCardProps) {
   const [loading, setLoading] = useState(false);
-  const [decided, setDecided] = useState<'confirmed' | 'cancelled' | null>(null);
+  const [decided, setDecided] = useState<'confirmed' | 'cancelled' | null>(
+    null,
+  );
 
   const handleConfirm = () => {
     setLoading(true);
@@ -209,9 +191,7 @@ function DetailRow({
         {icon}
         {label}
       </span>
-      <span className="font-semibold text-gray-300">
-        {value}
-      </span>
+      <span className="font-semibold text-gray-300">{value}</span>
     </div>
   );
 }

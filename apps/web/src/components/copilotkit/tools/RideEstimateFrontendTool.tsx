@@ -1,19 +1,22 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { useFrontendTool } from '@copilotkit/react-core/v2';
-import { z } from 'zod';
 import type { VehicleType } from '@/types';
+import { useFrontendTool } from '@copilotkit/react-core/v2';
+import React, { useRef } from 'react';
+
+import { z } from 'zod';
 import { RideEstimateCard } from '@/components/RideEstimateCard';
 
-interface RideEstimateFrontendToolProps {
+type RideEstimateFrontendToolProps = {
   onSelectVehicle?: (vehicleType: VehicleType) => void;
-}
+};
 
 export function RideEstimateFrontendTool({
   onSelectVehicle,
 }: RideEstimateFrontendToolProps) {
-  const resolveRef = useRef<((value: any) => void) | null>(null);
+  const resolveRef = useRef<
+    ((value: { selectedVehicleType: VehicleType }) => void) | null
+  >(null);
 
   useFrontendTool({
     name: 'showRideEstimate',
@@ -33,7 +36,7 @@ export function RideEstimateFrontendTool({
         )
         .describe('Available ride options and prices'),
     }),
-    handler: async (args) => {
+    handler: async () => {
       return new Promise((resolve) => {
         resolveRef.current = resolve;
       });

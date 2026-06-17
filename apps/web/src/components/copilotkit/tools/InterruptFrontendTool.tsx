@@ -1,16 +1,18 @@
 'use client';
 
-import React from 'react';
-import { useInterrupt } from '@copilotkit/react-core/v2';
 import type { Trip } from '@/types';
-import { RideConfirmCard } from '@/components/RideConfirmCard';
-import { CancelTripCard } from '@/components/CancelTripCard';
-import { useAuth } from '@/features/auth/auth-context';
+import { useInterrupt } from '@copilotkit/react-core/v2';
 
-interface InterruptFrontendToolProps {
+import React from 'react';
+import { CancelTripCard } from '@/components/CancelTripCard';
+import { RideConfirmCard } from '@/components/RideConfirmCard';
+import { useAuth } from '@/features/auth/auth-context';
+import { generateTripId } from '@/utils';
+
+type InterruptFrontendToolProps = {
   trips: Trip[];
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-}
+};
 
 export function InterruptFrontendTool({
   trips,
@@ -20,7 +22,7 @@ export function InterruptFrontendTool({
 
   useInterrupt({
     render: ({ event, resolve }) => {
-      console.log('useInterrupt triggered! event:', JSON.stringify(event));
+      console.warn('useInterrupt triggered! event:', JSON.stringify(event));
 
       let parsedValue = event.value;
       if (typeof parsedValue === 'string') {
@@ -46,7 +48,7 @@ export function InterruptFrontendTool({
             passengerPhone={data.passengerPhone || ''}
             price={data.price || 0}
             onConfirm={() => {
-              const newTripId = `TRP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+              const newTripId = generateTripId();
               const newTrip: Trip = {
                 id: newTripId,
                 userId: user?.uid || 'mock-google-user-123',
@@ -98,7 +100,7 @@ export function InterruptFrontendTool({
                         ...t,
                         status: 'cancelled',
                         cancelledAt: new Date().toISOString(),
-                        cancellationFee: cancellationFee,
+                        cancellationFee,
                       }
                     : t,
                 ),
