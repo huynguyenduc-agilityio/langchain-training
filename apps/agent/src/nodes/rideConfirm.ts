@@ -2,40 +2,51 @@ import { Command, interrupt } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 
-import { RideBookingState } from '../state/state';
-import { addTripToDb } from '../db/operations';
-import { Trip } from '../types';
-import { isWithinOperatingHours, hasTooManyActiveTrips } from '../utils/validation';
-import { VALIDATION_MESSAGES } from '../constants';
+import { RideBookingState } from '@/state';
+import { addTripToDb } from '@/db/operations';
+import { Trip, RideConfirmResult, RideRequestArgs } from '@/types';
+import {
+  isWithinOperatingHours,
+  hasTooManyActiveTrips,
+  getUserFromState,
+} from '@/utils';
+import { VALIDATION_MESSAGES, VEHICLE_BIKE } from '@/constants';
 
 /**
  * Ride Confirmation Node
  * Pauses graph execution using native interrupt, waits for approval/cancellation,
  * and updates state using the Command pattern.
  */
-export async function rideConfirmNode(state: RideBookingState, config?: RunnableConfig) {
+export async function rideConfirmNode(
+  state: RideBookingState,
+  config?: RunnableConfig,
+) {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1] as AIMessage;
   const toolCall = lastMessage.tool_calls?.[0];
 
   // Fallback to tool call arguments if tripDraft is null
-  const draft = state.tripDraft || (toolCall ? {
-    pickup: toolCall.args.pickup,
-    destination: toolCall.args.destination,
-    distance: toolCall.args.distance,
-    duration: toolCall.args.duration,
-    vehicleType: toolCall.args.vehicleType,
-    passengerName: toolCall.args.passengerName,
-    passengerPhone: toolCall.args.passengerPhone,
-    price: toolCall.args.price,
-    status: 'searching',
-  } : null);
+  const draft =
+    state.tripDraft ||
+    (toolCall
+      ? {
+          pickup: toolCall.args.pickup,
+          destination: toolCall.args.destination,
+          distance: toolCall.args.distance,
+          duration: toolCall.args.duration,
+          vehicleType: toolCall.args.vehicleType,
+          passengerName: toolCall.args.passengerName,
+          passengerPhone: toolCall.args.passengerPhone,
+          price: toolCall.args.price,
+          status: 'searching',
+        }
+      : null);
 
   // Throws GraphInterrupt to pause execution, returns resume payload when resumed
   const result = interrupt({
     type: 'ride_confirm',
     data: draft,
-  }) as any;
+  }) as RideConfirmResult;
 
   if (result && result.approved) {
     // Re-validate business rules at resumption step (concurrent conflict prevention)
@@ -57,34 +68,17 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
       });
     }
 
-    const contextUser = state.copilotkit?.context?.find(
-      (c: any) => c.description === 'The profile information of the currently authenticated user'
-    )?.value;
+    const {
+      userId: contextUserId,
+      name: userName,
+      email: userEmail,
+    } = getUserFromState(state);
 
-    let contextUserId: string | undefined;
-    let userName: string | undefined;
-    let userEmail: string | undefined;
-
-    if (contextUser) {
-      let parsedUser: any = null;
-      if (typeof contextUser === 'string') {
-        try {
-          parsedUser = JSON.parse(contextUser);
-        } catch (e) {
-          contextUserId = contextUser;
-        }
-      } else if (typeof contextUser === 'object') {
-        parsedUser = contextUser;
-      }
-
-      if (parsedUser) {
-        contextUserId = parsedUser.id || parsedUser.uid;
-        userName = parsedUser.name || parsedUser.displayName;
-        userEmail = parsedUser.email;
-      }
-    }
-
-    const userId = contextUserId || config?.configurable?.copilotkit_properties?.userId || config?.configurable?.userId || 'mock-google-user-123';
+    const userId =
+      contextUserId ||
+      config?.configurable?.copilotkit_properties?.userId ||
+      config?.configurable?.userId ||
+      'mock-google-user-123';
 
     const newTripId = result.tripId || `TRP-${Date.now()}`;
     const newTrip: Trip = {
@@ -94,16 +88,24 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
       destination: draft?.destination || '',
       distance: draft?.distance || 0,
       duration: draft?.duration || 0,
-      vehicleType: draft?.vehicleType || 'bike',
+      vehicleType: draft?.vehicleType || VEHICLE_BIKE,
       passengerName: draft?.passengerName || '',
       passengerPhone: draft?.passengerPhone || '',
       price: draft?.price || 0,
       status: 'searching',
       createdAt: new Date().toISOString(),
-      pickupLat: state.rideEstimate?.pickupLat || (toolCall?.args as any)?.pickupLat,
-      pickupLng: state.rideEstimate?.pickupLng || (toolCall?.args as any)?.pickupLng,
-      destLat: state.rideEstimate?.destLat || (toolCall?.args as any)?.destLat,
-      destLng: state.rideEstimate?.destLng || (toolCall?.args as any)?.destLng,
+      pickupLat:
+        state.rideEstimate?.pickupLat ||
+        (toolCall?.args as unknown as RideRequestArgs)?.pickupLat,
+      pickupLng:
+        state.rideEstimate?.pickupLng ||
+        (toolCall?.args as unknown as RideRequestArgs)?.pickupLng,
+      destLat:
+        state.rideEstimate?.destLat ||
+        (toolCall?.args as unknown as RideRequestArgs)?.destLat,
+      destLng:
+        state.rideEstimate?.destLng ||
+        (toolCall?.args as unknown as RideRequestArgs)?.destLng,
     };
 
     // Save trip to database
@@ -140,4 +142,3 @@ export async function rideConfirmNode(state: RideBookingState, config?: Runnable
     });
   }
 }
-

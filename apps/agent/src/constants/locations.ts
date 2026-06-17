@@ -16,4 +16,3 @@ export const COORDINATES = {
   DEFAULT_CITY: ACTIVE_CITY.defaultCoords,
   MOCK_DESTINATION: ACTIVE_CITY.mockDestination,
 };
-

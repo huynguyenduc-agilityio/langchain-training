@@ -1,34 +1,16 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { updateTripInDb } from '../db/operations';
-import { db } from '../db';
-import { drivers } from '../db/schema';
 import { eq, and } from 'drizzle-orm';
 
-/**
- * Calculate distance between two lat/lng points using Haversine formula
- * Returns distance in kilometers
- */
-function haversineDistance(
-  lat1: number, lng1: number,
-  lat2: number, lng2: number,
-): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
+import { updateTripInDb } from '@/db/operations';
+import { db } from '@/db';
+import { drivers } from '@/db/schema';
+import { VEHICLE_TYPES, BUSINESS_RULES } from '@/constants';
+import { haversineDistance } from '@/utils';
 
 export const matchDriverTool = tool(
   async ({ tripId, vehicleType, pickupLat, pickupLng }) => {
-    // 1. Query all available drivers of the matching vehicle type
+    // Query all available drivers of the matching vehicle type
     const availableDrivers = await db
       .select()
       .from(drivers)
@@ -48,19 +30,23 @@ export const matchDriverTool = tool(
       };
     }
 
-    // 2. Sort drivers by proximity to pickup location (nearest first)
+    // Sort drivers by proximity to pickup location (nearest first)
     const driversWithDistance = availableDrivers.map((d) => ({
       ...d,
       distanceFromPickup: haversineDistance(
-        pickupLat, pickupLng,
-        d.latitude, d.longitude,
+        pickupLat,
+        pickupLng,
+        d.latitude,
+        d.longitude,
       ),
     }));
-    driversWithDistance.sort((a, b) => a.distanceFromPickup - b.distanceFromPickup);
+    driversWithDistance.sort(
+      (a, b) => a.distanceFromPickup - b.distanceFromPickup,
+    );
 
     const matchedDriver = driversWithDistance[0];
 
-    // 3. Mark the selected driver as unavailable (busy)
+    // Mark the selected driver as unavailable (busy)
     await db
       .update(drivers)
       .set({ isAvailable: false })
@@ -74,14 +60,20 @@ export const matchDriverTool = tool(
       rating: matchedDriver.rating || 5.0,
     };
 
-    // 4. Update the trip status to 'matched' and assign the driver in the DB
+    // Update the trip status to 'matched' and assign the driver in the DB
     await updateTripInDb(tripId, {
       status: 'matched',
       driver: driverInfo,
     });
 
-    // 5. Calculate ETA based on driver's distance from pickup (avg 30km/h in city)
-    const etaMinutes = Math.max(1, Math.round((matchedDriver.distanceFromPickup / 30) * 60));
+    // 5. Calculate ETA based on driver's distance from pickup (avg speed in city)
+    const etaMinutes = Math.max(
+      1,
+      Math.round(
+        (matchedDriver.distanceFromPickup / BUSINESS_RULES.AVERAGE_SPEED_KMH) *
+          60,
+      ),
+    );
 
     return {
       success: true,
@@ -98,11 +90,10 @@ export const matchDriverTool = tool(
     schema: z.object({
       tripId: z.string().describe('The trip ID to match a driver for'),
       vehicleType: z
-        .enum(['bike', 'car4', 'car7'])
+        .enum(VEHICLE_TYPES)
         .describe('The vehicle type of the request'),
       pickupLat: z.number().describe('Latitude of the pickup location'),
       pickupLng: z.number().describe('Longitude of the pickup location'),
     }),
   },
 );
-

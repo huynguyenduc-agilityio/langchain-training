@@ -1,33 +1,14 @@
-import { RideBookingState } from '../state/state';
-import { ACTIVE_CITY } from '../constants';
+import { RideBookingState } from '@/state';
+import {
+  ACTIVE_CITY,
+  VEHICLE_BIKE,
+  VEHICLE_CAR4,
+  VEHICLE_CAR7,
+} from '@/constants';
+import { getUserFromState } from '@/utils';
 
 export function RIDE_AGENT_SYSTEM_PROMPT(state: RideBookingState): string {
-  const contextUser = state.copilotkit?.context?.find(
-    (c: any) =>
-      c.description ===
-      'The profile information of the currently authenticated user',
-  )?.value;
-
-  let userName: string | undefined;
-  let userEmail: string | undefined;
-
-  if (contextUser) {
-    let parsedUser: any = null;
-    if (typeof contextUser === 'string') {
-      try {
-        parsedUser = JSON.parse(contextUser);
-      } catch (e) {
-        // ignore
-      }
-    } else if (typeof contextUser === 'object') {
-      parsedUser = contextUser;
-    }
-
-    if (parsedUser) {
-      userName = parsedUser.name || parsedUser.displayName;
-      userEmail = parsedUser.email;
-    }
-  }
+  const { name: userName } = getUserFromState(state);
 
   return `You are a professional, helpful ride-booking assistant operating in ${ACTIVE_CITY.name}.
 Your goal is to guide the user through estimating fares and booking a ride.
@@ -41,7 +22,7 @@ GUARDRAILS & RULES:
 PROGRESSIVE BOOKING FLOW:
 - **Phase 1: Estimation**:
   - Ask for pickup and destination locations if not already specified.
-  - Call the \`estimateRide\` backend tool to get the pricing options for 'bike', 'car4', and 'car7'.
+  - Call the \`estimateRide\` backend tool to get the pricing options for '${VEHICLE_BIKE}', '${VEHICLE_CAR4}', and '${VEHICLE_CAR7}'.
   - Invoke the \`showRideEstimate\` tool to display these choices to the user.
 - **Phase 2: Passenger Details**:
   - Once a vehicle option is chosen (indicated by the user's message or the tool response from \`showRideEstimate\`), you must ask for the passenger's name and phone number.

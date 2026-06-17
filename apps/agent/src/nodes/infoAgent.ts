@@ -1,12 +1,16 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { convertActionsToDynamicStructuredTools } from '@copilotkit/sdk-js/langgraph';
 import { SystemMessage, AIMessage } from '@langchain/core/messages';
-import { sanitizeMessages, getFrontendActionNames } from '../utils/sanitizeMessages';
 import { RunnableConfig } from '@langchain/core/runnables';
-import { RideBookingState } from '../state/state';
-import { INFO_AGENT_SYSTEM_PROMPT } from '../prompts/index';
-import { lookupTripsTool } from '../tools/index';
-import { LLM_CONFIG } from '../constants';
+
+import {
+  sanitizeMessages,
+  getFrontendActionNames,
+} from '@/utils/sanitizeMessages';
+import { RideBookingState } from '@/state';
+import { INFO_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
+import { lookupTripsTool } from '@/tools/index';
+import { LLM_CONFIG } from '@/constants';
 
 export async function infoAgentNode(
   state: RideBookingState,
@@ -46,7 +50,8 @@ export async function infoAgentNode(
     console.error('[InfoAgent] Error during LLM invocation:', error);
     return {
       messages: new AIMessage({
-        content: 'I\'m sorry, I encountered an error retrieving your information. Please try again in a moment.',
+        content:
+          "I'm sorry, I encountered an error retrieving your information. Please try again in a moment.",
       }),
     };
   }

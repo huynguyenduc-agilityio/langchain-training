@@ -1,6 +1,6 @@
 import { AIMessage } from '@langchain/core/messages';
 
-import { RideBookingState } from '../state/state';
+import { RideBookingState } from '@/state';
 
 /**
  * Error response node for validation guardrail failures

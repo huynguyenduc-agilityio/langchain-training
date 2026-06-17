@@ -1,79 +1,15 @@
-import { Trip } from '../types';
-import { ACTIVE_CITY, BUSINESS_RULES } from '../constants';
+import { REGEX } from '@/constants';
+
+/**
+ * Sanitizes phone number string by removing whitespace, dashes, and parentheses.
+ */
+export function sanitizePhone(phone: string): string {
+  return phone.replace(REGEX.PHONE_CLEAN, '');
+}
 
 /**
  * Validates phone number format (standard international/local format).
  */
 export function isValidPhone(phone: string): boolean {
-  // Simple regex matching international format (e.g., +84... or +1...) or local VN format
-  const phoneRegex = /^\+?[0-9]{9,15}$/;
-  return phoneRegex.test(phone.replace(/[\s-()]/g, ''));
+  return REGEX.PHONE.test(sanitizePhone(phone));
 }
-
-/**
- * Validates if the request is within operating hours.
- */
-export function isWithinOperatingHours(): boolean {
-  // Get current hour in the active city's timezone (using offset)
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const cityTime = new Date(utc + 3600000 * ACTIVE_CITY.timezoneOffset);
-  const hour = cityTime.getHours();
-
-  return hour >= BUSINESS_RULES.OPERATING_HOURS.START && hour < BUSINESS_RULES.OPERATING_HOURS.END;
-}
-
-/**
- * Validates active trips limit.
- */
-export function hasTooManyActiveTrips(trips: Trip[]): boolean {
-  const activeStatuses = ['searching', 'matched', 'picked_up'];
-  const activeCount = trips.filter((t) =>
-    activeStatuses.includes(t.status),
-  ).length;
-  return activeCount >= BUSINESS_RULES.MAX_ACTIVE_TRIPS;
-}
-
-/**
- * Validates if coordinates are inside the active city service boundaries (bounding box).
- */
-export function isCoordsInServiceArea(lat: number, lng: number): boolean {
-  const { minLat, maxLat, minLng, maxLng } = ACTIVE_CITY.bounds;
-  return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
-}
-
-/**
- * Extracts the authenticated user from the CopilotKit context in state.
- */
-export function getUserFromState(state: any) {
-  const contextUser = state.copilotkit?.context?.find(
-    (c: any) => c.description === 'The profile information of the currently authenticated user'
-  )?.value;
-
-  let userId: string | undefined;
-  let name: string | undefined;
-  let email: string | undefined;
-
-  if (contextUser) {
-    let parsedUser: any = null;
-    if (typeof contextUser === 'string') {
-      try {
-        parsedUser = JSON.parse(contextUser);
-      } catch (e) {
-        userId = contextUser;
-      }
-    } else if (typeof contextUser === 'object') {
-      parsedUser = contextUser;
-    }
-
-    if (parsedUser) {
-      userId = parsedUser.id || parsedUser.uid;
-      name = parsedUser.name || parsedUser.displayName;
-      email = parsedUser.email;
-    }
-  }
-
-  return { userId, name, email };
-}
-
-

@@ -1,8 +1,10 @@
+import { eq, desc } from 'drizzle-orm';
+
 import { db } from './index';
 import { trips, drivers, users } from './schema';
-import { eq, desc } from 'drizzle-orm';
-import { Trip, Driver } from '../types';
-import { COORDINATES } from '../constants';
+import { Trip, Driver, TripStatus, VehicleType } from '@/types';
+import { COORDINATES } from '@/constants';
+import { sanitizePhone } from '@/utils';
 
 /**
  * Fetch a trip from the database and resolve driver info if present.
@@ -12,7 +14,7 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
     const result = await db
       .select()
       .from(trips)
-      .where(eq(trips.id as any, tripId as any) as any)
+      .where(eq(trips.id, tripId))
       .limit(1);
     if (result.length === 0) return undefined;
 
@@ -23,7 +25,7 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
       const driverResult = await db
         .select()
         .from(drivers)
-        .where(eq(drivers.id as any, row.driverId as any) as any)
+        .where(eq(drivers.id, row.driverId))
         .limit(1);
       if (driverResult.length > 0) {
         const dRow = driverResult[0];
@@ -44,11 +46,11 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
       destination: row.destination,
       distance: row.distance,
       duration: row.duration,
-      vehicleType: row.vehicleType as any,
+      vehicleType: row.vehicleType as VehicleType,
       passengerName: row.passengerName,
       passengerPhone: row.passengerPhone,
       price: row.price,
-      status: row.status as any,
+      status: (row.status as TripStatus) || 'searching',
       createdAt: row.createdAt
         ? row.createdAt.toISOString()
         : new Date().toISOString(),
@@ -70,7 +72,7 @@ export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
     const result = await db
       .select()
       .from(trips)
-      .where(eq(trips.userId as any, userId as any) as any)
+      .where(eq(trips.userId, userId))
       .orderBy(desc(trips.createdAt));
 
     const resultTrips: Trip[] = [];
@@ -81,7 +83,7 @@ export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
         const dRes = await db
           .select()
           .from(drivers)
-          .where(eq(drivers.id as any, row.driverId as any) as any)
+          .where(eq(drivers.id, row.driverId))
           .limit(1);
         if (dRes.length > 0) {
           driver = {
@@ -101,11 +103,11 @@ export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
         destination: row.destination,
         distance: row.distance,
         duration: row.duration,
-        vehicleType: row.vehicleType as any,
+        vehicleType: row.vehicleType as VehicleType,
         passengerName: row.passengerName,
         passengerPhone: row.passengerPhone,
         price: row.price,
-        status: row.status as any,
+        status: (row.status as TripStatus) || 'searching',
         createdAt: row.createdAt
           ? row.createdAt.toISOString()
           : new Date().toISOString(),
@@ -129,10 +131,10 @@ export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
  */
 export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
   try {
-    const cleanPhone = phone.replace(/[\s-()]/g, '');
+    const cleanPhone = sanitizePhone(phone);
     const allTrips = await db.select().from(trips);
     const matching = allTrips.filter(
-      (t) => t.passengerPhone.replace(/[\s-()]/g, '') === cleanPhone,
+      (t) => sanitizePhone(t.passengerPhone) === cleanPhone,
     );
 
     const resultTrips: Trip[] = [];
@@ -143,7 +145,7 @@ export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
         const dRes = await db
           .select()
           .from(drivers)
-          .where(eq(drivers.id as any, row.driverId as any) as any)
+          .where(eq(drivers.id, row.driverId))
           .limit(1);
         if (dRes.length > 0) {
           driver = {
@@ -163,11 +165,11 @@ export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
         destination: row.destination,
         distance: row.distance,
         duration: row.duration,
-        vehicleType: row.vehicleType as any,
+        vehicleType: row.vehicleType as VehicleType,
         passengerName: row.passengerName,
         passengerPhone: row.passengerPhone,
         price: row.price,
-        status: row.status as any,
+        status: (row.status as TripStatus) || 'searching',
         createdAt: row.createdAt
           ? row.createdAt.toISOString()
           : new Date().toISOString(),
@@ -199,8 +201,8 @@ export async function addTripToDb(
       .insert(users)
       .values({
         id: targetUserId,
-        name: userName,
-        email: userEmail,
+        name: userName || null,
+        email: userEmail || null,
       })
       .onConflictDoNothing();
 
@@ -234,7 +236,7 @@ export async function updateTripInDb(
   updates: Partial<Trip>,
 ): Promise<Trip | undefined> {
   try {
-    const updateData: any = {};
+    const updateData: Partial<typeof trips.$inferInsert> = {};
     if (updates.status) updateData.status = updates.status;
     if (updates.cancellationFee !== undefined)
       updateData.cancellationFee = updates.cancellationFee;
@@ -245,7 +247,7 @@ export async function updateTripInDb(
       const dRes = await db
         .select()
         .from(drivers)
-        .where(eq(drivers.phone as any, updates.driver.phone as any) as any)
+        .where(eq(drivers.phone, updates.driver.phone))
         .limit(1);
       if (dRes.length > 0) {
         updateData.driverId = dRes[0].id;
@@ -258,17 +260,14 @@ export async function updateTripInDb(
       const existing = await db
         .select()
         .from(trips)
-        .where(eq(trips.id as any, tripId as any) as any)
+        .where(eq(trips.id, tripId))
         .limit(1);
       if (existing.length > 0) {
         oldDriverId = existing[0].driverId;
       }
     }
 
-    await db
-      .update(trips)
-      .set(updateData)
-      .where(eq(trips.id as any, tripId as any) as any);
+    await db.update(trips).set(updateData).where(eq(trips.id, tripId));
 
     // If the trip is completed or cancelled, release the driver to be available again
     if (oldDriverId) {

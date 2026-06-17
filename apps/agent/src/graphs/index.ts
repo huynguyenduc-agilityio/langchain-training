@@ -1,6 +1,6 @@
 import { StateGraph, START, MemorySaver } from '@langchain/langgraph';
 
-import { RideBookingStateAnnotation } from '../state/index';
+import { RideBookingStateAnnotation } from '@/state/index';
 import {
   inputValidationNode,
   intentClassifierNode,
@@ -8,7 +8,7 @@ import {
   inputValidationRouter,
   errorResponseNode,
   supervisorNode,
-} from '../nodes/index';
+} from '@/nodes/index';
 import { rideSubgraph } from './rideSubgraph';
 import { managementSubgraph } from './managementSubgraph';
 import { infoSubgraph } from './infoSubgraph';
@@ -22,15 +22,15 @@ export function buildGraph() {
     .addNode('input_validation', inputValidationNode)
     .addNode('classify_intent', intentClassifierNode)
     .addNode('supervisor', supervisorNode)
-    .addNode('ride_agent', rideSubgraph as any)
-    .addNode('management_agent', managementSubgraph as any)
-    .addNode('info_agent', infoSubgraph as any)
+    .addNode('ride_agent', rideSubgraph)
+    .addNode('management_agent', managementSubgraph)
+    .addNode('info_agent', infoSubgraph)
     .addNode('error_response', errorResponseNode)
 
     .addEdge(START, 'input_validation')
 
     // 1. Guardrail conditional routing
-    .addConditionalEdges('input_validation', inputValidationRouter as any, {
+    .addConditionalEdges('input_validation', inputValidationRouter, {
       error_response: 'error_response',
       classify_intent: 'classify_intent',
     })
@@ -39,7 +39,7 @@ export function buildGraph() {
     .addEdge('classify_intent', 'supervisor')
 
     // 3. Supervisor routes to target sub-agents or ends
-    .addConditionalEdges('supervisor', supervisorRouter as any, {
+    .addConditionalEdges('supervisor', supervisorRouter, {
       ride_agent: 'ride_agent',
       management_agent: 'management_agent',
       info_agent: 'info_agent',

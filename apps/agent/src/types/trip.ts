@@ -1,7 +1,12 @@
 import { VEHICLE_TYPES } from '../constants';
 
-export type TripStatus = 'searching' | 'matched' | 'picked_up' | 'completed' | 'cancelled';
-export type VehicleType = typeof VEHICLE_TYPES[number];
+export type TripStatus =
+  | 'searching'
+  | 'matched'
+  | 'picked_up'
+  | 'completed'
+  | 'cancelled';
+export type VehicleType = (typeof VEHICLE_TYPES)[number];
 
 export interface Driver {
   name: string;
@@ -27,6 +32,28 @@ export interface Trip {
   createdAt: string;
   cancelledAt?: string;
   cancellationFee?: number;
+  pickupLat?: number;
+  pickupLng?: number;
+  destLat?: number;
+  destLng?: number;
+}
+
+export interface CancelConfirmResult {
+  approved: boolean;
+}
+
+export interface RideConfirmResult {
+  approved: boolean;
+  tripId?: string;
+}
+
+export interface RideRequestArgs {
+  pickup: string;
+  destination: string;
+  vehicleType: VehicleType;
+  passengerName: string;
+  passengerPhone: string;
+  price: number;
   pickupLat?: number;
   pickupLng?: number;
   destLat?: number;

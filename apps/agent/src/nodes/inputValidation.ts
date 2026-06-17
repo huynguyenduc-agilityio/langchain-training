@@ -1,10 +1,10 @@
-import { RideBookingState } from '../state/state';
+import { RideBookingState } from '@/state';
 import {
+  isValidPhone,
   isWithinOperatingHours,
   hasTooManyActiveTrips,
-  isValidPhone,
-} from '../utils/validation';
-import { VALIDATION_MESSAGES, BUSINESS_RULES } from '../constants';
+} from '@/utils';
+import { VALIDATION_MESSAGES, BUSINESS_RULES } from '@/constants';
 
 export async function inputValidationNode(state: RideBookingState) {
   // Determine if this is a booking-related flow.

@@ -14,3 +14,9 @@ export interface RideEstimate {
     price: number;
   }[];
 }
+
+export type EstimateRideResult =
+  | RideEstimate
+  | { error: 'outside_service_area'; location: string }
+  | { error: 'ambiguous_location'; message: string }
+  | { error: 'distance_limit_exceeded'; distance: number };

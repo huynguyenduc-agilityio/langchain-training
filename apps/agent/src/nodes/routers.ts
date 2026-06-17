@@ -1,6 +1,7 @@
-import { AIMessage } from '@langchain/core/messages';
+import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
-import { RideBookingState } from '../state/state';
+import { RideBookingState } from '@/state';
+import { CopilotKitAction } from '@/types';
 
 /**
  * Router function for input validation.
@@ -27,10 +28,12 @@ export function supervisorRouter(state: RideBookingState) {
   // State-aware context routing: if we have an active trip draft or ride estimate in progress
   // and the user input is classified as unknown/chitchat (e.g. providing name, phone, or saying "yes"),
   // force route it to ride_agent to avoid losing the booking context.
-  if ((state.tripDraft !== null || state.rideEstimate !== null) && category === 'unknown') {
+  if (
+    (state.tripDraft !== null || state.rideEstimate !== null) &&
+    category === 'unknown'
+  ) {
     category = 'request';
   }
-
 
   // Prevent infinite loops: if the last message is an AI response without tool calls,
   // or with only frontend action tool calls (already handled by CopilotKit client-side),
@@ -38,18 +41,14 @@ export function supervisorRouter(state: RideBookingState) {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
   if (lastMessage) {
-    const isAI =
-      lastMessage instanceof AIMessage ||
-      (lastMessage as any).type === 'ai' ||
-      (lastMessage as any)._getType?.() === 'ai' ||
-      lastMessage.constructor?.name === 'AIMessage';
+    const msgType =
+      lastMessage._getType?.() ||
+      lastMessage.type ||
+      lastMessage.constructor?.name?.toLowerCase();
+    const isAI = msgType === 'ai';
+    const isTool = msgType === 'tool';
 
-    const isTool =
-      (lastMessage as any).type === 'tool' ||
-      (lastMessage as any)._getType?.() === 'tool' ||
-      lastMessage.constructor?.name === 'ToolMessage';
-
-    const toolCalls = (lastMessage as any).tool_calls || [];
+    const toolCalls = isAI ? (lastMessage as AIMessage).tool_calls || [] : [];
     const hasToolCalls = toolCalls.length > 0;
 
     if (isAI && !hasToolCalls) {
@@ -58,10 +57,10 @@ export function supervisorRouter(state: RideBookingState) {
 
     // If all tool_calls are frontend actions (handled by CopilotKit), treat as end.
     if (isAI && hasToolCalls) {
-      const actions = state.copilotkit?.actions || [];
-      const frontendActionNames = new Set(actions.map((a: any) => a.name));
-      const allAreFrontendActions = toolCalls.every((tc: any) =>
-        frontendActionNames.has(tc.name)
+      const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
+      const frontendActionNames = new Set(actions.map((a) => a.name));
+      const allAreFrontendActions = toolCalls.every((tc) =>
+        frontendActionNames.has(tc.name),
       );
       if (allAreFrontendActions) {
         return '__end__';
@@ -71,10 +70,10 @@ export function supervisorRouter(state: RideBookingState) {
     // If the last message is a ToolMessage corresponding to a frontend action
     // (which means it's a synthetic response to a frontend tool call), treat as end.
     if (isTool) {
-      const toolName = (lastMessage as any).name;
-      const actions = state.copilotkit?.actions || [];
-      const frontendActionNames = new Set(actions.map((a: any) => a.name));
-      if (frontendActionNames.has(toolName)) {
+      const toolName = (lastMessage as ToolMessage).name;
+      const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
+      const frontendActionNames = new Set(actions.map((a) => a.name));
+      if (toolName && frontendActionNames.has(toolName)) {
         return '__end__';
       }
     }

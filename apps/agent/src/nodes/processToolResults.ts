@@ -1,8 +1,6 @@
-import { RunnableConfig } from '@langchain/core/runnables';
-import { RideBookingState } from '../state/state';
-import { Trip } from '../types';
-import { addTripToDb } from '../db/operations';
-import { VALIDATION_MESSAGES } from '../constants';
+import { BaseMessage, ToolMessage } from '@langchain/core/messages';
+import { RideBookingState } from '@/state';
+import { VALIDATION_MESSAGES, ERROR_CODES } from '@/constants';
 
 /**
  * Process Tool Results Node
@@ -10,15 +8,12 @@ import { VALIDATION_MESSAGES } from '../constants';
  * Inspects the last message in the state. If it's a ToolMessage,
  * parses its content and updates state attributes appropriately.
  */
-export async function processToolResults(
-  state: RideBookingState,
-  _config: RunnableConfig,
-) {
+export async function processToolResults(state: RideBookingState) {
   const messages = state.messages || [];
-  const lastMessage = messages[messages.length - 1] as any;
+  const lastMessage = messages[messages.length - 1] as BaseMessage | undefined;
 
   if (lastMessage && lastMessage._getType() === 'tool') {
-    const toolMessage = lastMessage as any;
+    const toolMessage = lastMessage as ToolMessage;
     const toolName = toolMessage.name;
     const toolContent = toolMessage.content;
 
@@ -27,17 +22,17 @@ export async function processToolResults(
         typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
 
       if (toolName === 'estimateRide') {
-        if (parsed.error === 'outside_service_area') {
+        if (parsed.error === ERROR_CODES.OUTSIDE_SERVICE_AREA) {
           return {
             validationError: VALIDATION_MESSAGES.OUTSIDE_SERVICE_AREA_ERROR,
           };
         }
-        if (parsed.error === 'distance_limit_exceeded') {
+        if (parsed.error === ERROR_CODES.DISTANCE_LIMIT_EXCEEDED) {
           return {
             validationError: VALIDATION_MESSAGES.DISTANCE_LIMIT_ERROR,
           };
         }
-        if (parsed.error === 'ambiguous_location') {
+        if (parsed.error === ERROR_CODES.AMBIGUOUS_LOCATION) {
           // Let the LLM see the error message and ask the user for clarification
           return {};
         }

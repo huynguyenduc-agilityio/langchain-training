@@ -2,19 +2,21 @@ import { ChatOpenAI } from '@langchain/openai';
 import { convertActionsToDynamicStructuredTools } from '@copilotkit/sdk-js/langgraph';
 import { SystemMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
-import { RideBookingState } from '../state/state';
-import { RIDE_AGENT_SYSTEM_PROMPT } from '../prompts/index';
+import { StructuredTool } from '@langchain/core/tools';
+
+import { RideBookingState } from '@/state';
+import { RIDE_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
 import {
   estimateRideTool,
   requestRideTool,
   matchDriverTool,
   dummyRideConfirmTool,
-} from '../tools/index';
-import { LLM_CONFIG } from '../constants';
+} from '@/tools/index';
+import { LLM_CONFIG } from '@/constants';
 import {
   sanitizeMessages,
   getFrontendActionNames,
-} from '../utils/sanitizeMessages';
+} from '@/utils/sanitizeMessages';
 
 export async function rideAgentNode(
   state: RideBookingState,
@@ -25,7 +27,11 @@ export async function rideAgentNode(
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
-  const backendTools = [estimateRideTool, requestRideTool, matchDriverTool];
+  const backendTools: StructuredTool[] = [
+    estimateRideTool,
+    requestRideTool,
+    matchDriverTool,
+  ];
   if (
     state.tripDraft &&
     state.tripDraft.passengerName &&

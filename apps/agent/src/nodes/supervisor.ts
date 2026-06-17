@@ -1,5 +1,6 @@
-import { ToolMessage } from '@langchain/core/messages';
-import { RideBookingState } from '../state/state';
+import { ToolMessage, AIMessage } from '@langchain/core/messages';
+import { RideBookingState } from '@/state';
+import { CopilotKitAction } from '@/types';
 
 /**
  * Supervisor node that acts as a central control router/anchor.
@@ -12,18 +13,16 @@ import { RideBookingState } from '../state/state';
  */
 export async function supervisorNode(state: RideBookingState) {
   const messages = state.messages || [];
-  const actions = state.copilotkit?.actions || [];
-  const frontendActionNames = new Set(actions.map((a: any) => a.name));
+  const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
+  const frontendActionNames = new Set(actions.map((a) => a.name));
 
   // Collect all tool_call IDs that already have a ToolMessage response
   const answeredToolCallIds = new Set<string>();
   for (const msg of messages) {
-    if (
-      (msg as any)._getType?.() === 'tool' ||
-      (msg as any).type === 'tool' ||
-      msg.constructor?.name === 'ToolMessage'
-    ) {
-      const toolCallId = (msg as any).tool_call_id;
+    const msgType =
+      msg._getType?.() || msg.type || msg.constructor?.name?.toLowerCase();
+    if (msgType === 'tool') {
+      const toolCallId = (msg as ToolMessage).tool_call_id;
       if (toolCallId) answeredToolCallIds.add(toolCallId);
     }
   }
@@ -31,15 +30,14 @@ export async function supervisorNode(state: RideBookingState) {
   // Find AIMessages with frontend action tool_calls that are unanswered
   const syntheticMessages: ToolMessage[] = [];
   for (const msg of messages) {
-    const isAI =
-      (msg as any)._getType?.() === 'ai' ||
-      (msg as any).type === 'ai' ||
-      msg.constructor?.name === 'AIMessage';
+    const msgType =
+      msg._getType?.() || msg.type || msg.constructor?.name?.toLowerCase();
 
-    if (isAI) {
-      const toolCalls = (msg as any).tool_calls || [];
+    if (msgType === 'ai') {
+      const toolCalls = (msg as AIMessage).tool_calls || [];
       for (const tc of toolCalls) {
         if (
+          tc.id &&
           frontendActionNames.has(tc.name) &&
           !answeredToolCallIds.has(tc.id)
         ) {

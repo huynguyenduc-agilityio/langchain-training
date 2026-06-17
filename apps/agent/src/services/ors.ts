@@ -1,19 +1,16 @@
-import { API_ENDPOINTS, ACTIVE_CITY } from '../constants';
-
-/**
- * Checks if coordinates fall within the active city's service area bounding box.
- */
-function isInServiceArea(lng: number, lat: number): boolean {
-  const { minLat, maxLat, minLng, maxLng } = ACTIVE_CITY.bounds;
-  return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
-}
+import { API_ENDPOINTS, ACTIVE_CITY } from '@/constants';
+import { isCoordsInServiceArea } from '@/utils';
+import { GeocodeFeature, GeocodeResponse } from '@/types';
 
 /**
  * Geocode using ORS Pelias API (primary provider).
  * Good for street addresses with house numbers (e.g., "100 Nguyen Van Linh").
  * Uses boundary.rect and boundary.country to constrain results to the service area.
  */
-async function getCoordsFromORS(query: string, apiKey: string): Promise<[number, number] | null> {
+async function getCoordsFromORS(
+  query: string,
+  apiKey: string,
+): Promise<[number, number] | null> {
   const { minLat, maxLat, minLng, maxLng } = ACTIVE_CITY.bounds;
 
   const params = new URLSearchParams({
@@ -32,14 +29,16 @@ async function getCoordsFromORS(query: string, apiKey: string): Promise<[number,
   const url = `${API_ENDPOINTS.ORS_GEOCODE_URL}?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) {
-    console.error(`[ORS] Geocoding failed for "${query}": ${response.statusText}`);
+    console.error(
+      `[ORS] Geocoding failed for "${query}": ${response.statusText}`,
+    );
     return null;
   }
 
-  const data = (await response.json()) as any;
-  const validFeatures = (data.features || []).filter((f: any) => {
+  const data = (await response.json()) as GeocodeResponse;
+  const validFeatures = (data.features || []).filter((f) => {
     const [lng, lat] = f.geometry.coordinates;
-    return isInServiceArea(lng, lat);
+    return isCoordsInServiceArea(lat, lng);
   });
 
   if (validFeatures.length === 0) return null;
@@ -53,7 +52,9 @@ async function getCoordsFromORS(query: string, apiKey: string): Promise<[number,
  * Free, no API key required, no rate limit.
  * Uses focus.point to bias results toward the active city center.
  */
-async function getCoordsFromPhoton(query: string): Promise<[number, number] | null> {
+async function getCoordsFromPhoton(
+  query: string,
+): Promise<[number, number] | null> {
   const params = new URLSearchParams({
     q: query,
     limit: '5',
@@ -65,29 +66,31 @@ async function getCoordsFromPhoton(query: string): Promise<[number, number] | nu
   const url = `${API_ENDPOINTS.PHOTON_GEOCODE_URL}?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) {
-    console.error(`[Photon] Geocoding failed for "${query}": ${response.statusText}`);
+    console.error(
+      `[Photon] Geocoding failed for "${query}": ${response.statusText}`,
+    );
     return null;
   }
 
-  const data = (await response.json()) as any;
-  const validFeatures = (data.features || []).filter((f: any) => {
+  const data = (await response.json()) as GeocodeResponse;
+  const validFeatures = (data.features || []).filter((f) => {
     const [lng, lat] = f.geometry.coordinates;
-    return isInServiceArea(lng, lat);
+    return isCoordsInServiceArea(lat, lng);
   });
 
   if (validFeatures.length === 0) return null;
 
   // Photon doesn't have confidence scores, so just return the top valid result
-  return validFeatures[0].geometry.coordinates as [number, number];
+  return validFeatures[0].geometry.coordinates;
 }
 
 /**
  * Picks the best result from a list of geocode features based on confidence scores.
  * Returns null if results are ambiguous (multiple results with similar confidence).
  */
-function pickBestResult(features: any[]): [number, number] | null {
+function pickBestResult(features: GeocodeFeature[]): [number, number] | null {
   if (features.length === 1) {
-    return features[0].geometry.coordinates as [number, number];
+    return features[0].geometry.coordinates;
   }
 
   const topConfidence = features[0].properties?.confidence || 0;
@@ -95,7 +98,7 @@ function pickBestResult(features: any[]): [number, number] | null {
 
   // If the top result is clearly the best match (confidence gap > 0.2 or top >= 0.8)
   if (topConfidence >= 0.8 || topConfidence - secondConfidence > 0.2) {
-    return features[0].geometry.coordinates as [number, number];
+    return features[0].geometry.coordinates;
   }
 
   return null; // Ambiguous
@@ -110,7 +113,10 @@ function pickBestResult(features: any[]): [number, number] | null {
  * Returns null if no results found or if the location is ambiguous,
  * signaling the agent to ask the user to clarify.
  */
-export async function getCoords(location: string, apiKey: string): Promise<[number, number] | null> {
+export async function getCoords(
+  location: string,
+  apiKey: string,
+): Promise<[number, number] | null> {
   // Append city name to improve query accuracy
   const cityLower = ACTIVE_CITY.englishName.toLowerCase();
   const query = location.toLowerCase().includes(cityLower)
@@ -121,15 +127,21 @@ export async function getCoords(location: string, apiKey: string): Promise<[numb
     // 1. Try ORS (primary provider)
     const orsResult = await getCoordsFromORS(query, apiKey);
     if (orsResult) {
-      console.log(`[Geocode] "${location}" resolved via ORS → [${orsResult[1]}, ${orsResult[0]}]`);
+      console.info(
+        `[Geocode] "${location}" resolved via ORS → [${orsResult[1]}, ${orsResult[0]}]`,
+      );
       return orsResult;
     }
 
     // 2. Fallback to Photon if ORS returned no valid results
-    console.log(`[Geocode] ORS returned no results for "${location}", trying Photon fallback...`);
+    console.info(
+      `[Geocode] ORS returned no results for "${location}", trying Photon fallback...`,
+    );
     const photonResult = await getCoordsFromPhoton(query);
     if (photonResult) {
-      console.log(`[Geocode] "${location}" resolved via Photon → [${photonResult[1]}, ${photonResult[0]}]`);
+      console.info(
+        `[Geocode] "${location}" resolved via Photon → [${photonResult[1]}, ${photonResult[0]}]`,
+      );
       return photonResult;
     }
 

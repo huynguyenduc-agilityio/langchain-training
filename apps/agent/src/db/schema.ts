@@ -1,7 +1,22 @@
-import { pgTable, text, timestamp, doublePrecision, pgEnum, boolean } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  text,
+  timestamp,
+  doublePrecision,
+  pgEnum,
+  boolean,
+} from 'drizzle-orm/pg-core';
 
-export const tripStatusEnum = pgEnum('trip_status', ['searching', 'matched', 'picked_up', 'completed', 'cancelled']);
-export const vehicleTypeEnum = pgEnum('vehicle_type', ['bike', 'car4', 'car7']);
+import { VEHICLE_TYPES } from '../constants';
+
+export const tripStatusEnum = pgEnum('trip_status', [
+  'searching',
+  'matched',
+  'picked_up',
+  'completed',
+  'cancelled',
+]);
+export const vehicleTypeEnum = pgEnum('vehicle_type', VEHICLE_TYPES);
 
 export const drivers = pgTable('drivers', {
   id: text('id').primaryKey(),
@@ -25,7 +40,9 @@ export const users = pgTable('users', {
 
 export const trips = pgTable('trips', {
   id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
+  userId: text('user_id')
+    .references(() => users.id)
+    .notNull(),
   pickup: text('pickup').notNull(),
   pickupLat: doublePrecision('pickup_lat').notNull(),
   pickupLng: doublePrecision('pickup_lng').notNull(),

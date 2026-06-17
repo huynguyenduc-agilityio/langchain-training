@@ -1,7 +1,14 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { getCoords } from '../services';
-import { isCoordsInServiceArea } from '../utils/validation';
+
+import { getCoords } from '@/services';
+import {
+  isCoordsInServiceArea,
+  haversineDistance,
+  metersToKm,
+  secondsToMinutes,
+} from '@/utils';
+import { EstimateRideResult, ORSDirectionsResponse } from '@/types';
 import {
   API_ENDPOINTS,
   PRICING_CONFIG,
@@ -10,10 +17,12 @@ import {
   VEHICLE_CAR7,
   ACTIVE_CITY,
   BUSINESS_RULES,
-} from '../constants';
+  ERROR_CODES,
+  ERROR_MESSAGES,
+} from '@/constants';
 
 export const estimateRideTool = tool(
-  async ({ pickup, destination }) => {
+  async ({ pickup, destination }): Promise<EstimateRideResult> => {
     const apiKey = process.env.ORS_API_KEY || '';
     let distance = 0;
     let duration = 0;
@@ -24,11 +33,11 @@ export const estimateRideTool = tool(
 
     // Validate if coordinates exist and are within service area boundary
     if (startCoords && !isCoordsInServiceArea(startCoords[1], startCoords[0])) {
-      return { error: 'outside_service_area', location: pickup } as any;
+      return { error: ERROR_CODES.OUTSIDE_SERVICE_AREA, location: pickup };
     }
 
     if (endCoords && !isCoordsInServiceArea(endCoords[1], endCoords[0])) {
-      return { error: 'outside_service_area', location: destination } as any;
+      return { error: ERROR_CODES.OUTSIDE_SERVICE_AREA, location: destination };
     }
 
     if (startCoords && endCoords) {
@@ -36,11 +45,15 @@ export const estimateRideTool = tool(
         const directionsUrl = `${API_ENDPOINTS.ORS_DIRECTIONS_URL}?api_key=${apiKey}&start=${startCoords.join(',')}&end=${endCoords.join(',')}`;
         const response = await fetch(directionsUrl);
         if (response.ok) {
-          const dirData = (await response.json()) as any;
+          const dirData = (await response.json()) as ORSDirectionsResponse;
           if (dirData.features && dirData.features.length > 0) {
-            const summary = dirData.features[0].properties.summary;
-            distance = parseFloat((summary.distance / 1000).toFixed(1)); // Convert meters to km
-            duration = Math.round(summary.duration / 60); // Convert seconds to minutes
+            const summary = dirData.features[0].properties?.summary;
+            if (summary) {
+              distance = metersToKm(summary.distance);
+              duration = secondsToMinutes(summary.duration);
+            } else {
+              fallbackUsed = true;
+            }
           } else {
             fallbackUsed = true;
           }
@@ -62,40 +75,43 @@ export const estimateRideTool = tool(
       // If geocoding failed for either location, ask user to clarify instead of guessing
       if (!startCoords && !endCoords) {
         return {
-          error: 'ambiguous_location',
-          message: `Could not find either location: "${pickup}" and "${destination}". Please provide more specific addresses or landmarks.`,
-        } as any;
+          error: ERROR_CODES.AMBIGUOUS_LOCATION,
+          message: ERROR_MESSAGES.AMBIGUOUS_BOTH(pickup, destination),
+        };
       }
       if (!startCoords) {
         return {
-          error: 'ambiguous_location',
-          message: `Could not find pickup location: "${pickup}". Please provide a more specific address or landmark.`,
-        } as any;
+          error: ERROR_CODES.AMBIGUOUS_LOCATION,
+          message: ERROR_MESSAGES.AMBIGUOUS_PICKUP(pickup),
+        };
       }
       if (!endCoords) {
         return {
-          error: 'ambiguous_location',
-          message: `Could not find destination: "${destination}". Please provide a more specific address or landmark.`,
-        } as any;
+          error: ERROR_CODES.AMBIGUOUS_LOCATION,
+          message: ERROR_MESSAGES.AMBIGUOUS_DESTINATION(destination),
+        };
       }
       // Geocoding succeeded but directions API failed — estimate from coords
-      const R = 6371; // Earth radius in km
-      const dLat = ((endCoords[1] - startCoords[1]) * Math.PI) / 180;
-      const dLon = ((endCoords[0] - startCoords[0]) * Math.PI) / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos((startCoords[1] * Math.PI) / 180) *
-          Math.cos((endCoords[1] * Math.PI) / 180) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      distance = parseFloat((R * c * 1.3).toFixed(1)); // 1.3x for road distance estimate
-      duration = Math.round(distance * 1.5 + 5);
+      const hDist = haversineDistance(
+        startCoords[1],
+        startCoords[0],
+        endCoords[1],
+        endCoords[0],
+      );
+      distance = parseFloat(
+        (hDist * BUSINESS_RULES.FALLBACK_ESTIMATE.DISTANCE_MULTIPLIER).toFixed(
+          1,
+        ),
+      ); // multiplier for road distance estimate
+      duration = Math.round(
+        distance * BUSINESS_RULES.FALLBACK_ESTIMATE.DURATION_MULTIPLIER +
+          BUSINESS_RULES.FALLBACK_ESTIMATE.DURATION_OFFSET,
+      );
     }
 
     // Validate distance boundary (max distance)
     if (distance > BUSINESS_RULES.MAX_RIDE_DISTANCE_KM) {
-      return { error: 'distance_limit_exceeded', distance } as any;
+      return { error: ERROR_CODES.DISTANCE_LIMIT_EXCEEDED, distance };
     }
 
     // Calculate rates (USD) using config:
@@ -139,11 +155,16 @@ export const estimateRideTool = tool(
     description:
       'Calculate ride distance, duration, and price estimates between pickup and destination.',
     schema: z.object({
-      pickup: z.string().describe(`Pickup location name (must be in ${ACTIVE_CITY.englishName})`),
+      pickup: z
+        .string()
+        .describe(
+          `Pickup location name (must be in ${ACTIVE_CITY.englishName})`,
+        ),
       destination: z
         .string()
-        .describe(`Destination location name (must be in ${ACTIVE_CITY.englishName})`),
+        .describe(
+          `Destination location name (must be in ${ACTIVE_CITY.englishName})`,
+        ),
     }),
   },
 );
-

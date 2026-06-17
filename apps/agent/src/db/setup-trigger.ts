@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import pg from 'pg';
 import * as dotenv from 'dotenv';
 import path from 'path';
@@ -14,7 +15,7 @@ async function main() {
   console.log('Connecting to database to set up real-time triggers...');
   const client = new pg.Client({
     connectionString,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
   });
 
   try {

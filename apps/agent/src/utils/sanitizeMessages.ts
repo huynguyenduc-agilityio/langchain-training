@@ -1,4 +1,6 @@
-import { ToolMessage } from '@langchain/core/messages';
+import { BaseMessage, ToolMessage, AIMessage } from '@langchain/core/messages';
+import { RideBookingState } from '@/state';
+import { CopilotKitAction } from '@/types';
 
 /**
  * Sanitize message history for OpenAI API compatibility.
@@ -9,37 +11,44 @@ import { ToolMessage } from '@langchain/core/messages';
  * ToolMessages after any orphan frontend action tool_calls.
  */
 export function sanitizeMessages(
-  messages: any[],
+  messages: BaseMessage[],
   frontendActionNames: Set<string>,
-): any[] {
+): BaseMessage[] {
   // Collect all tool_call IDs that already have a ToolMessage
   const answeredIds = new Set<string>();
   for (const msg of messages) {
     const msgType =
       msg._getType?.() || msg.type || msg.constructor?.name?.toLowerCase();
     if (msgType === 'tool') {
-      const id = msg.tool_call_id;
+      const id = (msg as ToolMessage).tool_call_id;
       if (id) answeredIds.add(id);
     }
   }
 
   // Insert synthetic ToolMessages after AIMessages with orphan tool_calls
-  const result: any[] = [];
+  const result: BaseMessage[] = [];
   for (const msg of messages) {
     result.push(msg);
     const msgType =
       msg._getType?.() || msg.type || msg.constructor?.name?.toLowerCase();
-    if (msgType === 'ai' && msg.tool_calls?.length) {
-      for (const tc of msg.tool_calls) {
-        if (!answeredIds.has(tc.id) && frontendActionNames.has(tc.name)) {
-          result.push(
-            new ToolMessage({
-              content: JSON.stringify({ status: 'displayed' }),
-              tool_call_id: tc.id,
-              name: tc.name,
-            }),
-          );
-          answeredIds.add(tc.id);
+    if (msgType === 'ai' && (msg as AIMessage).tool_calls?.length) {
+      const toolCalls = (msg as AIMessage).tool_calls;
+      if (toolCalls) {
+        for (const tc of toolCalls) {
+          if (
+            tc.id &&
+            !answeredIds.has(tc.id) &&
+            frontendActionNames.has(tc.name)
+          ) {
+            result.push(
+              new ToolMessage({
+                content: JSON.stringify({ status: 'displayed' }),
+                tool_call_id: tc.id,
+                name: tc.name,
+              }),
+            );
+            answeredIds.add(tc.id);
+          }
         }
       }
     }
@@ -50,8 +59,7 @@ export function sanitizeMessages(
 /**
  * Build a Set of frontend action names from CopilotKit state.
  */
-export function getFrontendActionNames(state: any): Set<string> {
-  return new Set(
-    (state.copilotkit?.actions || []).map((a: any) => a.name),
-  );
+export function getFrontendActionNames(state: RideBookingState): Set<string> {
+  const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
+  return new Set(actions.map((a) => a.name));
 }

@@ -1,8 +1,10 @@
 import { Command, interrupt } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
-import { RideBookingState } from '../state/state';
-import { updateTripInDb } from '../db/operations';
-import { CANCELLATION_FEE_CONFIG } from '../constants';
+
+import { RideBookingState } from '@/state';
+import { updateTripInDb } from '@/db/operations';
+import { CANCELLATION_FEE_CONFIG, VEHICLE_BIKE } from '@/constants';
+import { CancelConfirmResult } from '@/types';
 
 /**
  * Cancellation Confirmation Node
@@ -18,8 +20,10 @@ export async function cancelConfirmNode(state: RideBookingState) {
   // Lookup trip details from state
   const trip = state.userTrips.find((t) => t.id === tripId);
   const driverMatched = !!trip?.driver;
-  const vehicleType = trip?.vehicleType || 'bike';
-  const cancellationFee = driverMatched ? CANCELLATION_FEE_CONFIG[vehicleType] : 0;
+  const vehicleType = trip?.vehicleType || VEHICLE_BIKE;
+  const cancellationFee = driverMatched
+    ? CANCELLATION_FEE_CONFIG[vehicleType]
+    : 0;
 
   // Throws GraphInterrupt to pause execution, returns resume payload when resumed
   const result = interrupt({
@@ -31,11 +35,11 @@ export async function cancelConfirmNode(state: RideBookingState) {
       driverName: trip?.driver?.name,
       cancellationFee,
     },
-  }) as any;
+  }) as CancelConfirmResult;
 
   if (result && result.approved && tripId) {
     // Mutate DB immediately in the node to ensure state consistency
-    const updatedTrip = await updateTripInDb(tripId, {
+    await updateTripInDb(tripId, {
       status: 'cancelled',
       cancellationFee,
       cancelledAt: new Date().toISOString(),
@@ -49,7 +53,7 @@ export async function cancelConfirmNode(state: RideBookingState) {
             cancellationFee,
             cancelledAt: new Date().toISOString(),
           }
-        : t
+        : t,
     );
 
     return new Command({
@@ -80,4 +84,3 @@ export async function cancelConfirmNode(state: RideBookingState) {
     });
   }
 }
-

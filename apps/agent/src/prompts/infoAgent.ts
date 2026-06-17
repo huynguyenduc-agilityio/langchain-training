@@ -1,10 +1,10 @@
-import { RideBookingState } from '../state/state';
-import { ACTIVE_CITY } from '../constants';
-import { getUserFromState } from '../utils/validation';
+import { RideBookingState } from '@/state';
+import { ACTIVE_CITY } from '@/constants';
+import { getUserFromState } from '@/utils';
 
 export function INFO_AGENT_SYSTEM_PROMPT(state: RideBookingState): string {
   const { userId, name, email } = getUserFromState(state);
-  const userProfile = userId 
+  const userProfile = userId
     ? `ID: ${userId}\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}`
     : 'Not authenticated / Mock User';
 

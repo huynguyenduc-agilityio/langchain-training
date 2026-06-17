@@ -1,7 +1,8 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { updateTripInDb } from '../db/operations';
-import { CANCELLATION_FEE_CONFIG } from '../constants';
+
+import { updateTripInDb } from '@/db/operations';
+import { CANCELLATION_FEE_CONFIG, VEHICLE_TYPES } from '@/constants';
 
 export const cancelTripTool = tool(
   async ({ tripId, driverMatched, vehicleType }) => {
@@ -27,11 +28,16 @@ export const cancelTripTool = tool(
   },
   {
     name: 'cancelTrip',
-    description: 'Cancel a trip and calculate the cancellation fee if applicable.',
+    description:
+      'Cancel a trip and calculate the cancellation fee if applicable.',
     schema: z.object({
       tripId: z.string().describe('The trip ID to cancel'),
-      driverMatched: z.boolean().describe('Whether a driver is already matched to this trip'),
-      vehicleType: z.enum(['bike', 'car4', 'car7']).describe('The vehicle type of the trip'),
+      driverMatched: z
+        .boolean()
+        .describe('Whether a driver is already matched to this trip'),
+      vehicleType: z
+        .enum(VEHICLE_TYPES)
+        .describe('The vehicle type of the trip'),
     }),
-  }
+  },
 );

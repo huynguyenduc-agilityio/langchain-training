@@ -1,14 +1,14 @@
 import { StateGraph, START } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 
-import { RideBookingStateAnnotation } from '../state/index';
+import { RideBookingStateAnnotation } from '@/state/index';
 import {
   managementAgentNode,
   processToolResults,
   cancelConfirmNode,
   routeManagementAgent,
-} from '../nodes/index';
-import { cancelTripTool, lookupTripsTool } from '../tools/index';
+} from '@/nodes/index';
+import { cancelTripTool, lookupTripsTool } from '@/tools/index';
 
 const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('agent', managementAgentNode)
@@ -17,7 +17,7 @@ const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('cancel_confirm', cancelConfirmNode)
 
   .addEdge(START, 'agent')
-  .addConditionalEdges('agent', routeManagementAgent as any, {
+  .addConditionalEdges('agent', routeManagementAgent, {
     tool_node: 'tool_node',
     cancel_confirm: 'cancel_confirm',
     __end__: '__end__',
