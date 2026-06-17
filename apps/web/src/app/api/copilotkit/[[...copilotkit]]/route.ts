@@ -1,8 +1,9 @@
+import process from 'node:process';
+import { LangGraphAgent } from '@copilotkit/runtime/langgraph';
 import {
   CopilotRuntime,
   createCopilotRuntimeHandler,
 } from '@copilotkit/runtime/v2';
-import { LangGraphAgent } from '@copilotkit/runtime/langgraph';
 
 const runtime = new CopilotRuntime({
   agents: {

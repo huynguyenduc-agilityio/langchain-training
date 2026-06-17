@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db, schema } from '@/lib/db';
+import type { NextRequest } from 'next/server';
+import type { Driver, Trip, TripStatus, VehicleType } from '@/types';
 import { desc, eq } from 'drizzle-orm';
-import type { Trip, Driver } from '@/types';
+
+import { NextResponse } from 'next/server';
+import { db, schema } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +14,10 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get('userId');
 
     if (!userId) {
-      return NextResponse.json({ success: false, error: 'Missing userId parameter' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'Missing userId parameter' },
+        { status: 400 },
+      );
     }
 
     const allTrips = await db
@@ -20,13 +25,17 @@ export async function GET(req: NextRequest) {
       .from(schema.trips)
       .where(eq(schema.trips.userId, userId))
       .orderBy(desc(schema.trips.createdAt));
-      
+
     const resultTrips: Trip[] = [];
 
     for (const row of allTrips) {
-      let driver: Driver | undefined = undefined;
+      let driver: Driver | undefined;
       if (row.driverId) {
-        const dRes = await db.select().from(schema.drivers).where(eq(schema.drivers.id, row.driverId)).limit(1);
+        const dRes = await db
+          .select()
+          .from(schema.drivers)
+          .where(eq(schema.drivers.id, row.driverId))
+          .limit(1);
         if (dRes.length > 0) {
           driver = {
             name: dRes[0].name,
@@ -45,22 +54,30 @@ export async function GET(req: NextRequest) {
         destination: row.destination,
         distance: row.distance,
         duration: row.duration,
-        vehicleType: row.vehicleType as any,
+        vehicleType: row.vehicleType as VehicleType,
         passengerName: row.passengerName,
         passengerPhone: row.passengerPhone,
         price: row.price,
-        status: row.status as any,
-        createdAt: row.createdAt ? row.createdAt.toISOString() : new Date().toISOString(),
-        cancelledAt: row.cancelledAt ? row.cancelledAt.toISOString() : undefined,
+        status: row.status as TripStatus,
+        createdAt: row.createdAt
+          ? row.createdAt.toISOString()
+          : new Date().toISOString(),
+        cancelledAt: row.cancelledAt
+          ? row.cancelledAt.toISOString()
+          : undefined,
         cancellationFee: row.cancellationFee || undefined,
         driver,
       });
     }
 
     return NextResponse.json({ success: true, trips: resultTrips });
-  } catch (error: any) {
-    console.error('[API] Error fetching trips:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error) {
+    const err = error as Error;
+    console.error('[API] Error fetching trips:', err);
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }
 
@@ -82,8 +99,18 @@ export async function POST(req: NextRequest) {
       status,
     } = body;
 
-    if (!id || !userId || !pickup || !destination || !passengerName || !passengerPhone) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
+    if (
+      !id ||
+      !userId ||
+      !pickup ||
+      !destination ||
+      !passengerName ||
+      !passengerPhone
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields' },
+        { status: 400 },
+      );
     }
 
     // Upsert the user first to avoid foreign key violations
@@ -114,10 +141,17 @@ export async function POST(req: NextRequest) {
       status: status || 'searching',
     });
 
-    return NextResponse.json({ success: true, message: 'Trip created successfully' });
-  } catch (error: any) {
-    console.error('[API] Error creating trip:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      message: 'Trip created successfully',
+    });
+  } catch (error) {
+    const err = error as Error;
+    console.error('[API] Error creating trip:', err);
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }
 
@@ -128,7 +162,10 @@ export async function PATCH(req: NextRequest) {
     const { tripId, userId, updates } = body;
 
     if (!tripId || !userId || !updates) {
-      return NextResponse.json({ success: false, error: 'Missing tripId, userId, or updates' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'Missing tripId, userId, or updates' },
+        { status: 400 },
+      );
     }
 
     const existing = await db
@@ -138,18 +175,34 @@ export async function PATCH(req: NextRequest) {
       .limit(1);
 
     if (existing.length === 0) {
-      return NextResponse.json({ success: false, error: 'Trip not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Trip not found' },
+        { status: 404 },
+      );
     }
 
     // Security check: ensure user owns the trip being updated
     if (existing[0].userId !== userId) {
-      return NextResponse.json({ success: false, error: 'Unauthorized: Trip does not belong to this user' }, { status: 403 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized: Trip does not belong to this user',
+        },
+        { status: 403 },
+      );
     }
 
-    const updateData: any = {};
+    const updateData: {
+      status?: TripStatus;
+      cancellationFee?: number;
+      cancelledAt?: Date;
+      driverId?: string;
+    } = {};
     if (updates.status) updateData.status = updates.status;
-    if (updates.cancellationFee !== undefined) updateData.cancellationFee = updates.cancellationFee;
-    if (updates.cancelledAt) updateData.cancelledAt = new Date(updates.cancelledAt);
+    if (updates.cancellationFee !== undefined)
+      updateData.cancellationFee = updates.cancellationFee;
+    if (updates.cancelledAt)
+      updateData.cancelledAt = new Date(updates.cancelledAt);
 
     if (updates.driver) {
       const dRes = await db
@@ -164,16 +217,32 @@ export async function PATCH(req: NextRequest) {
 
     const oldDriverId = existing[0].driverId;
 
-    await db.update(schema.trips).set(updateData).where(eq(schema.trips.id, tripId));
+    await db
+      .update(schema.trips)
+      .set(updateData)
+      .where(eq(schema.trips.id, tripId));
 
     // If the trip is completed or cancelled, release the driver to be available again
-    if ((updates.status === 'cancelled' || updates.status === 'completed') && oldDriverId) {
-      await db.update(schema.drivers).set({ isAvailable: true }).where(eq(schema.drivers.id, oldDriverId));
+    if (
+      (updates.status === 'cancelled' || updates.status === 'completed') &&
+      oldDriverId
+    ) {
+      await db
+        .update(schema.drivers)
+        .set({ isAvailable: true })
+        .where(eq(schema.drivers.id, oldDriverId));
     }
 
-    return NextResponse.json({ success: true, message: 'Trip updated successfully' });
-  } catch (error: any) {
-    console.error('[API] Error updating trip:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      message: 'Trip updated successfully',
+    });
+  } catch (error) {
+    const err = error as Error;
+    console.error('[API] Error updating trip:', err);
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 },
+    );
   }
 }

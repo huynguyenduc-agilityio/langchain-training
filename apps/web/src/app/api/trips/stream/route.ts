@@ -1,4 +1,5 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
+import process from 'node:process';
 import pg from 'pg';
 
 export const dynamic = 'force-dynamic';
@@ -37,9 +38,14 @@ export async function GET(req: NextRequest) {
       // When a notification is received, send it to the client
       client.on('notification', (msg) => {
         try {
-          controller.enqueue(encoder.encode(`data: ${msg.payload || 'update'}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${msg.payload || 'update'}\n\n`),
+          );
         } catch (enqueueErr) {
-          console.error('[SSE] Error enqueuing notification, closing stream:', enqueueErr);
+          console.error(
+            '[SSE] Error enqueuing notification, closing stream:',
+            enqueueErr,
+          );
           cleanup();
         }
       });
@@ -48,18 +54,20 @@ export async function GET(req: NextRequest) {
       const heartbeatInterval = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': heartbeat\n\n'));
-        } catch (err) {
+        } catch {
           cleanup();
         }
       }, 15000);
 
-      const cleanup = () => {
+      function cleanup() {
         clearInterval(heartbeatInterval);
-        client.end().catch((e) => console.error('[SSE] Error closing pg client:', e));
+        client
+          .end()
+          .catch((e) => console.error('[SSE] Error closing pg client:', e));
         try {
           controller.close();
-        } catch (_) {}
-      };
+        } catch {}
+      }
 
       // Clean up connection when request is aborted by client
       req.signal.addEventListener('abort', () => {
@@ -67,7 +75,11 @@ export async function GET(req: NextRequest) {
       });
     },
     async cancel() {
-      await client.end().catch((e) => console.error('[SSE] Error closing pg client on cancel:', e));
+      await client
+        .end()
+        .catch((e) =>
+          console.error('[SSE] Error closing pg client on cancel:', e),
+        );
     },
   });
 
@@ -75,7 +87,7 @@ export async function GET(req: NextRequest) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     },
   });
 }

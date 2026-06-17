@@ -1,34 +1,20 @@
 'use client';
 
+import type { TripCardProps } from '@/types';
+import { ArrowRight, MapPin, Navigation, Phone, User } from 'lucide-react';
+
 import React, { useState } from 'react';
-import {
-  MapPin,
-  Clock,
-  Compass,
-  User,
-  Phone,
-  ArrowRight,
-  Navigation,
-} from 'lucide-react';
-import type { Trip } from '@/types';
-import { TripStatusBadge, VehicleBadge } from '@/components/ui/index';
 import { Card, CardContent } from '@/components/ui/card';
+import { TripStatusBadge, VehicleBadge } from '@/components/ui/index';
 import { Separator } from '@/components/ui/separator';
+import { formatPrice } from '@/utils';
+
 import { TripDetailDialog } from './TripDetailDialog';
 
-interface TripCardProps {
-  trip: Trip;
-  index: number;
-  onCancel?: (tripId: string) => void;
-}
-
-function formatPrice(amount: number) {
-  return '$' + amount.toFixed(2);
-}
-
-export function TripCard({ trip, index, onCancel }: TripCardProps) {
+export function TripCard({ trip, index: _index, onCancel }: TripCardProps) {
   const [detailOpen, setDetailOpen] = useState(false);
-  const isCancellable = trip.status === 'searching' || trip.status === 'matched';
+  const isCancellable =
+    trip.status === 'searching' || trip.status === 'matched';
 
   return (
     <>

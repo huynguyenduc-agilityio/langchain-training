@@ -1,25 +1,12 @@
 'use client';
 
+import type { CancelSuccessCardProps } from '@/types';
+import { ArrowRight, CheckCircle2, MapPin, Trash2 } from 'lucide-react';
+
 import React from 'react';
-import {
-  CheckCircle2,
-  Trash2,
-  MapPin,
-  ArrowRight,
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-interface CancelSuccessCardProps {
-  tripId: string;
-  pickup: string;
-  destination: string;
-  cancellationFee: number;
-}
-
-function formatPrice(amount: number) {
-  return '$' + amount.toFixed(2);
-}
+import { Card, CardContent } from '@/components/ui/card';
+import { formatPrice } from '@/utils';
 
 export function CancelSuccessCard({
   tripId,
@@ -32,9 +19,7 @@ export function CancelSuccessCard({
       {/* Header */}
       <div className="px-4 py-3 flex items-center gap-2 border-b border-solid border-gray-855 bg-gradient-to-r from-red-950/15 to-transparent">
         <CheckCircle2 className="w-5 h-5 text-gray-400 shrink-0" />
-        <span className="font-bold text-xs text-gray-400">
-          Trip Cancelled
-        </span>
+        <span className="font-bold text-xs text-gray-400">Trip Cancelled</span>
         <Badge
           variant="outline"
           className="ml-auto bg-gray-955 text-gray-400 border-gray-800 hover:bg-gray-955 text-[9px] font-bold px-2 py-0.5 rounded-lg border-solid"
@@ -47,9 +32,13 @@ export function CancelSuccessCard({
         {/* Route */}
         <div className="flex items-center gap-2 text-xs">
           <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-          <span className="text-gray-400 font-semibold truncate max-w-[100px] line-through">{pickup}</span>
+          <span className="text-gray-400 font-semibold truncate max-w-[100px] line-through">
+            {pickup}
+          </span>
           <ArrowRight className="w-3 h-3 text-gray-600 shrink-0" />
-          <span className="text-gray-400 font-semibold truncate max-w-[100px] line-through">{destination}</span>
+          <span className="text-gray-400 font-semibold truncate max-w-[100px] line-through">
+            {destination}
+          </span>
         </div>
 
         {/* Cancellation fee */}

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
 import { useFrontendTool } from '@copilotkit/react-core/v2';
+import React from 'react';
 import { z } from 'zod';
+
 import { CancelSuccessCard } from '@/components/CancelSuccessCard';
 
 export function CancelSuccessFrontendTool() {

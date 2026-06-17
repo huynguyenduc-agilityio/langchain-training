@@ -1,4 +1,4 @@
-import { ApiFetchOptions } from '@/types';
+import type { ApiFetchOptions } from '@/types';
 import { ABSOLUTE_URL_PATTERN } from '@/constants';
 
 const getRequestUrl = (path: string, baseUrl: string) => {

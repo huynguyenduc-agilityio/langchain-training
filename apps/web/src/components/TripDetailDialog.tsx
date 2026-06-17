@@ -1,38 +1,31 @@
 'use client';
 
+import type { TripDetailDialogProps } from '@/types';
+import {
+  AlertTriangle,
+  ArrowRight,
+  Car,
+  Compass,
+  FileText,
+  MapPin,
+  Phone,
+  Star,
+  User,
+  X,
+} from 'lucide-react';
+
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-  MapPin,
-  Clock,
-  Calendar,
-  User,
-  Phone,
-  ArrowRight,
-  Compass,
-  FileText,
-  AlertTriangle,
-  X,
-  Star,
-  Car,
-} from 'lucide-react';
-import type { Trip } from '@/types';
 import { TripStatusBadge, VehicleBadge } from '@/components/ui/index';
-
-interface TripDetailDialogProps {
-  trip: Trip;
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCancel?: (tripId: string) => void;
-}
+import { Separator } from '@/components/ui/separator';
+import { formatDate, formatPrice, formatTime } from '@/utils';
 
 export function TripDetailDialog({
   trip,
@@ -42,33 +35,6 @@ export function TripDetailDialog({
 }: TripDetailDialogProps) {
   const isCancellable =
     trip.status === 'searching' || trip.status === 'matched';
-
-  const formatDate = (isoString: string) => {
-    try {
-      return new Date(isoString).toLocaleDateString('en-US', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-    } catch {
-      return isoString;
-    }
-  };
-
-  const formatTime = (isoString: string) => {
-    try {
-      return new Date(isoString).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return isoString;
-    }
-  };
-
-  const formatPrice = (amount: number) => {
-    return '$' + amount.toFixed(2);
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

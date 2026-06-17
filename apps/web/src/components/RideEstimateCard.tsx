@@ -1,39 +1,19 @@
 'use client';
 
+import type { RideEstimateCardProps } from '@/types';
+import {
+  ArrowRight,
+  ChevronRight,
+  Clock,
+  MapPin,
+  Navigation,
+} from 'lucide-react';
+
 import React from 'react';
-import { Clock, MapPin, ArrowRight, ChevronRight, Navigation } from 'lucide-react';
-import type { VehicleType } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-interface RideEstimateCardProps {
-  pickup: string;
-  destination: string;
-  distance: number;
-  duration: number;
-  options: {
-    vehicleType: VehicleType;
-    price: number;
-  }[];
-  onSelectVehicle?: (vehicleType: VehicleType) => void;
-}
-
-const VEHICLE_EMOJI: Record<VehicleType, string> = {
-  bike: '🏍️',
-  car4: '🚗',
-  car7: '🚙',
-};
-
-const VEHICLE_NAMES: Record<VehicleType, string> = {
-  bike: 'Bike',
-  car4: 'Car (4-seat)',
-  car7: 'Car (7-seat)',
-};
-
-function formatPrice(amount: number | undefined | null) {
-  if (amount == null || isNaN(amount)) return '$0.00';
-  return '$' + amount.toFixed(2);
-}
+import { Card, CardContent } from '@/components/ui/card';
+import { VEHICLE_EMOJIS, VEHICLE_NAMES } from '@/constants';
+import { formatPrice } from '@/utils';
 
 export function RideEstimateCard({
   pickup,
@@ -65,9 +45,13 @@ export function RideEstimateCard({
       <div className="flex flex-col gap-1.5 px-3 py-2 bg-emerald-950/20 border border-emerald-900/30 rounded-xl border-solid">
         <div className="flex items-center gap-2">
           <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span className="text-xs font-bold text-emerald-400 truncate max-w-[100px]">{pickup}</span>
+          <span className="text-xs font-bold text-emerald-400 truncate max-w-[100px]">
+            {pickup}
+          </span>
           <ArrowRight className="w-3 h-3 text-emerald-400 shrink-0" />
-          <span className="text-xs font-bold text-emerald-400 truncate max-w-[100px]">{destination}</span>
+          <span className="text-xs font-bold text-emerald-400 truncate max-w-[100px]">
+            {destination}
+          </span>
           <Badge className="ml-auto bg-emerald-950 text-emerald-400 border border-emerald-850 hover:bg-emerald-950/80 text-[10px] px-2 py-0.5 rounded-full border-solid">
             {options.length} vehicle{options.length > 1 ? 's' : ''}
           </Badge>
@@ -78,8 +62,8 @@ export function RideEstimateCard({
             {distance} km
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-emerald-500" />
-            ~{duration} min travel time
+            <Clock className="w-3 h-3 text-emerald-500" />~{duration} min travel
+            time
           </span>
         </div>
       </div>
@@ -95,7 +79,7 @@ export function RideEstimateCard({
             <div className="flex items-center gap-3 min-w-0">
               {/* Vehicle icon */}
               <div className="w-10 h-10 rounded-xl bg-gray-955 border border-gray-855 flex items-center justify-center text-lg shrink-0 border-solid">
-                {VEHICLE_EMOJI[opt.vehicleType] || '🚗'}
+                {VEHICLE_EMOJIS[opt.vehicleType] || '🚗'}
               </div>
 
               {/* Vehicle type & details */}

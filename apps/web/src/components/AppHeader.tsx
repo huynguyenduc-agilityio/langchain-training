@@ -1,14 +1,10 @@
 'use client';
 
+import type { NotificationItem } from '@/types';
+import { Bell, Car, LogOut, User as UserIcon } from 'lucide-react';
+
 import React, { useState } from 'react';
-import { Car, Bell, LogOut, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/features/auth/auth-context';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-interface NotificationItem {
-  id: string;
-  type: 'confirm' | 'cancel' | 'info';
-  message: string;
-  time: string;
-  read: boolean;
-}
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useAuth } from '@/features/auth/auth-context';
 
 export function AppHeader() {
   const { user, logout } = useAuth();

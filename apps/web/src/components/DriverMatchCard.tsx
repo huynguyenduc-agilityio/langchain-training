@@ -1,16 +1,11 @@
 'use client';
 
-import React from 'react';
-import { Star, Phone, Car, CheckCircle2, ShieldCheck } from 'lucide-react';
-import type { Driver } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import type { DriverMatchCardProps } from '@/types';
+import { Car, CheckCircle2, Phone, ShieldCheck, Star } from 'lucide-react';
 
-interface DriverMatchCardProps {
-  tripId: string;
-  driver: Driver;
-  etaMinutes: number;
-}
+import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function DriverMatchCard({
   tripId,
@@ -42,14 +37,19 @@ export function DriverMatchCard({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-extrabold text-gray-150">{driver.name}</span>
+                <span className="text-sm font-extrabold text-gray-150">
+                  {driver.name}
+                </span>
                 <span className="text-[10px] font-bold text-amber-400 flex items-center gap-0.5 bg-amber-950/30 px-1.5 py-0.5 rounded-md shrink-0">
                   <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400 shrink-0" />
                   {driver.rating}
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 mt-0.5">
-                {driver.vehicleInfo} · <span className="font-bold text-gray-200">{driver.licensePlate}</span>
+                {driver.vehicleInfo} ·{' '}
+                <span className="font-bold text-gray-200">
+                  {driver.licensePlate}
+                </span>
               </p>
             </div>
           </div>
@@ -58,7 +58,10 @@ export function DriverMatchCard({
         <div className="border-t border-gray-850/50 pt-2.5 flex items-center justify-between text-xs text-gray-400">
           <span className="flex items-center gap-1">
             <Phone className="w-3.5 h-3.5 text-gray-550" />
-            Driver phone: <strong className="text-gray-300 font-semibold">{driver.phone}</strong>
+            Driver phone:{' '}
+            <strong className="text-gray-300 font-semibold">
+              {driver.phone}
+            </strong>
           </span>
           <span className="bg-emerald-950/30 border border-emerald-900/20 px-2 py-0.5 rounded-lg text-emerald-400 font-bold text-[10px] animate-pulse">
             Arriving in ~{etaMinutes} min

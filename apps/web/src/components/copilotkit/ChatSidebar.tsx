@@ -1,21 +1,22 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import type { ComponentProps } from 'react';
 import {
+  CopilotModalHeader,
   CopilotSidebar,
   useConfigureSuggestions,
   useCopilotChatConfiguration,
-  CopilotModalHeader,
 } from '@copilotkit/react-core/v2';
+import React, { useEffect, useRef } from 'react';
 
-function CustomHeader(props: any) {
+function CustomHeader(props: ComponentProps<typeof CopilotModalHeader>) {
   const config = useCopilotChatConfiguration();
-  const hasClosed = useRef(false);
+  const hasClosedRef = useRef(false);
 
   useEffect(() => {
-    if (config && !hasClosed.current) {
+    if (config && !hasClosedRef.current) {
       config.setModalOpen(false);
-      hasClosed.current = true;
+      hasClosedRef.current = true;
     }
   }, [config]);
 
@@ -43,7 +44,7 @@ export function ChatSidebar() {
   return (
     <CopilotSidebar
       defaultOpen={false}
-      header={CustomHeader as any}
+      header={CustomHeader as unknown as typeof CopilotModalHeader}
       messageView={{
         assistantMessage: {
           toolbarVisible: false,

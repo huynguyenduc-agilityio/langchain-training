@@ -1,11 +1,11 @@
-export interface AuthUser {
+export type AuthUser = {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-}
+};
 
-export interface AuthContextType {
+export type AuthContextType = {
   user: AuthUser | null;
   loading: boolean;
   isFirebaseMode: boolean;
@@ -13,4 +13,4 @@ export interface AuthContextType {
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
-}
+};
