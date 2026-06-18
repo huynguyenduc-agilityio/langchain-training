@@ -1,54 +1,78 @@
 'use client';
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { ComponentProps } from 'react';
-import {
+import type {
+  CopilotChatAssistantMessage,
+  CopilotChatInput,
+  CopilotChatUserMessage,
   CopilotModalHeader,
-  CopilotSidebar,
-  useConfigureSuggestions,
-  useCopilotChatConfiguration,
 } from '@copilotkit/react-core/v2';
-import React, { useEffect, useRef } from 'react';
+import {
+  CopilotSidebar,
+  useAgent,
+  useCopilotKit,
+} from '@copilotkit/react-core/v2';
 
-function CustomHeader(props: ComponentProps<typeof CopilotModalHeader>) {
-  const config = useCopilotChatConfiguration();
-  const hasClosedRef = useRef(false);
+import { generateUUID } from '@/utils';
 
-  useEffect(() => {
-    if (config && !hasClosedRef.current) {
-      config.setModalOpen(false);
-      hasClosedRef.current = true;
-    }
-  }, [config]);
-
-  return <CopilotModalHeader {...props} />;
-}
+import { AssistantMessage } from './chat/AssistantMessage';
+import { UserMessage } from './chat/UserMessage';
+import { HiddenTypingIndicator, TypingIndicator } from './chat/TypingIndicator';
+import { CustomChatHeader } from './chat/CustomChatHeader';
+import { ChatInput } from './chat/ChatInput';
 
 export function ChatSidebar() {
-  useConfigureSuggestions({
-    suggestions: [
-      {
-        title: 'Request a ride',
-        message: 'I want to request a ride',
-      },
-      {
-        title: 'View my trips',
-        message: 'Show me my trip history',
-      },
-      {
-        title: 'Cancel a trip',
-        message: 'I want to cancel a trip',
-      },
-    ],
-  });
+  const { agent } = useAgent();
+  const { copilotkit } = useCopilotKit();
+  const [threadId, setThreadId] = useState<string | undefined>(undefined);
+  const hasMessages = (agent?.messages?.length ?? 0) > 0;
+
+  const agentRef = useRef(agent);
+  useEffect(() => {
+    agentRef.current = agent;
+  }, [agent]);
+
+  const handleStop = useCallback(async () => {
+    try {
+      const currentAgent = agentRef.current;
+      if (currentAgent) {
+        copilotkit.stopAgent({ agent: currentAgent });
+        await currentAgent.detachActiveRun();
+      }
+    } catch (error) {
+      console.warn('Failed to detach active run', { error });
+    }
+  }, [copilotkit]);
+
+  const handleReset = useCallback(async () => {
+    await handleStop();
+    setThreadId(generateUUID());
+  }, [handleStop]);
+
+  // useConfigureSuggestions({
+  //   suggestions: COPILOT_SUGGESTIONS,
+  // });
+
+  const Header = useCallback(
+    (headerProps: ComponentProps<typeof CopilotModalHeader>) => (
+      <CustomChatHeader {...headerProps} onReset={handleReset} />
+    ),
+    [handleReset],
+  );
 
   return (
     <CopilotSidebar
+      threadId={threadId}
       defaultOpen={false}
-      header={CustomHeader as unknown as typeof CopilotModalHeader}
+      header={Header as unknown as typeof CopilotModalHeader}
+      onStop={handleStop}
+      input={ChatInput as unknown as typeof CopilotChatInput}
       messageView={{
-        assistantMessage: {
-          toolbarVisible: false,
-        },
+        assistantMessage:
+          AssistantMessage as typeof CopilotChatAssistantMessage,
+        userMessage: UserMessage as typeof CopilotChatUserMessage,
+        cursor: hasMessages ? TypingIndicator : HiddenTypingIndicator,
       }}
       labels={{
         modalHeaderTitle: 'CityRide AI',

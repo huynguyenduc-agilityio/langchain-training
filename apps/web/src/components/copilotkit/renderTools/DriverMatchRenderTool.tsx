@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { DriverMatchCard } from '@/components/DriverMatchCard';
 import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 import { Card, CardContent } from '@/components/ui/card';
+import { COPILOT_TOOLS } from '@/constants';
 
 function SearchingDriverCard() {
   return (
@@ -46,7 +47,7 @@ function SearchingDriverCard() {
 
 export function DriverMatchRenderTool() {
   useRenderTool({
-    name: 'matchDriver',
+    name: COPILOT_TOOLS.MATCH_DRIVER.name,
     parameters: z.object({
       tripId: z.string().describe('The trip ID to match a driver for'),
       vehicleType: z

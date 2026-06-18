@@ -5,12 +5,12 @@ import React from 'react';
 import { z } from 'zod';
 
 import { CancelTripErrorCard } from '@/components/CancelTripErrorCard';
+import { COPILOT_TOOLS } from '@/constants';
 
 export function CancelErrorFrontendTool() {
   useFrontendTool({
-    name: 'showCancelError',
-    description:
-      'Display an error card when a trip cancellation fails (e.g., trip not found, already completed, or cancellation error).',
+    name: COPILOT_TOOLS.RENDER_CANCEL_ERROR.name,
+    description: COPILOT_TOOLS.RENDER_CANCEL_ERROR.description,
     parameters: z.object({
       tripId: z.string().optional().describe('The trip ID (if available)'),
       reason: z
