@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { getTripsByPhoneFromDb, getTripsByUserIdFromDb } from '@/db/operations';
 import { Trip } from '@/types';
+import { AGENT_TOOLS } from '@/constants';
 
 export const lookupTripsTool = tool(
   async ({ passengerPhone, userId }, config) => {
@@ -28,9 +29,8 @@ export const lookupTripsTool = tool(
     };
   },
   {
-    name: 'lookupTrips',
-    description:
-      "Lookup the current authenticated user's trips, or search by passenger phone number.",
+    name: AGENT_TOOLS.LOOKUP_TRIPS.name,
+    description: AGENT_TOOLS.LOOKUP_TRIPS.description,
     schema: z.object({
       passengerPhone: z
         .string()

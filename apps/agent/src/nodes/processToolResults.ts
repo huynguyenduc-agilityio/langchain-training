@@ -1,6 +1,6 @@
 import { BaseMessage, ToolMessage } from '@langchain/core/messages';
 import { RideBookingState } from '@/state';
-import { VALIDATION_MESSAGES, ERROR_CODES } from '@/constants';
+import { VALIDATION_MESSAGES, ERROR_CODES, AGENT_TOOLS } from '@/constants';
 
 /**
  * Process Tool Results Node
@@ -21,7 +21,7 @@ export async function processToolResults(state: RideBookingState) {
       const parsed =
         typeof toolContent === 'string' ? JSON.parse(toolContent) : toolContent;
 
-      if (toolName === 'estimateRide') {
+      if (toolName === AGENT_TOOLS.ESTIMATE_RIDE.name) {
         if (parsed.error === ERROR_CODES.OUTSIDE_SERVICE_AREA) {
           return {
             validationError: VALIDATION_MESSAGES.OUTSIDE_SERVICE_AREA_ERROR,
@@ -42,13 +42,13 @@ export async function processToolResults(state: RideBookingState) {
         };
       }
 
-      if (toolName === 'requestRide') {
+      if (toolName === AGENT_TOOLS.REQUEST_RIDE.name) {
         return {
           tripDraft: parsed.tripDraft,
         };
       }
 
-      if (toolName === 'matchDriver') {
+      if (toolName === AGENT_TOOLS.MATCH_DRIVER.name) {
         if (parsed.success === false) {
           // If matching failed, do not update userTrips or clear draft in graph state.
           // Allow the LLM to get the error tool output and handle it.
@@ -70,7 +70,7 @@ export async function processToolResults(state: RideBookingState) {
         };
       }
 
-      if (toolName === 'cancelTrip') {
+      if (toolName === AGENT_TOOLS.CANCEL_TRIP.name) {
         const updatedTrips = state.userTrips.map((trip) => {
           if (trip.id === parsed.tripId) {
             return {
@@ -87,7 +87,7 @@ export async function processToolResults(state: RideBookingState) {
         };
       }
 
-      if (toolName === 'lookupTrips') {
+      if (toolName === AGENT_TOOLS.LOOKUP_TRIPS.name) {
         return {
           userTrips: parsed.trips || [],
         };

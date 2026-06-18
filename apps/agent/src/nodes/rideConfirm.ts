@@ -10,7 +10,7 @@ import {
   hasTooManyActiveTrips,
   getUserFromState,
 } from '@/utils';
-import { VALIDATION_MESSAGES, VEHICLE_BIKE } from '@/constants';
+import { VALIDATION_MESSAGES, VEHICLE_BIKE, AGENT_TOOLS } from '@/constants';
 
 /**
  * Ride Confirmation Node
@@ -115,7 +115,7 @@ export async function rideConfirmNode(
       update: {
         messages: [
           new ToolMessage({
-            name: toolCall?.name || 'showRideConfirm',
+            name: toolCall?.name || AGENT_TOOLS.CONFIRM_RIDE.name,
             content: JSON.stringify({ approved: true, tripId: newTripId }),
             tool_call_id: toolCall?.id || '',
           }),
@@ -130,7 +130,7 @@ export async function rideConfirmNode(
       update: {
         messages: [
           new ToolMessage({
-            name: toolCall?.name || 'showRideConfirm',
+            name: toolCall?.name || AGENT_TOOLS.CONFIRM_RIDE.name,
             content: JSON.stringify({ approved: false }),
             tool_call_id: toolCall?.id || '',
           }),

@@ -7,3 +7,4 @@ export * from './vehicles';
 export * from './rules';
 export * from './regex';
 export * from './errors';
+export * from './tools';

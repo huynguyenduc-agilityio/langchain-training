@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { updateTripInDb } from '@/db/operations';
 import { db } from '@/db';
 import { drivers } from '@/db/schema';
-import { VEHICLE_TYPES, BUSINESS_RULES } from '@/constants';
+import { VEHICLE_TYPES, BUSINESS_RULES, AGENT_TOOLS } from '@/constants';
 import { haversineDistance } from '@/utils';
 
 export const matchDriverTool = tool(
@@ -84,9 +84,8 @@ export const matchDriverTool = tool(
     };
   },
   {
-    name: 'matchDriver',
-    description:
-      'Start driver matching for an approved trip request. Finds the nearest available driver.',
+    name: AGENT_TOOLS.MATCH_DRIVER.name,
+    description: AGENT_TOOLS.MATCH_DRIVER.description,
     schema: z.object({
       tripId: z.string().describe('The trip ID to match a driver for'),
       vehicleType: z

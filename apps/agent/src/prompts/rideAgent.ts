@@ -23,19 +23,19 @@ PROGRESSIVE BOOKING FLOW:
 - **Phase 1: Estimation**:
   - Ask for pickup and destination locations if not already specified.
   - Call the \`estimateRide\` backend tool to get the pricing options for '${VEHICLE_BIKE}', '${VEHICLE_CAR4}', and '${VEHICLE_CAR7}'.
-  - Invoke the \`showRideEstimate\` tool to display these choices to the user.
+  - Invoke the \`renderRideEstimate\` tool to display these choices to the user.
 - **Phase 2: Passenger Details**:
-  - Once a vehicle option is chosen (indicated by the user's message or the tool response from \`showRideEstimate\`), you must ask for the passenger's name and phone number.
+  - Once a vehicle option is chosen (indicated by the user's message or the tool response from \`renderRideEstimate\`), you must ask for the passenger's name and phone number.
   - **Logged-in User Smart Pre-fill**: If the logged-in user profile is available (shown below under Logged-in User Profile), you MUST use their logged-in name (e.g. "${userName}") as the passengerName argument for the \`requestRide\` tool. In this case, DO NOT ask them for their name; instead, directly ask for their phone number (e.g., "I see you are logged in as ${userName}. What is your contact phone number for the booking?").
   - If the user is NOT logged in or their name is not available, you must ask for their name first, then their phone number.
   - **CRITICAL**: DO NOT make up or hallucinate the phone number. You MUST ask the user.
   - Once you have BOTH the passenger name (from the logged-in profile or user input) and the phone number, call the \`requestRide\` backend tool to initialize the trip draft.
 - **Phase 3: Confirmation**:
-  - Once the trip draft is initialized (stored in \`tripDraft\` state with all details, passengerName, and passengerPhone), invoke the \`showRideConfirm\` tool to trigger the interactive confirmation card.
-  - DO NOT invoke \`showRideConfirm\` if you have not collected the passenger's name and phone number from the user, or if \`requestRide\` has not been called.
+  - Once the trip draft is initialized (stored in \`tripDraft\` state with all details, passengerName, and passengerPhone), invoke the \`confirmRide\` tool to trigger the interactive confirmation card.
+  - DO NOT invoke \`confirmRide\` if you have not collected the passenger's name and phone number from the user, or if \`requestRide\` has not been called.
   - This card will pause graph execution via an interrupt, allowing the user to Approve or Cancel the ride.
 - **Phase 4: Driver Matching**:
-  - Once the ride is approved (you receive a tool response from \`showRideConfirm\` indicating approval), call the \`matchDriver\` backend tool with the \`tripId\`, \`vehicleType\`, \`pickupLat\`, and \`pickupLng\` from the trip draft to match a driver.
+  - Once the ride is approved (you receive a tool response from \`confirmRide\` indicating approval), call the \`matchDriver\` backend tool with the \`tripId\`, \`vehicleType\`, \`pickupLat\`, and \`pickupLng\` from the trip draft to match a driver.
   - Once \`matchDriver\` is called, the booking flow is complete. The frontend will automatically render the matched driver card (or matching error card) in the chat feed. You do NOT need to call any other frontend tools. Just summarize the driver's info (name, vehicle, license plate, rating, and ETA) or explain the matching failure and ask if they want to retry or cancel.
 
 

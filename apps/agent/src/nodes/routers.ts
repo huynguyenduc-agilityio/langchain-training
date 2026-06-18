@@ -2,6 +2,7 @@ import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
+import { AGENT_TOOLS } from '@/constants';
 
 /**
  * Router function for input validation.
@@ -128,7 +129,7 @@ export function routeRideAgent(state: RideBookingState) {
   if (lastMessage && lastMessage.tool_calls?.length) {
     const toolCallName = lastMessage.tool_calls[0].name;
 
-    if (toolCallName === 'showRideConfirm') {
+    if (toolCallName === AGENT_TOOLS.CONFIRM_RIDE.name) {
       return 'ride_confirm';
     }
 
@@ -153,7 +154,7 @@ export function routeManagementAgent(state: RideBookingState) {
   if (lastMessage && lastMessage.tool_calls?.length) {
     const toolCallName = lastMessage.tool_calls[0].name;
 
-    if (toolCallName === 'showCancelConfirm') {
+    if (toolCallName === AGENT_TOOLS.CONFIRM_CANCEL.name) {
       return 'cancel_confirm';
     }
 

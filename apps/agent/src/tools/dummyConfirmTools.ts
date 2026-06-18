@@ -1,11 +1,11 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
-import { VEHICLE_TYPES } from '@/constants';
+import { VEHICLE_TYPES, AGENT_TOOLS } from '@/constants';
 
 export const dummyRideConfirmTool = tool(async () => ({ success: true }), {
-  name: 'showRideConfirm',
-  description: 'Display the final ride request details for user approval.',
+  name: AGENT_TOOLS.CONFIRM_RIDE.name,
+  description: AGENT_TOOLS.CONFIRM_RIDE.description,
   schema: z.object({
     pickup: z.string().describe('The pickup location name'),
     destination: z.string().describe('The destination location name'),
@@ -19,8 +19,8 @@ export const dummyRideConfirmTool = tool(async () => ({ success: true }), {
 });
 
 export const dummyCancelConfirmTool = tool(async () => ({ success: true }), {
-  name: 'showCancelConfirm',
-  description: 'Display the cancellation confirmation details for a trip.',
+  name: AGENT_TOOLS.CONFIRM_CANCEL.name,
+  description: AGENT_TOOLS.CONFIRM_CANCEL.description,
   schema: z.object({
     tripId: z.string().describe('The trip ID to cancel'),
   }),
