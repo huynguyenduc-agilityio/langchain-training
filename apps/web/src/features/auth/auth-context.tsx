@@ -11,7 +11,6 @@ import { Car } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { MOCK_EMAIL_USER_PREFIX, MOCK_USER } from '@/constants';
 import {
   auth,
   signOut as firebaseSignOut,
@@ -25,19 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 1. Initialize user state synchronously. For mock mode, read from localStorage.
   // We check typeof window to prevent SSR errors during build.
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window !== 'undefined' && (!isFirebaseConfigured || !auth)) {
-      const savedUser = localStorage.getItem('cityride_mock_user');
-      if (savedUser) {
-        try {
-          return JSON.parse(savedUser);
-        } catch {
-          localStorage.removeItem('cityride_mock_user');
-        }
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   // 2. Track hydration/mount state
   const [mounted, setMounted] = useState(false);
@@ -92,21 +79,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, loading, pathname, router]);
 
   const signInWithGoogle = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      throw new Error(
+        'Firebase is not configured. Google Sign-In is unavailable.',
+      );
+    }
     try {
-      if (isFirebaseConfigured && auth) {
-        const result = await signInWithPopup(auth, googleProvider);
-        if (result.user) {
-          setUser({
-            uid: result.user.uid,
-            email: result.user.email,
-            displayName: result.user.displayName,
-            photoURL: result.user.photoURL,
-          });
-        }
-      } else {
-        // Mock Google Sign-In using constant
-        localStorage.setItem('cityride_mock_user', JSON.stringify(MOCK_USER));
-        setUser(MOCK_USER);
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user) {
+        setUser({
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName,
+          photoURL: result.user.photoURL,
+        });
       }
     } catch (error) {
       console.error('Sign in with Google error:', error);
@@ -115,26 +101,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, pass: string) => {
+    if (!isFirebaseConfigured || !auth) {
+      throw new Error(
+        'Firebase is not configured. Email Sign-In is unavailable.',
+      );
+    }
     try {
-      if (isFirebaseConfigured && auth) {
-        const result = await signInWithEmailAndPassword(auth, email, pass);
-        if (result.user) {
-          setUser({
-            uid: result.user.uid,
-            email: result.user.email,
-            displayName: result.user.displayName,
-            photoURL: result.user.photoURL,
-          });
-        }
-      } else {
-        const mockUser: AuthUser = {
-          uid: MOCK_EMAIL_USER_PREFIX + email.replace(/[@.]/g, '-'),
-          email,
-          displayName: email.split('@')[0],
-          photoURL: null,
-        };
-        localStorage.setItem('cityride_mock_user', JSON.stringify(mockUser));
-        setUser(mockUser);
+      const result = await signInWithEmailAndPassword(auth, email, pass);
+      if (result.user) {
+        setUser({
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName,
+          photoURL: result.user.photoURL,
+        });
       }
     } catch (error) {
       console.error('Sign in with Email error:', error);
@@ -143,27 +123,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUpWithEmail = async (email: string, pass: string, name: string) => {
+    if (!isFirebaseConfigured || !auth) {
+      throw new Error(
+        'Firebase is not configured. Email Sign-Up is unavailable.',
+      );
+    }
     try {
-      if (isFirebaseConfigured && auth) {
-        const result = await createUserWithEmailAndPassword(auth, email, pass);
-        if (result.user) {
-          await updateProfile(result.user, { displayName: name });
-          setUser({
-            uid: result.user.uid,
-            email: result.user.email,
-            displayName: name,
-            photoURL: null,
-          });
-        }
-      } else {
-        const mockUser: AuthUser = {
-          uid: MOCK_EMAIL_USER_PREFIX + email.replace(/[@.]/g, '-'),
-          email,
+      const result = await createUserWithEmailAndPassword(auth, email, pass);
+      if (result.user) {
+        await updateProfile(result.user, { displayName: name });
+        setUser({
+          uid: result.user.uid,
+          email: result.user.email,
           displayName: name,
           photoURL: null,
-        };
-        localStorage.setItem('cityride_mock_user', JSON.stringify(mockUser));
-        setUser(mockUser);
+        });
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -172,12 +146,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    if (!isFirebaseConfigured || !auth) {
+      setUser(null);
+      return;
+    }
     try {
-      if (isFirebaseConfigured && auth) {
-        await firebaseSignOut(auth);
-      } else {
-        localStorage.removeItem('cityride_mock_user');
-      }
+      await firebaseSignOut(auth);
       setUser(null);
     } catch (error) {
       console.error('Logout error:', error);

@@ -1,7 +1,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
-import { VEHICLE_TYPES } from '@/constants';
+import { VEHICLE_TYPES, AGENT_TOOLS } from '@/constants';
 
 export const requestRideTool = tool(
   async (args) => {
@@ -28,9 +28,8 @@ export const requestRideTool = tool(
     }
   },
   {
-    name: 'requestRide',
-    description:
-      'Initiate a draft ride booking request once passenger details and vehicle selection are provided.',
+    name: AGENT_TOOLS.REQUEST_RIDE.name,
+    description: AGENT_TOOLS.REQUEST_RIDE.description,
     schema: z.object({
       pickup: z.string().describe('The pickup location name'),
       destination: z.string().describe('The destination location name'),

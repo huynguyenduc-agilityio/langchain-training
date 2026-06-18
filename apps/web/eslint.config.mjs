@@ -51,6 +51,7 @@ export default antfu(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       'antfu/no-top-level-await': 'off', // Allow top-level await
+      'node/prefer-global/process': 'off',
       'react-refresh/only-export-components': [
         'error',
         { allowConstantExport: true },

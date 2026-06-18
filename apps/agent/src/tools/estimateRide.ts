@@ -19,6 +19,7 @@ import {
   BUSINESS_RULES,
   ERROR_CODES,
   ERROR_MESSAGES,
+  AGENT_TOOLS,
 } from '@/constants';
 
 export const estimateRideTool = tool(
@@ -151,9 +152,8 @@ export const estimateRideTool = tool(
     };
   },
   {
-    name: 'estimateRide',
-    description:
-      'Calculate ride distance, duration, and price estimates between pickup and destination.',
+    name: AGENT_TOOLS.ESTIMATE_RIDE.name,
+    description: AGENT_TOOLS.ESTIMATE_RIDE.description,
     schema: z.object({
       pickup: z
         .string()

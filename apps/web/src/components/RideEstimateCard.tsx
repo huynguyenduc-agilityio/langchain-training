@@ -69,9 +69,9 @@ export function RideEstimateCard({
       </div>
 
       {/* Vehicle Option cards */}
-      {options.map((opt) => (
+      {options.map((opt, index) => (
         <Card
-          key={opt.vehicleType}
+          key={index}
           className="group rounded-2xl overflow-hidden cursor-pointer bg-gray-900 border-gray-855 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-950/20 transition-all duration-300 border-solid"
           onClick={() => onSelectVehicle?.(opt.vehicleType)}
         >

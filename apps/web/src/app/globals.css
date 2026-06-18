@@ -378,6 +378,11 @@ body {
   max-width: 85%;
 }
 
+/* Hide empty assistant message bubble when it doesn't contain text content (e.g. during tool execution) */
+.copilotKitAssistantMessage > div:first-of-type:not(:has(p, span, li, a, code, pre, h1, h2, h3, h4, h5, h6, table)) {
+  display: none !important;
+}
+
 /* ── User Message: primary color background ── */
 .copilotKitUserMessage [class*='bg-muted'] {
   background-color: var(--accent-primary) !important;
