@@ -5,12 +5,12 @@ import React from 'react';
 import { z } from 'zod';
 
 import { CancelSuccessCard } from '@/components/CancelSuccessCard';
+import { COPILOT_TOOLS } from '@/constants';
 
 export function CancelSuccessFrontendTool() {
   useFrontendTool({
-    name: 'showCancelSuccess',
-    description:
-      'Display a success card after a trip has been cancelled successfully.',
+    name: COPILOT_TOOLS.RENDER_CANCEL_SUCCESS.name,
+    description: COPILOT_TOOLS.RENDER_CANCEL_SUCCESS.description,
     parameters: z.object({
       tripId: z.string().describe('The cancelled trip ID'),
       pickup: z.string().describe('Pickup location name'),

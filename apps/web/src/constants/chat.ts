@@ -1,0 +1,14 @@
+export const COPILOT_SUGGESTIONS = [
+  {
+    title: 'Request a ride',
+    message: 'I want to request a ride',
+  },
+  {
+    title: 'View my trips',
+    message: 'Show me my trip history',
+  },
+  {
+    title: 'Cancel a trip',
+    message: 'I want to cancel a trip',
+  },
+];

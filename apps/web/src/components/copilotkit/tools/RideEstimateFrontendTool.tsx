@@ -6,6 +6,7 @@ import React, { useRef } from 'react';
 
 import { z } from 'zod';
 import { RideEstimateCard } from '@/components/RideEstimateCard';
+import { COPILOT_TOOLS } from '@/constants';
 
 type RideEstimateFrontendToolProps = {
   onSelectVehicle?: (vehicleType: VehicleType) => void;
@@ -19,9 +20,8 @@ export function RideEstimateFrontendTool({
   >(null);
 
   useFrontendTool({
-    name: 'showRideEstimate',
-    description:
-      'Display interactive fare choices and ride estimate to the user in a card.',
+    name: COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.name,
+    description: COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.description,
     parameters: z.object({
       pickup: z.string().describe('The pickup location name'),
       destination: z.string().describe('The destination location name'),
