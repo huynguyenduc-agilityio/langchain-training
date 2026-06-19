@@ -57,8 +57,16 @@ export function AssistantMessage({
             </div>
           )}
 
-          {hasToolCalls && (
-            <CopilotChatToolCallsView message={message} messages={messages} />
+          {hasDisplayToolCalls && (
+            <CopilotChatToolCallsView
+              message={{
+                ...message,
+                toolCalls: message.toolCalls?.filter((tc) =>
+                  DISPLAY_TOOL_NAMES.has(tc.function.name),
+                ),
+              }}
+              messages={messages}
+            />
           )}
         </div>
       </div>

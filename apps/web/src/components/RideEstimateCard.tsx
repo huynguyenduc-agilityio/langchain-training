@@ -1,19 +1,13 @@
 'use client';
 
-import type { RideEstimateCardProps } from '@/types';
-import {
-  ArrowRight,
-  ChevronRight,
-  Clock,
-  MapPin,
-  Navigation,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import type { RideEstimateCardProps, VehicleType } from '@/types';
+import { ArrowRight, Check, Clock, MapPin, Navigation } from 'lucide-react';
 
-import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { VEHICLE_EMOJIS, VEHICLE_NAMES } from '@/constants';
-import { formatPrice } from '@/utils';
+import { cn, formatPrice } from '@/utils';
 
 export function RideEstimateCard({
   pickup,
@@ -23,6 +17,14 @@ export function RideEstimateCard({
   options,
   onSelectVehicle,
 }: RideEstimateCardProps) {
+  const [selectedType, setSelectedType] = useState<VehicleType | null>(null);
+
+  const handleSelect = (vehicleType: VehicleType) => {
+    if (selectedType) return; // Ignore if already selected
+    setSelectedType(vehicleType);
+    onSelectVehicle?.(vehicleType);
+  };
+
   if (!options || options.length === 0) {
     return (
       <Card className="border-red-500/20 bg-gray-950 p-4 my-2 border-solid shadow-md shadow-red-950/5">
@@ -69,43 +71,68 @@ export function RideEstimateCard({
       </div>
 
       {/* Vehicle Option cards */}
-      {options.map((opt, index) => (
-        <Card
-          key={index}
-          className="group rounded-2xl overflow-hidden cursor-pointer bg-gray-900 border-gray-855 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-950/20 transition-all duration-300 border-solid"
-          onClick={() => onSelectVehicle?.(opt.vehicleType)}
-        >
-          <CardContent className="p-3.5 flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              {/* Vehicle icon */}
-              <div className="w-10 h-10 rounded-xl bg-gray-955 border border-gray-855 flex items-center justify-center text-lg shrink-0 border-solid">
-                {VEHICLE_EMOJIS[opt.vehicleType] || '🚗'}
+      {options.map((opt, index) => {
+        const isSelected = selectedType === opt.vehicleType;
+        const isAnySelected = selectedType !== null;
+
+        return (
+          <Card
+            key={index}
+            className={cn(
+              'group rounded-2xl overflow-hidden bg-gray-900 border-gray-855 transition-all duration-300 border-solid',
+              isAnySelected
+                ? isSelected
+                  ? 'border-emerald-500 shadow-md shadow-emerald-950/20'
+                  : ''
+                : 'cursor-pointer hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-950/20',
+            )}
+            style={{
+              opacity: isAnySelected && !isSelected ? 0.4 : 1,
+              pointerEvents: isAnySelected ? 'none' : 'auto',
+            }}
+            onClick={() => handleSelect(opt.vehicleType)}
+          >
+            <CardContent className="p-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Vehicle icon */}
+                <div className="w-10 h-10 rounded-xl bg-gray-955 border border-gray-855 flex items-center justify-center text-lg shrink-0 border-solid">
+                  {VEHICLE_EMOJIS[opt.vehicleType] || '🚗'}
+                </div>
+
+                {/* Vehicle type & details */}
+                <div className="min-w-0">
+                  <span className="font-bold text-xs text-gray-100 block truncate">
+                    {VEHICLE_NAMES[opt.vehicleType]}
+                  </span>
+                  <span className="text-[10px] text-gray-550 font-semibold block mt-0.5">
+                    Intra-city ride in Da Nang
+                  </span>
+                </div>
               </div>
 
-              {/* Vehicle type & details */}
-              <div className="min-w-0">
-                <span className="font-bold text-xs text-gray-100 block truncate">
-                  {VEHICLE_NAMES[opt.vehicleType]}
+              {/* Price & Select action */}
+              <div className="flex items-center gap-4 shrink-0">
+                <span className="font-extrabold text-sm text-emerald-400">
+                  {formatPrice(opt.price)}
                 </span>
-                <span className="text-[10px] text-gray-550 font-semibold block mt-0.5">
-                  Intra-city ride in Da Nang
-                </span>
-              </div>
-            </div>
 
-            {/* Price & Select action */}
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="font-extrabold text-sm text-emerald-400">
-                {formatPrice(opt.price)}
-              </span>
-              <div className="flex items-center gap-0.5 text-emerald-400 font-bold text-xs">
-                <span>Select</span>
-                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                {/* Selection Icon */}
+                <div className="shrink-0 flex items-center justify-center">
+                  {isSelected ? (
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-gray-950 transition-all duration-300 shadow-sm shadow-emerald-500/20">
+                      <Check className="w-3.5 h-3.5 stroke-[3.5]" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border border-solid border-gray-600 flex items-center justify-center group-hover:border-emerald-500 transition-all duration-200">
+                      <div className="w-1.5 h-1.5 rounded-full bg-transparent group-hover:bg-emerald-500/30 transition-all duration-200" />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

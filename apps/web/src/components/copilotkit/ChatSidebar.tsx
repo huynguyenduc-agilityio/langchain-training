@@ -23,7 +23,7 @@ import { CustomChatHeader } from './chat/CustomChatHeader';
 import { ChatInput } from './chat/ChatInput';
 
 export function ChatSidebar() {
-  const { agent } = useAgent();
+  const { agent } = useAgent({ agentId: 'default' });
   const { copilotkit } = useCopilotKit();
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
   const hasMessages = (agent?.messages?.length ?? 0) > 0;

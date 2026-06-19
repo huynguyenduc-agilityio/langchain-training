@@ -2,7 +2,7 @@ import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
-import { AGENT_TOOLS } from '@/constants';
+import { AGENT_TOOLS, INTERACTIVE_FRONTEND_TOOLS } from '@/constants';
 
 /**
  * Router function for input validation.
@@ -74,7 +74,11 @@ export function supervisorRouter(state: RideBookingState) {
       const toolName = (lastMessage as ToolMessage).name;
       const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
       const frontendActionNames = new Set(actions.map((a) => a.name));
-      if (toolName && frontendActionNames.has(toolName)) {
+      if (
+        toolName &&
+        !INTERACTIVE_FRONTEND_TOOLS.has(toolName) &&
+        frontendActionNames.has(toolName)
+      ) {
         return '__end__';
       }
     }
