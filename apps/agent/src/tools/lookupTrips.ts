@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { getTripsByPhoneFromDb, getTripsByUserIdFromDb } from '@/db/operations';
 import { Trip } from '@/types';
-import { AGENT_TOOLS } from '@/constants';
+import { AGENT_TOOLS, BUSINESS_RULES } from '@/constants';
 
 export const lookupTripsTool = tool(
   async ({ passengerPhone, userId }, config) => {
@@ -14,18 +14,25 @@ export const lookupTripsTool = tool(
 
     let trips: Trip[] = [];
     if (finalUserId) {
-      trips = await getTripsByUserIdFromDb(finalUserId);
+      trips = await getTripsByUserIdFromDb(
+        finalUserId,
+        BUSINESS_RULES.TRIPS_DISPLAY_LIMIT,
+      );
     } else if (passengerPhone) {
-      trips = await getTripsByPhoneFromDb(passengerPhone);
+      trips = await getTripsByPhoneFromDb(
+        passengerPhone,
+        BUSINESS_RULES.TRIPS_DISPLAY_LIMIT,
+      );
     }
 
     return {
       success: true,
       passengerPhone: passengerPhone || 'N/A',
       trips,
+      limit: BUSINESS_RULES.TRIPS_DISPLAY_LIMIT,
       message: finalUserId
-        ? `Retrieved ${trips.length} trips for the current authenticated user.`
-        : `Retrieved ${trips.length} trips for phone number ${passengerPhone}.`,
+        ? `Retrieved ${trips.length} most recent trips (limit: ${BUSINESS_RULES.TRIPS_DISPLAY_LIMIT}) for the current authenticated user.`
+        : `Retrieved ${trips.length} most recent trips (limit: ${BUSINESS_RULES.TRIPS_DISPLAY_LIMIT}) for phone number ${passengerPhone}.`,
     };
   },
   {

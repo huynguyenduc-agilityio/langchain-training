@@ -6,11 +6,11 @@ import {
   useCopilotKit,
   useFrontendTool,
 } from '@copilotkit/react-core/v2';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback } from 'react';
 
 import { z } from 'zod';
 import { RideEstimateCard } from '@/components/RideEstimateCard';
-import { COPILOT_TOOLS } from '@/constants';
+import { COPILOT_TOOLS, VEHICLE_NAMES } from '@/constants';
 
 type RideEstimateFrontendToolProps = {
   onSelectVehicle?: (vehicleType: VehicleType) => void;
@@ -21,30 +21,20 @@ export function RideEstimateFrontendTool({
 }: RideEstimateFrontendToolProps) {
   const { agent } = useAgent({ agentId: 'default' });
   const { copilotkit } = useCopilotKit();
-  const hasTriggeredRun = useRef(false);
 
-  useEffect(() => {
-    if (!agent) return;
-    const messages = agent.messages || [];
-    const lastMessage = messages[messages.length - 1];
-    if (
-      hasTriggeredRun.current &&
-      lastMessage &&
-      lastMessage.role === 'tool' &&
-      (lastMessage as typeof lastMessage & { name?: string }).name ===
-        COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.name &&
-      !agent.isRunning
-    ) {
-      hasTriggeredRun.current = false;
-      copilotkit.runAgent({ agent }).catch((err) => {
-        console.error('Failed to resume agent after vehicle selection:', err);
+  const handleSelectVehicle = useCallback(
+    (vehicleType: VehicleType) => {
+      const displayName = VEHICLE_NAMES[vehicleType] ?? vehicleType;
+      agent.addMessage({
+        id: `msg-select-vehicle-${Date.now()}`,
+        role: 'user',
+        content: `Let's go with ${displayName}.`,
       });
-    }
-  }, [agent, copilotkit]);
-
-  const resolveRef = useRef<
-    ((value: { selectedVehicleType: VehicleType }) => void) | null
-  >(null);
+      copilotkit.runAgent({ agent });
+      onSelectVehicle?.(vehicleType);
+    },
+    [agent, copilotkit, onSelectVehicle],
+  );
 
   useFrontendTool({
     name: COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.name,
@@ -64,9 +54,7 @@ export function RideEstimateFrontendTool({
         .describe('Available ride options and prices'),
     }),
     handler: async () => {
-      return new Promise((resolve) => {
-        resolveRef.current = resolve;
-      });
+      return { displayed: true };
     },
     render: ({ args }) => {
       return (
@@ -76,14 +64,7 @@ export function RideEstimateFrontendTool({
           distance={args.distance || 0}
           duration={args.duration || 0}
           options={args.options || []}
-          onSelectVehicle={(vehicleType) => {
-            if (resolveRef.current) {
-              hasTriggeredRun.current = true;
-              resolveRef.current({ selectedVehicleType: vehicleType });
-              resolveRef.current = null;
-            }
-            onSelectVehicle?.(vehicleType);
-          }}
+          onSelectVehicle={handleSelectVehicle}
         />
       );
     },

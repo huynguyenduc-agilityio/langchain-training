@@ -2,7 +2,7 @@ import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
-import { AGENT_TOOLS, INTERACTIVE_FRONTEND_TOOLS } from '@/constants';
+import { AGENT_TOOLS } from '@/constants';
 
 /**
  * Router function for input validation.
@@ -74,11 +74,7 @@ export function supervisorRouter(state: RideBookingState) {
       const toolName = (lastMessage as ToolMessage).name;
       const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
       const frontendActionNames = new Set(actions.map((a) => a.name));
-      if (
-        toolName &&
-        !INTERACTIVE_FRONTEND_TOOLS.has(toolName) &&
-        frontendActionNames.has(toolName)
-      ) {
+      if (toolName && frontendActionNames.has(toolName)) {
         return '__end__';
       }
     }
@@ -119,6 +115,26 @@ export function routeAfterChat(state: RideBookingState) {
   }
 
   return '__end__';
+}
+
+/**
+ * Routing logic after process_results in Info Agent subgraph.
+ * If the tool that just ran renders a UI card (e.g. lookupTrips), route to __end__
+ * to prevent the LLM from being re-invoked and generating a redundant follow-up message.
+ * The UI card is the complete response — no LLM text is needed.
+ */
+export function routeAfterInfoToolResults(state: RideBookingState) {
+  const messages = state.messages || [];
+  const lastMessage = messages[messages.length - 1];
+
+  if (lastMessage?._getType?.() === 'tool') {
+    const toolName = (lastMessage as ToolMessage).name;
+    if (toolName === AGENT_TOOLS.LOOKUP_TRIPS.name) {
+      return '__end__';
+    }
+  }
+
+  return 'agent';
 }
 
 /**

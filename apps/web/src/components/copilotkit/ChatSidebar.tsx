@@ -15,6 +15,7 @@ import {
 } from '@copilotkit/react-core/v2';
 
 import { generateUUID } from '@/utils';
+import { DISPLAY_TOOL_NAMES } from '@/constants';
 
 import { AssistantMessage } from './chat/AssistantMessage';
 import { UserMessage } from './chat/UserMessage';
@@ -27,6 +28,19 @@ export function ChatSidebar() {
   const { copilotkit } = useCopilotKit();
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
   const hasMessages = (agent?.messages?.length ?? 0) > 0;
+
+  // Hide the global typing cursor when a display tool card (e.g. skeleton) is already
+  // rendering — the card serves as the visual loading state, making the "..." redundant.
+  const hasDisplayToolRunning = Boolean(
+    agent?.messages?.some(
+      (m) =>
+        m.role === 'assistant' &&
+        'toolCalls' in m &&
+        (m.toolCalls as Array<{ function: { name: string } }>)?.some((tc) =>
+          DISPLAY_TOOL_NAMES.has(tc.function.name),
+        ),
+    ),
+  );
 
   const agentRef = useRef(agent);
   useEffect(() => {
@@ -72,7 +86,10 @@ export function ChatSidebar() {
         assistantMessage:
           AssistantMessage as typeof CopilotChatAssistantMessage,
         userMessage: UserMessage as typeof CopilotChatUserMessage,
-        cursor: hasMessages ? TypingIndicator : HiddenTypingIndicator,
+        cursor:
+          hasMessages && !hasDisplayToolRunning
+            ? TypingIndicator
+            : HiddenTypingIndicator,
       }}
       labels={{
         modalHeaderTitle: 'CityRide AI',

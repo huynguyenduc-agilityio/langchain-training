@@ -1,4 +1,4 @@
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, like } from 'drizzle-orm';
 
 import { db } from './index';
 import { trips, drivers, users } from './schema';
@@ -65,15 +65,20 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
 }
 
 /**
- * Retrieve all trips filtered by user ID from the database.
+ * Retrieve trips filtered by user ID from the database.
+ * @param limit - Maximum number of trips to return (default: 5 most recent)
  */
-export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
+export async function getTripsByUserIdFromDb(
+  userId: string,
+  limit = 5,
+): Promise<Trip[]> {
   try {
     const result = await db
       .select()
       .from(trips)
       .where(eq(trips.userId, userId))
-      .orderBy(desc(trips.createdAt));
+      .orderBy(desc(trips.createdAt))
+      .limit(limit);
 
     const resultTrips: Trip[] = [];
 
@@ -127,15 +132,22 @@ export async function getTripsByUserIdFromDb(userId: string): Promise<Trip[]> {
 }
 
 /**
- * Retrieve all trips filtered by phone from the database.
+ * Retrieve trips filtered by phone from the database.
+ * @param limit - Maximum number of trips to return (default: 5 most recent)
  */
-export async function getTripsByPhoneFromDb(phone: string): Promise<Trip[]> {
+export async function getTripsByPhoneFromDb(
+  phone: string,
+  limit = 5,
+): Promise<Trip[]> {
   try {
     const cleanPhone = sanitizePhone(phone);
-    const allTrips = await db.select().from(trips);
-    const matching = allTrips.filter(
-      (t) => sanitizePhone(t.passengerPhone) === cleanPhone,
-    );
+    // Use a DB-level filter instead of full-table scan in memory
+    const matching = await db
+      .select()
+      .from(trips)
+      .where(like(trips.passengerPhone, `%${cleanPhone}%`))
+      .orderBy(desc(trips.createdAt))
+      .limit(limit);
 
     const resultTrips: Trip[] = [];
 

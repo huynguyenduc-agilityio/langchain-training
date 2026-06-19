@@ -1,6 +1,6 @@
 'use client';
 
-import type { Trip, VehicleType } from '@/types';
+import type { Trip } from '@/types';
 
 import React from 'react';
 
@@ -10,19 +10,15 @@ import { DriverMatchRenderTool } from './renderTools/DriverMatchRenderTool';
 import { CancelErrorFrontendTool } from './tools/CancelErrorFrontendTool';
 import { CancelSuccessFrontendTool } from './tools/CancelSuccessFrontendTool';
 import { InterruptFrontendTool } from './tools/InterruptFrontendTool';
+import { TripsListRenderTool } from './renderTools/TripsListRenderTool';
 import { RideEstimateFrontendTool } from './tools/RideEstimateFrontendTool';
 
 type CopilotKitToolsProps = {
   trips: Trip[];
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-  onSelectVehicle?: (vehicleType: VehicleType) => void;
 };
 
-export function CopilotKitTools({
-  trips,
-  setTrips,
-  onSelectVehicle,
-}: CopilotKitToolsProps) {
+export function CopilotKitTools({ trips, setTrips }: CopilotKitToolsProps) {
   return (
     <>
       {/* Readables */}
@@ -30,11 +26,12 @@ export function CopilotKitTools({
       <ActiveTripsReadable trips={trips} />
 
       {/* Frontend Tools */}
-      <RideEstimateFrontendTool onSelectVehicle={onSelectVehicle} />
+      <RideEstimateFrontendTool />
       <InterruptFrontendTool trips={trips} setTrips={setTrips} />
       <DriverMatchRenderTool />
       <CancelSuccessFrontendTool />
       <CancelErrorFrontendTool />
+      <TripsListRenderTool />
     </>
   );
 }

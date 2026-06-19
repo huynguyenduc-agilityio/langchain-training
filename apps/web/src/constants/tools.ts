@@ -25,6 +25,11 @@ export const COPILOT_TOOLS = {
     name: 'renderCancelError',
     description: 'Display an error card after a trip cancellation fails.',
   },
+  LOOKUP_TRIPS: {
+    name: 'lookupTrips',
+    description:
+      "Lookup the current authenticated user's trips, or search by passenger phone number.",
+  },
 } as const;
 
 // Tools that render a visible UI card in the chat — used to distinguish from data-only tools
@@ -35,4 +40,5 @@ export const DISPLAY_TOOL_NAMES = new Set<string>([
   COPILOT_TOOLS.CONFIRM_CANCEL.name,
   COPILOT_TOOLS.RENDER_CANCEL_SUCCESS.name,
   COPILOT_TOOLS.RENDER_CANCEL_ERROR.name,
+  COPILOT_TOOLS.LOOKUP_TRIPS.name,
 ]);
