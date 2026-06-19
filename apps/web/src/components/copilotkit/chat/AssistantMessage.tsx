@@ -29,7 +29,20 @@ export function AssistantMessage({
   const hasDisplayToolCalls = Boolean(
     message.toolCalls?.some((tc) => DISPLAY_TOOL_NAMES.has(tc.function.name)),
   );
-  const showTyping = isRunning && !hasContent && !hasToolCalls;
+
+  // If any message in the list is currently rendering a display tool card (e.g. skeleton),
+  // suppress the typing bubble — the card already serves as the loading indicator.
+  const anyDisplayToolRunning = Boolean(
+    messages?.some(
+      (m) =>
+        m.role === 'assistant' &&
+        'toolCalls' in m &&
+        (m.toolCalls as Array<{ function: { name: string } }>)?.some((tc) =>
+          DISPLAY_TOOL_NAMES.has(tc.function.name),
+        ),
+    ),
+  );
+  const showTyping = isRunning && !hasContent && !hasToolCalls && !anyDisplayToolRunning;
   const showTextBubble = hasContent || showTyping;
 
   if (!showTextBubble && !hasDisplayToolCalls) return null;

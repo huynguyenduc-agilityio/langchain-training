@@ -8,6 +8,7 @@ import { CancelTripCard } from '@/components/CancelTripCard';
 import { RideConfirmCard } from '@/components/RideConfirmCard';
 import { useAuth } from '@/features/auth/auth-context';
 import { generateTripId } from '@/utils';
+import { AssistantAvatar } from '../chat/AssistantAvatar';
 
 type InterruptFrontendToolProps = {
   trips: Trip[];
@@ -36,8 +37,17 @@ export function InterruptFrontendTool({
       const type = parsedValue?.type;
       const data = parsedValue?.data;
 
+      const wrapWithAvatar = (element: React.ReactNode) => (
+        <div className="flex items-start gap-2.5 py-3 select-text w-full">
+          <AssistantAvatar />
+          <div className="flex-1 flex flex-col gap-2 w-full max-w-[85%]">
+            {element}
+          </div>
+        </div>
+      );
+
       if (type === 'ride_confirm' && data) {
-        return (
+        return wrapWithAvatar(
           <RideConfirmCard
             pickup={data.pickup || ''}
             destination={data.destination || ''}
@@ -73,7 +83,7 @@ export function InterruptFrontendTool({
             onCancel={() => {
               resolve({ approved: false });
             }}
-          />
+          />,
         );
       }
 
@@ -84,7 +94,7 @@ export function InterruptFrontendTool({
         const driverName = trip?.driver?.name || data.driverName;
         const cancellationFee = data.cancellationFee ?? 0;
 
-        return (
+        return wrapWithAvatar(
           <CancelTripCard
             tripId={data.tripId || ''}
             pickup={pickup}
@@ -112,7 +122,7 @@ export function InterruptFrontendTool({
             onReject={() => {
               resolve({ approved: false });
             }}
-          />
+          />,
         );
       }
 

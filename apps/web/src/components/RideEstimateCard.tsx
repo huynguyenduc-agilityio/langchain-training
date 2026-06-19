@@ -115,7 +115,6 @@ export function RideEstimateCard({
                 <span className="font-extrabold text-sm text-emerald-400">
                   {formatPrice(opt.price)}
                 </span>
-
                 {/* Selection Icon */}
                 <div className="shrink-0 flex items-center justify-center">
                   {isSelected ? (
