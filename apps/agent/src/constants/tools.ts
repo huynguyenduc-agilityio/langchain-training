@@ -47,3 +47,13 @@ export const AGENT_TOOLS = {
     description: 'Display an error card after a trip cancellation fails.',
   },
 } as const;
+
+/**
+ * Frontend tools that require user interaction before the agent should resume.
+ * The supervisor router will NOT end the turn when receiving a ToolMessage
+ * from these tools — instead, the frontend will trigger `runAgent` after
+ * the user completes the interaction.
+ */
+export const INTERACTIVE_FRONTEND_TOOLS = new Set<string>([
+  AGENT_TOOLS.RENDER_RIDE_ESTIMATE.name,
+]);

@@ -1,8 +1,12 @@
 'use client';
 
 import type { VehicleType } from '@/types';
-import { useFrontendTool } from '@copilotkit/react-core/v2';
-import React, { useRef } from 'react';
+import {
+  useAgent,
+  useCopilotKit,
+  useFrontendTool,
+} from '@copilotkit/react-core/v2';
+import React, { useEffect, useRef } from 'react';
 
 import { z } from 'zod';
 import { RideEstimateCard } from '@/components/RideEstimateCard';
@@ -15,6 +19,29 @@ type RideEstimateFrontendToolProps = {
 export function RideEstimateFrontendTool({
   onSelectVehicle,
 }: RideEstimateFrontendToolProps) {
+  const { agent } = useAgent({ agentId: 'default' });
+  const { copilotkit } = useCopilotKit();
+  const hasTriggeredRun = useRef(false);
+
+  useEffect(() => {
+    if (!agent) return;
+    const messages = agent.messages || [];
+    const lastMessage = messages[messages.length - 1];
+    if (
+      hasTriggeredRun.current &&
+      lastMessage &&
+      lastMessage.role === 'tool' &&
+      (lastMessage as typeof lastMessage & { name?: string }).name ===
+        COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.name &&
+      !agent.isRunning
+    ) {
+      hasTriggeredRun.current = false;
+      copilotkit.runAgent({ agent }).catch((err) => {
+        console.error('Failed to resume agent after vehicle selection:', err);
+      });
+    }
+  }, [agent, copilotkit]);
+
   const resolveRef = useRef<
     ((value: { selectedVehicleType: VehicleType }) => void) | null
   >(null);
@@ -51,6 +78,7 @@ export function RideEstimateFrontendTool({
           options={args.options || []}
           onSelectVehicle={(vehicleType) => {
             if (resolveRef.current) {
+              hasTriggeredRun.current = true;
               resolveRef.current({ selectedVehicleType: vehicleType });
               resolveRef.current = null;
             }
