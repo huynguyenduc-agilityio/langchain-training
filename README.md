@@ -1,93 +1,215 @@
-# langchain-training
+# 🚕 City Ride Booking Chatbot
 
+> An AI-powered intra-city ride-hailing application where users can request rides, estimate fares, manage trips, and interact with an intelligent chatbot assistant. Built with **LangChainJS**, **LangGraph**, **CopilotKit**, and **AG-UI** — featuring streaming responses, human-in-the-loop confirmation workflows, Generative UI, multi-agent architecture, guardrails, interrupts, and subgraphs.
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9.15.0-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![Turborepo](https://img.shields.io/badge/Turborepo-2.5.x-EF4444?logo=turborepo&logoColor=white)](https://turbo.build/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
-## Getting started
+---
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## 📋 Table of Contents
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Technical Stacks](#-technical-stacks)
+- [Development Tools](#-development-tools)
+- [Timeline](#-timeline)
+- [Quick Start](#-quick-start)
+- [Command Reference](#-command-reference)
+- [Project Structure](#-project-structure)
+- [Author](#-author)
 
-## Add your files
+---
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 🔍 Overview
+
+- **Plan:** [LangChain & LangGraph Training Plan - City Ride Booking](doc-plan/%5Bhuy.nguyenduc%5D%20LangChain%20%26%20LangGraph%20Training%20Plan%20-%20City%20Ride%20Booking.md)
+- **Team size:** 1 developer
+
+This is a **Turborepo monorepo** with two runtime surfaces managed by `pnpm`.
+
+| Package                          | Role                                                    | Default URL            |
+| -------------------------------- | ------------------------------------------------------- | ---------------------- |
+| [`apps/web`](apps/web)           | User-facing trip dashboard, login, and chat experience  | http://localhost:3000   |
+| [`apps/agent`](apps/agent)       | LangGraph AI agent server (CopilotKit + AG-UI runtime)  | http://localhost:8123   |
+
+### Key Features
+
+- 🤖 **AI Chat Assistant** — conversational chatbot for ride estimation, booking, cancellation, and trip lookup
+- 🚗 **Ride Estimation** — geocoding & routing via OpenRouteService (ORS) with fare calculation for Bike / Car 4-seat / Car 7-seat
+- ✅ **Human-in-the-Loop** — ride request and cancellation confirmation cards using LangGraph `interrupt()` + `Command` pattern
+- 🧠 **Multi-Agent Architecture** — supervisor pattern routing to specialized Ride Agent, Management Agent, and Info Agent subgraphs
+- 🛡️ **Input Guardrails** — programmatic validation node (operating hours, active trip limit, distance cap, phone format)
+- 🎨 **Generative UI** — interactive cards rendered in chat via `useFrontendTool` and `useRenderTool`
+- 🔐 **Firebase Authentication** — user login with Firebase Auth
+- 💾 **PostgreSQL Persistence** — trip data and driver matching via Drizzle ORM
+
+---
+
+## 🏗 Architecture
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.asoft-python.com/huy.nguyenduc/langchain-training.git
-git branch -M main
-git push -uf origin main
+web (Next.js)  ──►  agent (LangGraph Server)  ──►  PostgreSQL
+  CopilotKit           LangChainJS                   Drizzle ORM
+  AG-UI streaming      Supervisor + Subgraphs        Trip / Driver data
+  Generative UI        OpenRouteService (ORS)
+  Firebase Auth        MemorySaver checkpointer
 ```
 
-## Integrate with your tools
+1. `web` renders the trip dashboard, login page, and CopilotKit chat sidebar
+2. `web` sends CopilotKit runtime requests to the `agent` LangGraph server
+3. `agent` runs the multi-agent graph (supervisor → ride / management / info sub-agents) and calls external services (ORS for geocoding, PostgreSQL for data)
+4. The agent uses `interrupt()` for human-in-the-loop confirmations and streams responses back via AG-UI protocol
 
-* [Set up project integrations](https://gitlab.asoft-python.com/huy.nguyenduc/langchain-training/-/settings/integrations)
+---
 
-## Collaborate with your team
+## 🛠 Technical Stacks
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+| Technology                                                        | Version   | Purpose                                                |
+| ----------------------------------------------------------------- | --------- | ------------------------------------------------------ |
+| [TypeScript](https://www.typescriptlang.org/)                     | `5.x`     | Strongly typed language across all apps                |
+| [React](https://react.dev/)                                       | `19.2.4`  | Frontend UI library                                    |
+| [Next.js](https://nextjs.org/)                                    | `16.2.7`  | React framework with SSR and API routes                |
+| [CopilotKit](https://docs.copilotkit.ai/)                        | `1.59.x`  | Framework for in-app AI copilots and agents            |
+| [AG-UI](https://docs.ag-ui.com/)                                 | `0.0.55`  | Protocol for streaming agentic UI events               |
+| [LangChainJS](https://js.langchain.com/)                         | `1.1.x`   | LLM framework for building AI chains and agents        |
+| [LangGraph](https://langchain-ai.github.io/langgraphjs/)         | `1.3.x`   | Stateful, multi-agent graph orchestration framework    |
+| [OpenAI SDK](https://platform.openai.com/)                       | `1.4.x`   | LLM provider (via `@langchain/openai`)                 |
+| [TailwindCSS](https://tailwindcss.com/)                          | `4.x`     | Utility-first CSS framework                            |
+| [shadcn/ui](https://ui.shadcn.com/)                              | `4.10.0`  | Radix-based UI component library                       |
+| [Drizzle ORM](https://orm.drizzle.team/)                         | `0.45.2`  | TypeScript ORM for PostgreSQL                          |
+| [Firebase](https://firebase.google.com/)                         | `12.14.0` | Authentication provider                                |
+| [Zod](https://zod.dev/)                                          | `3.25.x`  | Schema validation for structured outputs               |
 
-## Test and Deploy
+---
 
-Use the built-in continuous integration in GitLab.
+## 🔧 Development Tools
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+| Tool                                       | Version  | Purpose                                  |
+| ------------------------------------------ | -------- | ---------------------------------------- |
+| [Turborepo](https://turbo.build/)          | `2.5.x`  | Monorepo task runner with caching        |
+| [ESLint](https://eslint.org/)              | `9.x`    | Static code analysis                     |
+| [Prettier](https://prettier.io/)           | `3.5.x`  | Opinionated code formatter               |
+| [tsup](https://tsup.egoist.dev/)           | `8.4.x`  | TypeScript bundler for agent build       |
+| [Drizzle Kit](https://orm.drizzle.team/)   | `0.31.x` | Database migration and schema management |
 
-***
+---
 
-# Editing this README
+## 📅 Timeline
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+|              |               |
+| ------------ | ------------- |
+| **Estimate** | 8 days        |
+| **Start**    | June 9, 2026  |
+| **End**      | June 17, 2026 |
 
-## Suggestions for a good README
+---
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 🚀 Quick Start
 
-## Name
-Choose a self-explaining name for your project.
+### Prerequisites
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/en/download/package-manager)
+[![pnpm](https://img.shields.io/badge/pnpm-v9.15.0-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/installation)
+[![OpenAI](https://img.shields.io/badge/LLM-OpenAI_API_Key-412991?logo=openai&logoColor=white)](https://platform.openai.com/)
+[![ORS](https://img.shields.io/badge/Geocoding-OpenRouteService_API_Key-6CB52D)](https://openrouteservice.org/)
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Steps
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd langchain-training
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+# 2. Install all dependencies
+pnpm install
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+# 3. Set up environment variables
+cp apps/agent/.env.example apps/agent/.env
+# (web/.env — create manually, see below)
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Fill in the required values:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+**`apps/agent/.env`**
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+```bash
+OPENAI_API_KEY=<your-openai-key>
+AGENT_PORT=8123
+ORS_API_KEY=<your-openrouteservice-key>
+DATABASE_URL=<your-postgresql-connection-string>
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+# LangSmith Tracing (optional)
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=<your-langsmith-key>
+LANGSMITH_PROJECT=<your-project-name>
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+**`apps/web/.env`**
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+```bash
+DATABASE_URL=<your-postgresql-connection-string>
+LANGGRAPH_DEPLOYMENT_URL=http://localhost:8123
 
-## License
-For open source projects, say how it is licensed.
+# Firebase Authentication
+NEXT_PUBLIC_FIREBASE_API_KEY=<your-firebase-api-key>
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<your-firebase-auth-domain>
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=<your-firebase-project-id>
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=<your-firebase-storage-bucket>
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<your-firebase-sender-id>
+NEXT_PUBLIC_FIREBASE_APP_ID=<your-firebase-app-id>
+```
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+### Start services
+
+Start each service in a separate terminal **in this order**:
+
+```bash
+# Terminal 1 — LangGraph AI agent server
+pnpm dev:agent
+
+# Terminal 2 — Next.js frontend
+pnpm dev:web
+```
+
+Open http://localhost:3000 in your browser.
+
+---
+
+## 📟 Command Reference
+
+### Installation
+
+| Command        | Purpose                           |
+| -------------- | --------------------------------- |
+| `pnpm install` | Install all workspace dependencies |
+
+### Development
+
+| Command         | Purpose                        | Port                   |
+| --------------- | ------------------------------ | ---------------------- |
+| `pnpm dev`      | Run all apps concurrently      | —                      |
+| `pnpm dev:agent`| Run LangGraph agent server     | http://localhost:8123   |
+| `pnpm dev:web`  | Run Next.js frontend           | http://localhost:3000   |
+
+### Build
+
+| Command      | Purpose        |
+| ------------ | -------------- |
+| `pnpm build` | Build all apps |
+
+### Lint & Format
+
+| Command              | Purpose                                    |
+| -------------------- | ------------------------------------------ |
+| `pnpm lint`          | Lint all apps                              |
+| `pnpm format:check`  | Check formatting with Prettier             |
+
+---
+
+## 👤 Author
+
+- **Huy Nguyen Duc** — [huy.nguyenduc](mailto:huy.nguyenduc@asnet.com.vn)
