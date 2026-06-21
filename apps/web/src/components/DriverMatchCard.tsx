@@ -3,7 +3,7 @@
 import type { DriverMatchCardProps } from '@/types';
 import { Car, CheckCircle2, Phone, ShieldCheck, Star } from 'lucide-react';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -11,7 +11,14 @@ export function DriverMatchCard({
   tripId,
   driver,
   etaMinutes,
+  onMount,
 }: DriverMatchCardProps) {
+  // Notify parent once on mount so it can sync trips state.
+  useEffect(() => {
+    onMount?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Card className="rounded-2xl overflow-hidden my-2 border-solid bg-gray-900 border-emerald-950/40 shadow-lg shadow-emerald-950/5">
       {/* Header */}

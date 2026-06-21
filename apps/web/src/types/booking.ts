@@ -33,6 +33,8 @@ export type DriverMatchCardProps = {
   tripId: string;
   driver: Driver;
   etaMinutes: number;
+  /** Called once when the card first mounts — used to sync trips state upstream. */
+  onMount?: () => void;
 };
 
 export type DriverMatchErrorCardProps = {

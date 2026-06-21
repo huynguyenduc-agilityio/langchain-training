@@ -1,4 +1,4 @@
-import { StateGraph, START, MemorySaver } from '@langchain/langgraph';
+import { StateGraph, START } from '@langchain/langgraph';
 
 import { RideBookingStateAnnotation } from '@/state/index';
 import {
@@ -12,11 +12,13 @@ import {
 import { rideSubgraph } from './rideSubgraph';
 import { managementSubgraph } from './managementSubgraph';
 import { infoSubgraph } from './infoSubgraph';
+import { getCheckpointer } from '@/db/checkpointer';
 
 /**
  * Build the City Ride Booking chatbot graph.
+ * Async because PostgresSaver.setup() must be awaited on first call.
  */
-export function buildGraph() {
+export async function buildGraph() {
   // Build Parent Graph Workflow
   const workflow = new StateGraph(RideBookingStateAnnotation)
     .addNode('input_validation', inputValidationNode)
@@ -53,9 +55,7 @@ export function buildGraph() {
     .addEdge('info_agent', 'supervisor')
     .addEdge('error_response', '__end__');
 
-  const memory = new MemorySaver();
+  const checkpointer = await getCheckpointer();
 
-  return workflow.compile({
-    checkpointer: memory,
-  });
+  return workflow.compile({ checkpointer });
 }
