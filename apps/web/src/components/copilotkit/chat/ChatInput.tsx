@@ -92,31 +92,31 @@ export const ChatInput = ({
 
   const cleanClassName = className
     ? className
-        .split(' ')
-        .filter(
-          (c) =>
-            !c.includes('bg-background') &&
-            !c.includes('border-t') &&
-            !c.includes('border-border') &&
-            !c.includes('px-') &&
-            !c.includes('pb-') &&
-            !c.includes('pt-') &&
-            !c.includes('mx-') &&
-            !c.includes('my-') &&
-            !c.includes('mb-') &&
-            !c.includes('mt-') &&
-            !c.includes('ml-') &&
-            !c.includes('mr-') &&
-            !c.includes('m-') &&
-            !c.includes('w-'),
-        )
-        .join(' ')
+      .split(' ')
+      .filter(
+        (c) =>
+          !c.includes('bg-background') &&
+          !c.includes('border-t') &&
+          !c.includes('border-border') &&
+          !c.includes('px-') &&
+          !c.includes('pb-') &&
+          !c.includes('pt-') &&
+          !c.includes('mx-') &&
+          !c.includes('my-') &&
+          !c.includes('mb-') &&
+          !c.includes('mt-') &&
+          !c.includes('ml-') &&
+          !c.includes('mr-') &&
+          !c.includes('m-') &&
+          !c.includes('w-'),
+      )
+      .join(' ')
     : '';
 
   return (
     <div
       className={cn(
-        'pointer-events-auto flex flex-col gap-3 bg-transparent mx-4 mb-4 w-[calc(100%-32px)]',
+        'pointer-events-auto flex flex-col gap-3 bg-[#0a0a0a] w-full px-4 pt-4 pb-4 border-t border-[var(--border-subtle)]',
         cleanClassName,
       )}
     >

@@ -387,10 +387,7 @@ body {
   box-shadow: 0 0 10px var(--accent-glow);
 }
 
-/* Reduce excessive px-8 pb-4 padding on suggestions/input area */
-.copilotKitSidebar .copilotKitChat > div:not([style]) > div:last-child {
-  padding: 0 !important;
-}
+
 
 /* ── Suggestion pills: left-aligned chips above input ── */
 /* Align suggestions flush-left with the input field */
