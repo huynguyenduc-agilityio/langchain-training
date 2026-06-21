@@ -6,7 +6,7 @@ import {
   infoAgentNode,
   processToolResults,
   routeAfterChat,
-  routeAfterInfoToolResults,
+  routeAfterToolResults,
 } from '@/nodes/index';
 import { lookupTripsTool } from '@/tools/index';
 
@@ -20,7 +20,7 @@ const infoSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     __end__: '__end__',
   })
   .addEdge('tool_node', 'process_results')
-  .addConditionalEdges('process_results', routeAfterInfoToolResults, {
+  .addConditionalEdges('process_results', routeAfterToolResults, {
     agent: 'agent',
     __end__: '__end__',
   });

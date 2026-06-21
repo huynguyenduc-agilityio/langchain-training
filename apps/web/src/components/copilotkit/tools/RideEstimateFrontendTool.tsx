@@ -6,7 +6,7 @@ import {
   useCopilotKit,
   useFrontendTool,
 } from '@copilotkit/react-core/v2';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 
 import { z } from 'zod';
 import { RideEstimateCard } from '@/components/RideEstimateCard';
@@ -22,19 +22,30 @@ export function RideEstimateFrontendTool({
   const { agent } = useAgent({ agentId: 'default' });
   const { copilotkit } = useCopilotKit();
 
-  const handleSelectVehicle = useCallback(
-    (vehicleType: VehicleType) => {
-      const displayName = VEHICLE_NAMES[vehicleType] ?? vehicleType;
-      agent.addMessage({
-        id: `msg-select-vehicle-${Date.now()}`,
-        role: 'user',
-        content: `Let's go with ${displayName}.`,
-      });
-      copilotkit.runAgent({ agent });
-      onSelectVehicle?.(vehicleType);
-    },
-    [agent, copilotkit, onSelectVehicle],
-  );
+  // Use refs so the stable callback always reads the latest values,
+  // avoiding the stale-closure bug where useFrontendTool only captures
+  // the render function once (on mount) and the provisional agent gets frozen in.
+  const agentRef = useRef(agent);
+  agentRef.current = agent;
+
+  const copilotKitRef = useRef(copilotkit);
+  copilotKitRef.current = copilotkit;
+
+  const onSelectVehicleRef = useRef(onSelectVehicle);
+  onSelectVehicleRef.current = onSelectVehicle;
+
+  const handleSelectVehicle = useCallback(async (vehicleType: VehicleType) => {
+    const currentAgent = agentRef.current;
+    const currentCopilotKit = copilotKitRef.current;
+    const displayName = VEHICLE_NAMES[vehicleType] ?? vehicleType;
+    currentAgent.addMessage({
+      id: `msg-select-vehicle-${Date.now()}`,
+      role: 'user',
+      content: `Let's go with ${displayName}.`,
+    });
+    onSelectVehicleRef.current?.(vehicleType);
+    await currentCopilotKit.runAgent({ agent: currentAgent });
+  }, []); // Empty deps — stable forever, always reads latest via refs
 
   useFrontendTool({
     name: COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.name,
@@ -57,13 +68,18 @@ export function RideEstimateFrontendTool({
       return { displayed: true };
     },
     render: ({ args }) => {
+      // args stream in progressively as the LLM generates JSON.
+      // Guard: only render once options has actually arrived —
+      // otherwise an empty [] would flash the "Unable to estimate" error state.
+      if (!args.options || args.options.length === 0) return null;
+
       return (
         <RideEstimateCard
           pickup={args.pickup || ''}
           destination={args.destination || ''}
           distance={args.distance || 0}
           duration={args.duration || 0}
-          options={args.options || []}
+          options={args.options}
           onSelectVehicle={handleSelectVehicle}
         />
       );

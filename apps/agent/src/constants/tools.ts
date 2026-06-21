@@ -1,3 +1,5 @@
+import { UiTerminalToolConfig } from '@/types';
+
 export const AGENT_TOOLS = {
   ESTIMATE_RIDE: {
     name: 'estimateRide',
@@ -48,12 +50,8 @@ export const AGENT_TOOLS = {
   },
 } as const;
 
-/**
- * Frontend tools that require user interaction before the agent should resume.
- * The supervisor router will NOT end the turn when receiving a ToolMessage
- * from these tools — instead, the frontend will trigger `runAgent` after
- * the user completes the interaction.
- */
-export const INTERACTIVE_FRONTEND_TOOLS = new Set<string>([
-  AGENT_TOOLS.RENDER_RIDE_ESTIMATE.name,
-]);
+// Registry of backend tools that render a self-contained UI card and require
+export const UI_TERMINAL_TOOLS: Record<string, UiTerminalToolConfig> = {
+  [AGENT_TOOLS.LOOKUP_TRIPS.name]: { endOn: 'always' },
+  [AGENT_TOOLS.MATCH_DRIVER.name]: { endOn: 'success' },
+};

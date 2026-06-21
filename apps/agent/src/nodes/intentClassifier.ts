@@ -10,33 +10,33 @@ import { RideBookingState } from '@/state';
 import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '@/prompts/index';
 import { LLM_CONFIG } from '@/constants';
 
+const intentSchema = z.object({
+  category: z.enum(['estimate', 'request', 'cancel', 'view_trips', 'faq', 'unknown']),
+  confidence: z.number(),
+});
+
 export async function intentClassifierNode(state: RideBookingState) {
   const model = new ChatOpenAI({
     model: LLM_CONFIG.DEFAULT_MODEL,
-    temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
+    temperature: 0,
+    // Disable streaming: this is an internal utility call (classification only),
+    // not a conversational response. Streaming here causes CopilotKit to forward
+    // the raw JSON tokens ({"category":"request","confidence":0.95}) to the UI.
+    streaming: false,
+    // Force JSON mode: response_format must be passed via modelKwargs in
+    // @langchain/openai v1.x (it is not a direct ChatOpenAIFields property).
+    modelKwargs: {
+      response_format: { type: 'json_object' },
+    },
   });
-
-  const schema = z.object({
-    category: z.enum([
-      'estimate',
-      'request',
-      'cancel',
-      'view_trips',
-      'faq',
-      'unknown',
-    ]),
-    confidence: z.number(),
-  });
-
-  const modelWithStructuredOutput = model.withStructuredOutput(schema);
 
   const systemMessage = new SystemMessage({
-    content: INTENT_CLASSIFIER_SYSTEM_PROMPT,
+    content:
+      INTENT_CLASSIFIER_SYSTEM_PROMPT +
+      '\n\nYou MUST respond with a valid JSON object with exactly two fields: "category" and "confidence".',
   });
 
   // Extract only the last user message for classification.
-  // Using the full conversation history (which includes tool calls, tool results,
-  // and AI responses) confuses the classifier on subsequent requests.
   const messages = state.messages || [];
   const lastUserMessage = [...messages]
     .reverse()
@@ -52,13 +52,22 @@ export async function intentClassifierNode(state: RideBookingState) {
     : messages.slice(-1);
 
   try {
-    const response = await modelWithStructuredOutput.invoke([
-      systemMessage,
-      ...classificationMessages,
-    ]);
+    // Use .invoke() directly — this returns an AIMessage but we only read
+    // its content and NEVER return it in the node output, so LangGraph's
+    // messages reducer never appends it to state.messages.
+    const response = await model.invoke([systemMessage, ...classificationMessages]);
+
+    const raw =
+      typeof response.content === 'string'
+        ? response.content
+        : JSON.stringify(response.content);
+
+    const parsed = intentSchema.parse(JSON.parse(raw));
 
     return {
-      intent: response,
+      intent: parsed,
+      // Explicitly NOT returning `messages` — this keeps the AIMessage
+      // out of the conversation history and off the CopilotKit stream.
     };
   } catch (error) {
     console.error('Failed to classify intent:', error);

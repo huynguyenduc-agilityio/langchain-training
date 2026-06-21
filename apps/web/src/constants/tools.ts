@@ -32,12 +32,13 @@ export const COPILOT_TOOLS = {
   },
 } as const;
 
-// Tools that render a visible UI card in the chat — used to distinguish from data-only tools
+// Tools that render a visible UI card in the chat via CopilotKit tool rendering
+// (useFrontendTool / useRenderTool). Interrupt-based tools (confirmRide, confirmCancel)
+// are excluded — their cards are rendered by useInterrupt and should NOT show the
+// default CopilotKit tool chip.
 export const DISPLAY_TOOL_NAMES = new Set<string>([
   COPILOT_TOOLS.RENDER_RIDE_ESTIMATE.name,
-  COPILOT_TOOLS.CONFIRM_RIDE.name,
   COPILOT_TOOLS.MATCH_DRIVER.name,
-  COPILOT_TOOLS.CONFIRM_CANCEL.name,
   COPILOT_TOOLS.RENDER_CANCEL_SUCCESS.name,
   COPILOT_TOOLS.RENDER_CANCEL_ERROR.name,
   COPILOT_TOOLS.LOOKUP_TRIPS.name,

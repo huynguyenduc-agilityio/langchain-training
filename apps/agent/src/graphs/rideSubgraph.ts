@@ -7,6 +7,7 @@ import {
   processToolResults,
   rideConfirmNode,
   routeRideAgent,
+  routeAfterToolResults,
 } from '@/nodes/index';
 import {
   estimateRideTool,
@@ -30,7 +31,10 @@ const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     __end__: '__end__',
   })
   .addEdge('tool_node', 'process_results')
-  .addEdge('process_results', 'agent')
+  .addConditionalEdges('process_results', routeAfterToolResults, {
+    agent: 'agent',
+    __end__: '__end__',
+  })
   .addEdge('ride_confirm', 'agent');
 
 export const rideSubgraph = rideSubgraphWorkflow.compile();
