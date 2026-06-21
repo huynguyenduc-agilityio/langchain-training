@@ -12,3 +12,5 @@ export const COPILOT_SUGGESTIONS = [
     message: 'I want to cancel a trip',
   },
 ];
+
+export const THREAD_ID_KEY = 'cityride_chat_thread_id';

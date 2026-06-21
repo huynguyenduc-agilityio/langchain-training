@@ -28,7 +28,7 @@ export function CopilotKitTools({ trips, setTrips }: CopilotKitToolsProps) {
       {/* Frontend Tools */}
       <RideEstimateFrontendTool />
       <InterruptFrontendTool trips={trips} setTrips={setTrips} />
-      <DriverMatchRenderTool />
+      <DriverMatchRenderTool setTrips={setTrips} />
       <CancelSuccessFrontendTool />
       <CancelErrorFrontendTool />
       <TripsListRenderTool />

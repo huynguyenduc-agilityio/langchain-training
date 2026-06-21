@@ -2,13 +2,14 @@
 
 import { useRenderTool } from '@copilotkit/react-core/v2';
 import { Loader2 } from 'lucide-react';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { z } from 'zod';
 
 import { DriverMatchCard } from '@/components/DriverMatchCard';
 import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { COPILOT_TOOLS } from '@/constants';
+import type { Driver, Trip } from '@/types';
 
 function SearchingDriverCard() {
   return (
@@ -45,7 +46,24 @@ function SearchingDriverCard() {
   );
 }
 
-export function DriverMatchRenderTool() {
+type DriverMatchRenderToolProps = {
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+};
+
+export function DriverMatchRenderTool({ setTrips }: DriverMatchRenderToolProps) {
+  const handleDriverMatched = useCallback(
+    (tripId: string, driver: Driver) => {
+      setTrips((prev) =>
+        prev.map((t) =>
+          t.id === tripId
+            ? { ...t, status: 'matched' as const, driver }
+            : t,
+        ),
+      );
+    },
+    [setTrips],
+  );
+
   useRenderTool({
     name: COPILOT_TOOLS.MATCH_DRIVER.name,
     parameters: z.object({
@@ -70,6 +88,7 @@ export function DriverMatchRenderTool() {
                 tripId={parsed.tripId}
                 driver={parsed.driver}
                 etaMinutes={parsed.etaMinutes}
+                onMount={() => handleDriverMatched(parsed.tripId, parsed.driver)}
               />
             );
           } else {
