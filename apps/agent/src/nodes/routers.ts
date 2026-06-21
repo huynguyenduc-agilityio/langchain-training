@@ -1,8 +1,9 @@
 import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
+
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
-import { AGENT_TOOLS } from '@/constants';
+import { AGENT_TOOLS, UI_TERMINAL_TOOLS } from '@/constants';
 
 /**
  * Router function for input validation.
@@ -71,12 +72,17 @@ export function supervisorRouter(state: RideBookingState) {
     // If the last message is a ToolMessage corresponding to a frontend action
     // (which means it's a synthetic response to a frontend tool call), treat as end.
     if (isTool) {
-      const toolName = (lastMessage as ToolMessage).name;
+      const toolMsg = lastMessage as ToolMessage;
+      const toolName = toolMsg.name;
       const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
       const frontendActionNames = new Set(actions.map((a) => a.name));
       if (toolName && frontendActionNames.has(toolName)) {
         return '__end__';
       }
+
+      // UI-terminal tools render a self-contained card on the frontend.
+      // Behavior (always vs success-only) is defined in the UI_TERMINAL_TOOLS registry.
+      if (shouldEndAfterTool(toolMsg)) return '__end__';
     }
   }
 
@@ -115,26 +121,6 @@ export function routeAfterChat(state: RideBookingState) {
   }
 
   return '__end__';
-}
-
-/**
- * Routing logic after process_results in Info Agent subgraph.
- * If the tool that just ran renders a UI card (e.g. lookupTrips), route to __end__
- * to prevent the LLM from being re-invoked and generating a redundant follow-up message.
- * The UI card is the complete response — no LLM text is needed.
- */
-export function routeAfterInfoToolResults(state: RideBookingState) {
-  const messages = state.messages || [];
-  const lastMessage = messages[messages.length - 1];
-
-  if (lastMessage?._getType?.() === 'tool') {
-    const toolName = (lastMessage as ToolMessage).name;
-    if (toolName === AGENT_TOOLS.LOOKUP_TRIPS.name) {
-      return '__end__';
-    }
-  }
-
-  return 'agent';
 }
 
 /**
@@ -185,4 +171,45 @@ export function routeManagementAgent(state: RideBookingState) {
   }
 
   return '__end__';
+}
+
+/**
+ * Checks whether routing should end immediately after a UI-terminal tool runs.
+ * Behavior is driven by the UI_TERMINAL_TOOLS registry (constants/tools.ts):
+ * - 'always'  → end regardless of tool result
+ * - 'success' → end only when tool result contains { success: true }
+ */
+function shouldEndAfterTool(message: ToolMessage): boolean {
+  const config = UI_TERMINAL_TOOLS[message.name ?? ''];
+  if (!config) return false;
+
+  if (config.endOn === 'always') return true;
+
+  try {
+    const content =
+      typeof message.content === 'string'
+        ? JSON.parse(message.content)
+        : message.content;
+    return content?.success === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Generic router for after tool_node → process_results.
+ * Routes to '__end__' if the last tool was a UI-terminal tool that should end,
+ * otherwise routes back to 'agent' for LLM to continue the flow.
+ *
+ * Reusable across ride, management, and info subgraphs.
+ */
+export function routeAfterToolResults(state: RideBookingState): 'agent' | '__end__' {
+  const messages = state.messages || [];
+  const lastMessage = messages[messages.length - 1];
+
+  if (lastMessage?._getType?.() === 'tool') {
+    if (shouldEndAfterTool(lastMessage as ToolMessage)) return '__end__';
+  }
+
+  return 'agent';
 }

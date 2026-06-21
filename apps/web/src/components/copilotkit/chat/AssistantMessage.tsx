@@ -24,11 +24,14 @@ export function AssistantMessage({
   isRunning = false,
   className,
 }: CopilotChatAssistantMessageProps) {
-  const hasContent = Boolean(message.content?.trim());
+  const rawContent = message.content?.trim() ?? '';
+
   const hasToolCalls = Boolean(message.toolCalls?.length);
   const hasDisplayToolCalls = Boolean(
     message.toolCalls?.some((tc) => DISPLAY_TOOL_NAMES.has(tc.function.name)),
   );
+
+  const hasContent = Boolean(rawContent);
 
   // If any message in the list is currently rendering a display tool card (e.g. skeleton),
   // suppress the typing bubble — the card already serves as the loading indicator.
