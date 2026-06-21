@@ -11,7 +11,7 @@ type ChatSuggestionsProps = {
 
 export function ChatSuggestions({ onSelect, disabled }: ChatSuggestionsProps) {
   return (
-    <div className="flex flex-wrap gap-1.5 mb-2 px-1 justify-start">
+    <div className="flex flex-wrap gap-1.5 px-1 justify-start">
       {COPILOT_SUGGESTIONS.map((suggestion) => (
         <button
           key={suggestion.title}
