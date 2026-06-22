@@ -1,6 +1,10 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { convertActionsToDynamicStructuredTools } from '@copilotkit/sdk-js/langgraph';
-import { SystemMessage, AIMessage } from '@langchain/core/messages';
+import {
+  SystemMessage,
+  AIMessage,
+  ToolMessage,
+} from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 import { StructuredTool } from '@langchain/core/tools';
 
@@ -12,11 +16,13 @@ import {
   matchDriverTool,
   dummyRideConfirmTool,
 } from '@/tools/index';
-import { LLM_CONFIG } from '@/constants';
+import { LLM_CONFIG, AGENT_TOOLS } from '@/constants';
 import {
   sanitizeMessages,
   getFrontendActionNames,
 } from '@/utils/sanitizeMessages';
+import { getUserFromState } from '@/utils';
+import { getUserPhoneFromDb } from '@/db/operations';
 
 export async function rideAgentNode(
   state: RideBookingState,
@@ -27,11 +33,54 @@ export async function rideAgentNode(
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
-  const backendTools: StructuredTool[] = [
-    estimateRideTool,
-    requestRideTool,
-    matchDriverTool,
-  ];
+  // Verify if the current tripDraft has been explicitly approved in the message history
+  let tripApproved = false;
+  if (state.tripDraft) {
+    let lastRequestRideIndex = -1;
+    let lastConfirmRideApprovedIndex = -1;
+    const messages = state.messages || [];
+
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      const msgType =
+        msg._getType?.() || msg.type || msg.constructor?.name?.toLowerCase();
+
+      if (msgType === 'tool') {
+        const toolMsg = msg as ToolMessage;
+        if (toolMsg.name === AGENT_TOOLS.REQUEST_RIDE.name) {
+          if (lastRequestRideIndex === -1) {
+            lastRequestRideIndex = i;
+          }
+        }
+        if (toolMsg.name === AGENT_TOOLS.CONFIRM_RIDE.name) {
+          try {
+            const content =
+              typeof toolMsg.content === 'string'
+                ? JSON.parse(toolMsg.content)
+                : toolMsg.content;
+            if (content?.approved === true) {
+              if (lastConfirmRideApprovedIndex === -1) {
+                lastConfirmRideApprovedIndex = i;
+              }
+            }
+          } catch {
+            // Ignore
+          }
+        }
+      }
+    }
+
+    if (lastRequestRideIndex !== -1) {
+      tripApproved = lastConfirmRideApprovedIndex > lastRequestRideIndex;
+    }
+  }
+
+  const backendTools: StructuredTool[] = [estimateRideTool, requestRideTool];
+
+  if (tripApproved) {
+    backendTools.push(matchDriverTool);
+  }
+
   if (
     state.tripDraft &&
     state.tripDraft.passengerName &&
@@ -46,8 +95,14 @@ export async function rideAgentNode(
 
   const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
 
+  const { userId } = getUserFromState(state);
+  let userPhone: string | undefined = undefined;
+  if (userId) {
+    userPhone = await getUserPhoneFromDb(userId);
+  }
+
   const systemMessage = new SystemMessage({
-    content: RIDE_AGENT_SYSTEM_PROMPT(state),
+    content: RIDE_AGENT_SYSTEM_PROMPT(state, userPhone),
   });
 
   const sanitizedMessages = sanitizeMessages(

@@ -208,15 +208,22 @@ export async function addTripToDb(
   try {
     const targetUserId = trip.userId;
 
-    // Upsert the user first with real auth profile to avoid foreign key violations
+    // Upsert the user profile with the latest phone and name details
     await db
       .insert(users)
       .values({
         id: targetUserId,
-        name: userName || null,
+        name: userName || trip.passengerName || null,
         email: userEmail || null,
+        phone: trip.passengerPhone || null,
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          phone: trip.passengerPhone || null,
+          name: userName || trip.passengerName || null,
+        },
+      });
 
     await db.insert(trips).values({
       id: trip.id,
@@ -294,4 +301,26 @@ export async function updateTripInDb(
     console.error('[DB] Error updating trip:', error);
     return undefined;
   }
+}
+
+/**
+ * Retrieve user's phone number from the database by userId.
+ */
+export async function getUserPhoneFromDb(
+  userId: string,
+): Promise<string | undefined> {
+  try {
+    const userResult = await db
+      .select({ phone: users.phone })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (userResult.length > 0 && userResult[0].phone) {
+      return userResult[0].phone;
+    }
+  } catch (error) {
+    console.error('[DB] Error getting user phone:', error);
+  }
+  return undefined;
 }

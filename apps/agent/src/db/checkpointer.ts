@@ -12,7 +12,7 @@ export async function getCheckpointer(): Promise<PostgresSaver> {
   if (!connString) {
     throw new Error(
       'DATABASE_DIRECT_URL is not set. Add it to .env — it must point to the ' +
-      'direct PostgreSQL connection (port 5432), not the PgBouncer pooler.',
+        'direct PostgreSQL connection (port 5432), not the PgBouncer pooler.',
     );
   }
 

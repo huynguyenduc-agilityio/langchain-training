@@ -2,7 +2,11 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 import { updateTripInDb } from '@/db/operations';
-import { CANCELLATION_FEE_CONFIG, VEHICLE_TYPES, AGENT_TOOLS } from '@/constants';
+import {
+  CANCELLATION_FEE_CONFIG,
+  VEHICLE_TYPES,
+  AGENT_TOOLS,
+} from '@/constants';
 
 export const cancelTripTool = tool(
   async ({ tripId, driverMatched, vehicleType }) => {

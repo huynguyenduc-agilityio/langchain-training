@@ -45,7 +45,8 @@ export function AssistantMessage({
         ),
     ),
   );
-  const showTyping = isRunning && !hasContent && !hasToolCalls && !anyDisplayToolRunning;
+  const showTyping =
+    isRunning && !hasContent && !hasToolCalls && !anyDisplayToolRunning;
   const showTextBubble = hasContent || showTyping;
 
   if (!showTextBubble && !hasDisplayToolCalls) return null;

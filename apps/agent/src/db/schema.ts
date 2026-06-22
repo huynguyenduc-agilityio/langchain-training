@@ -35,6 +35,7 @@ export const users = pgTable('users', {
   id: text('id').primaryKey(),
   email: text('email'),
   name: text('name'),
+  phone: text('phone'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
