@@ -7,10 +7,10 @@ import {
   useFrontendTool,
 } from '@copilotkit/react-core/v2';
 import React, { useCallback, useRef } from 'react';
-
 import { z } from 'zod';
+
 import { RideEstimateCard } from '@/components/RideEstimateCard';
-import { COPILOT_TOOLS, VEHICLE_NAMES } from '@/constants';
+import { COPILOT_TOOLS, VEHICLE_NAMES, COPILOTKIT_AGENT_ID } from '@/constants';
 
 type RideEstimateFrontendToolProps = {
   onSelectVehicle?: (vehicleType: VehicleType) => void;
@@ -19,7 +19,7 @@ type RideEstimateFrontendToolProps = {
 export function RideEstimateFrontendTool({
   onSelectVehicle,
 }: RideEstimateFrontendToolProps) {
-  const { agent } = useAgent({ agentId: 'default' });
+  const { agent } = useAgent({ agentId: COPILOTKIT_AGENT_ID });
   const { copilotkit } = useCopilotKit();
 
   // Use refs so the stable callback always reads the latest values,
@@ -67,7 +67,7 @@ export function RideEstimateFrontendTool({
     handler: async () => {
       return { displayed: true };
     },
-    render: ({ args }) => {
+    render: ({ args, toolCallId }) => {
       // args stream in progressively as the LLM generates JSON.
       // Guard: only render once options has actually arrived —
       // otherwise an empty [] would flash the "Unable to estimate" error state.
@@ -75,6 +75,7 @@ export function RideEstimateFrontendTool({
 
       return (
         <RideEstimateCard
+          toolCallId={toolCallId}
           pickup={args.pickup || ''}
           destination={args.destination || ''}
           distance={args.distance || 0}

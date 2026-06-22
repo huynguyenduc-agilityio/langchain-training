@@ -14,6 +14,7 @@ export type RideConfirmCardProps = {
 };
 
 export type RideEstimateCardProps = {
+  toolCallId?: string;
   pickup: string;
   destination: string;
   distance: number;
