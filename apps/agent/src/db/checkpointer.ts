@@ -2,10 +2,7 @@ import { PostgresSaver } from '@langchain/langgraph-checkpoint-postgres';
 
 let _checkpointer: PostgresSaver | null = null;
 
-/**
- * Returns a singleton PostgresSaver instance backed by the direct Supabase connection.
- */
-export async function getCheckpointer(): Promise<PostgresSaver> {
+export function getCheckpointer(): PostgresSaver {
   if (_checkpointer) return _checkpointer;
 
   const connString = process.env.DATABASE_DIRECT_URL;
@@ -18,8 +15,10 @@ export async function getCheckpointer(): Promise<PostgresSaver> {
 
   const checkpointer = PostgresSaver.fromConnString(connString);
 
-  // Create checkpoint tables if not yet present (idempotent).
-  await checkpointer.setup();
+  // Create checkpoint tables if not yet present (idempotent) in the background.
+  checkpointer.setup().catch((err) => {
+    console.error('Failed to setup postgres checkpointer:', err);
+  });
 
   _checkpointer = checkpointer;
   return _checkpointer;

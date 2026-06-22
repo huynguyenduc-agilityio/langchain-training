@@ -1,3 +1,4 @@
+```mermaid
 ---
 config:
   look: classic
@@ -113,3 +114,4 @@ graph LR
     linkStyle 22 stroke:#00C853
     linkStyle 24 stroke:#00C853
     linkStyle 25 stroke:#00C853
+```
