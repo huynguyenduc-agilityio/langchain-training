@@ -5,9 +5,11 @@ import {
   createCopilotRuntimeHandler,
 } from '@copilotkit/runtime/v2';
 
+import { COPILOTKIT_AGENT_ID } from '@/constants';
+
 const runtime = new CopilotRuntime({
   agents: {
-    default: new LangGraphAgent({
+    [COPILOTKIT_AGENT_ID]: new LangGraphAgent({
       deploymentUrl:
         process.env.LANGGRAPH_DEPLOYMENT_URL || 'http://localhost:8123',
       graphId: 'agent',

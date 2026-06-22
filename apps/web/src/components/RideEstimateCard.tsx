@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { RideEstimateCardProps, VehicleType } from '@/types';
 import { ArrowRight, Check, Clock, MapPin, Navigation } from 'lucide-react';
 
@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { VEHICLE_EMOJIS, VEHICLE_NAMES } from '@/constants';
 import { cn, formatPrice } from '@/utils';
+import { useRideEstimateStore } from '@/store/useRideEstimateStore';
 
 export function RideEstimateCard({
+  toolCallId,
   pickup,
   destination,
   distance,
@@ -17,11 +19,23 @@ export function RideEstimateCard({
   options,
   onSelectVehicle,
 }: RideEstimateCardProps) {
+  const cardKey = toolCallId || `${pickup}-${destination}-${distance}-${duration}`;
+  const selection = useRideEstimateStore((state) => state.selections[cardKey]);
+  const setSelection = useRideEstimateStore((state) => state.setSelection);
+
   const [selectedType, setSelectedType] = useState<VehicleType | null>(null);
+
+  // Sync selection from Zustand store after mounting to prevent hydration mismatches
+  useEffect(() => {
+    if (selection) {
+      setSelectedType(selection);
+    }
+  }, [selection]);
 
   const handleSelect = (vehicleType: VehicleType) => {
     if (selectedType) return; // Ignore if already selected
     setSelectedType(vehicleType);
+    setSelection(cardKey, vehicleType);
     onSelectVehicle?.(vehicleType);
   };
 

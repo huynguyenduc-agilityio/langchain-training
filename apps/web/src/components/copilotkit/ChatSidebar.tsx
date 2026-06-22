@@ -20,7 +20,7 @@ import {
   createAndPersistThreadId,
   getPersistedThreadId,
 } from '@/utils';
-import { DISPLAY_TOOL_NAMES } from '@/constants';
+import { DISPLAY_TOOL_NAMES, COPILOTKIT_AGENT_ID } from '@/constants';
 
 import { AssistantMessage } from './chat/AssistantMessage';
 import { UserMessage } from './chat/UserMessage';
@@ -30,7 +30,7 @@ import { ChatInput } from './chat/ChatInput';
 import { WelcomeMessage } from './chat/WelcomeMessage';
 
 export function ChatSidebar() {
-  const { agent } = useAgent({ agentId: 'default' });
+  const { agent } = useAgent({ agentId: COPILOTKIT_AGENT_ID });
   const { copilotkit } = useCopilotKit();
   const [messageListEl, setMessageListEl] = useState<Element | null>(null);
   const [threadId, setThreadId] = useState<string>(getPersistedThreadId);

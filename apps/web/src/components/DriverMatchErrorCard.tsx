@@ -7,12 +7,13 @@ import { AlertTriangle, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { COPILOTKIT_AGENT_ID } from '@/constants';
 
 export function DriverMatchErrorCard({
   tripId,
   reason,
 }: DriverMatchErrorCardProps) {
-  const { agent } = useAgent({ agentId: 'default' });
+  const { agent } = useAgent({ agentId: COPILOTKIT_AGENT_ID });
   const { copilotkit } = useCopilotKit();
   const [actionSelected, setActionSelected] = useState<
     'retry' | 'cancel' | null
