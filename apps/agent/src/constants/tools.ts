@@ -1,4 +1,4 @@
-import { UiTerminalToolConfig } from '@/types';
+import { UiTerminalToolConfig } from '../types';
 
 export const AGENT_TOOLS = {
   ESTIMATE_RIDE: {
