@@ -16,9 +16,8 @@ import { getCheckpointer } from '@/db/checkpointer';
 
 /**
  * Build the City Ride Booking chatbot graph.
- * Async because PostgresSaver.setup() must be awaited on first call.
  */
-export async function buildGraph() {
+export function buildGraph() {
   // Build Parent Graph Workflow
   const workflow = new StateGraph(RideBookingStateAnnotation)
     .addNode('input_validation', inputValidationNode)
@@ -55,7 +54,7 @@ export async function buildGraph() {
     .addEdge('info_agent', 'supervisor')
     .addEdge('error_response', '__end__');
 
-  const checkpointer = await getCheckpointer();
+  const checkpointer = getCheckpointer();
 
   return workflow.compile({ checkpointer });
 }
