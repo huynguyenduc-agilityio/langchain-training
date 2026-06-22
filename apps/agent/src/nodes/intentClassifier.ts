@@ -11,7 +11,14 @@ import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '@/prompts/index';
 import { LLM_CONFIG } from '@/constants';
 
 const intentSchema = z.object({
-  category: z.enum(['estimate', 'request', 'cancel', 'view_trips', 'faq', 'unknown']),
+  category: z.enum([
+    'estimate',
+    'request',
+    'cancel',
+    'view_trips',
+    'faq',
+    'unknown',
+  ]),
   confidence: z.number(),
 });
 
@@ -55,7 +62,10 @@ export async function intentClassifierNode(state: RideBookingState) {
     // Use .invoke() directly — this returns an AIMessage but we only read
     // its content and NEVER return it in the node output, so LangGraph's
     // messages reducer never appends it to state.messages.
-    const response = await model.invoke([systemMessage, ...classificationMessages]);
+    const response = await model.invoke([
+      systemMessage,
+      ...classificationMessages,
+    ]);
 
     const raw =
       typeof response.content === 'string'

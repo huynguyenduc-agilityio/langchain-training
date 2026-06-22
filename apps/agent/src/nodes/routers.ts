@@ -1,6 +1,5 @@
 import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
-
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
 import { AGENT_TOOLS, UI_TERMINAL_TOOLS } from '@/constants';
@@ -203,7 +202,9 @@ function shouldEndAfterTool(message: ToolMessage): boolean {
  *
  * Reusable across ride, management, and info subgraphs.
  */
-export function routeAfterToolResults(state: RideBookingState): 'agent' | '__end__' {
+export function routeAfterToolResults(
+  state: RideBookingState,
+): 'agent' | '__end__' {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
 
