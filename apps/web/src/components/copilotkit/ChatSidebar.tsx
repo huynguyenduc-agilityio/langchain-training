@@ -15,12 +15,9 @@ import {
   useCopilotKit,
 } from '@copilotkit/react-core/v2';
 
-import {
-  checkHasVisibleMessages,
-  createAndPersistThreadId,
-  getPersistedThreadId,
-} from '@/utils';
-import { DISPLAY_TOOL_NAMES, COPILOTKIT_AGENT_ID } from '@/constants';
+import { checkHasVisibleMessages, createAndPersistThreadId } from '@/utils';
+import { COPILOTKIT_AGENT_ID, DISPLAY_TOOL_NAMES } from '@/constants';
+import { useAgentStore } from '@/store/useAgentStore';
 
 import { AssistantMessage } from './chat/AssistantMessage';
 import { UserMessage } from './chat/UserMessage';
@@ -33,7 +30,7 @@ export function ChatSidebar() {
   const { agent } = useAgent({ agentId: COPILOTKIT_AGENT_ID });
   const { copilotkit } = useCopilotKit();
   const [messageListEl, setMessageListEl] = useState<Element | null>(null);
-  const [threadId, setThreadId] = useState<string>(getPersistedThreadId);
+  const { threadId, setThreadId } = useAgentStore();
   const hasMessages = (agent?.messages?.length ?? 0) > 0;
   const hasVisibleMessages = checkHasVisibleMessages(
     agent?.messages as Array<{ role: string; content?: string }> | undefined,
@@ -41,14 +38,13 @@ export function ChatSidebar() {
 
   // Hide the global typing cursor when a display tool card (e.g. skeleton) is already
   // rendering — the card serves as the visual loading state, making the "..." redundant.
+  const lastMessage = agent?.messages?.[agent?.messages?.length - 1];
   const hasDisplayToolRunning = Boolean(
-    agent?.messages?.some(
-      (m) =>
-        m.role === 'assistant' &&
-        'toolCalls' in m &&
-        (m.toolCalls as Array<{ function: { name: string } }>)?.some((tc) =>
-          DISPLAY_TOOL_NAMES.has(tc.function.name),
-        ),
+    lastMessage &&
+    lastMessage.role === 'assistant' &&
+    'toolCalls' in lastMessage &&
+    (lastMessage.toolCalls as Array<{ function: { name: string } }>)?.some(
+      (tc) => DISPLAY_TOOL_NAMES.has(tc.function.name),
     ),
   );
 
@@ -83,7 +79,7 @@ export function ChatSidebar() {
     await handleStop();
     // Generate a fresh thread and persist it — old thread stays in DB but is no longer used.
     setThreadId(createAndPersistThreadId());
-  }, [handleStop]);
+  }, [handleStop, setThreadId]);
 
   const Header = useCallback(
     (headerProps: ComponentProps<typeof CopilotModalHeader>) => (

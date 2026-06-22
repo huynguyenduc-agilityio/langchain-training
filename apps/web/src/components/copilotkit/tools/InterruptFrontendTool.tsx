@@ -3,10 +3,11 @@
 import type { Trip } from '@/types';
 import { useInterrupt } from '@copilotkit/react-core/v2';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { CancelTripCard } from '@/components/CancelTripCard';
 import { RideConfirmCard } from '@/components/RideConfirmCard';
 import { useAuth } from '@/features/auth/auth-context';
+import { useAgentStore } from '@/store/useAgentStore';
 import { generateTripId } from '@/utils';
 import { AssistantAvatar } from '../chat/AssistantAvatar';
 
@@ -20,10 +21,44 @@ export function InterruptFrontendTool({
   setTrips,
 }: InterruptFrontendToolProps) {
   const { user } = useAuth();
+  const { threadId } = useAgentStore();
+
+  const interruptCreatedAtThreadIdRef = useRef<string | null>(null);
+  const prevEventSigRef = useRef<string | null>(null);
+  const activeResolveRef = useRef<((value: unknown) => void) | null>(null);
+
+  useEffect(() => {
+    if (activeResolveRef.current) {
+      activeResolveRef.current({ approved: false, cancelled: true });
+      activeResolveRef.current = null;
+    }
+    // Reset event signature tracking and creation thread ID tracking on thread reset
+    prevEventSigRef.current = null;
+    interruptCreatedAtThreadIdRef.current = null;
+  }, [threadId]);
 
   useInterrupt({
     render: ({ event, resolve }) => {
-      console.warn('useInterrupt triggered! event:', JSON.stringify(event));
+      const wrappedResolve = (value: unknown) => {
+        activeResolveRef.current = null;
+        resolve(value);
+      };
+
+      activeResolveRef.current = wrappedResolve;
+
+      const currentEventSig =
+        typeof event?.value === 'string'
+          ? event.value
+          : JSON.stringify(event?.value || '');
+
+      if (prevEventSigRef.current !== currentEventSig) {
+        prevEventSigRef.current = currentEventSig;
+        interruptCreatedAtThreadIdRef.current = threadId;
+      }
+
+      if (!threadId || interruptCreatedAtThreadIdRef.current !== threadId) {
+        return <></>;
+      }
 
       let parsedValue = event.value;
       if (typeof parsedValue === 'string') {
@@ -78,10 +113,10 @@ export function InterruptFrontendTool({
               setTrips((prev) => [newTrip, ...prev]);
 
               // Resolve interrupt
-              resolve({ approved: true, tripId: newTripId });
+              wrappedResolve({ approved: true, tripId: newTripId });
             }}
             onCancel={() => {
-              resolve({ approved: false });
+              wrappedResolve({ approved: false });
             }}
           />,
         );
@@ -117,10 +152,10 @@ export function InterruptFrontendTool({
               );
 
               // Resolve interrupt back to agent
-              resolve({ approved: true });
+              wrappedResolve({ approved: true });
             }}
             onReject={() => {
-              resolve({ approved: false });
+              wrappedResolve({ approved: false });
             }}
           />,
         );
