@@ -15,7 +15,11 @@ import {
   useCopilotKit,
 } from '@copilotkit/react-core/v2';
 
-import { getPersistedThreadId, createAndPersistThreadId, checkHasVisibleMessages } from '@/utils';
+import {
+  checkHasVisibleMessages,
+  createAndPersistThreadId,
+  getPersistedThreadId,
+} from '@/utils';
 import { DISPLAY_TOOL_NAMES } from '@/constants';
 
 import { AssistantMessage } from './chat/AssistantMessage';
@@ -31,7 +35,9 @@ export function ChatSidebar() {
   const [messageListEl, setMessageListEl] = useState<Element | null>(null);
   const [threadId, setThreadId] = useState<string>(getPersistedThreadId);
   const hasMessages = (agent?.messages?.length ?? 0) > 0;
-  const hasVisibleMessages = checkHasVisibleMessages(agent?.messages as Array<{ role: string; content?: string }> | undefined);
+  const hasVisibleMessages = checkHasVisibleMessages(
+    agent?.messages as Array<{ role: string; content?: string }> | undefined,
+  );
 
   // Hide the global typing cursor when a display tool card (e.g. skeleton) is already
   // rendering — the card serves as the visual loading state, making the "..." redundant.

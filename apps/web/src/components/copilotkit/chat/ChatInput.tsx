@@ -92,25 +92,29 @@ export const ChatInput = ({
 
   const cleanClassName = className
     ? className
-      .split(' ')
-      .filter(
-        (c) =>
-          !c.includes('bg-background') &&
-          !c.includes('border-t') &&
-          !c.includes('border-border') &&
-          !c.includes('px-') &&
-          !c.includes('pb-') &&
-          !c.includes('pt-') &&
-          !c.includes('mx-') &&
-          !c.includes('my-') &&
-          !c.includes('mb-') &&
-          !c.includes('mt-') &&
-          !c.includes('ml-') &&
-          !c.includes('mr-') &&
-          !c.includes('m-') &&
-          !c.includes('w-'),
-      )
-      .join(' ')
+        .split(' ')
+        .filter(
+          (c) =>
+            !c.includes('bg-background') &&
+            !c.includes('border-t') &&
+            !c.includes('border-border') &&
+            !c.includes('p-') &&
+            !c.includes('px-') &&
+            !c.includes('py-') &&
+            !c.includes('pt-') &&
+            !c.includes('pb-') &&
+            !c.includes('pl-') &&
+            !c.includes('pr-') &&
+            !c.includes('mx-') &&
+            !c.includes('my-') &&
+            !c.includes('mb-') &&
+            !c.includes('mt-') &&
+            !c.includes('ml-') &&
+            !c.includes('mr-') &&
+            !c.includes('m-') &&
+            !c.includes('w-'),
+        )
+        .join(' ')
     : '';
 
   return (
