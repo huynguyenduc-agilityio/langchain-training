@@ -208,7 +208,12 @@ export function routeAfterToolResults(
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
 
-  if (lastMessage?._getType?.() === 'tool') {
+  const msgType =
+    lastMessage?._getType?.() ||
+    lastMessage?.type ||
+    lastMessage?.constructor?.name?.toLowerCase();
+
+  if (msgType === 'tool') {
     if (shouldEndAfterTool(lastMessage as ToolMessage)) return '__end__';
   }
 
