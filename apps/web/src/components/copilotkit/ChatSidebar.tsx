@@ -15,7 +15,7 @@ import {
   useCopilotKit,
 } from '@copilotkit/react-core/v2';
 
-import { checkHasVisibleMessages, createAndPersistThreadId } from '@/utils';
+import { checkHasVisibleMessages, generateUUID } from '@/utils';
 import { COPILOTKIT_AGENT_ID, DISPLAY_TOOL_NAMES } from '@/constants';
 import { useAgentStore } from '@/store/useAgentStore';
 
@@ -49,14 +49,17 @@ export function ChatSidebar() {
   );
 
   useEffect(() => {
+    if (!threadId) return;
+
     const find = () => {
       const el = document.querySelector('[data-testid="copilot-message-list"]');
       setMessageListEl(el ?? null);
     };
+
     // Small delay to ensure CopilotSidebar has mounted its DOM
     const t = setTimeout(find, 100);
     return () => clearTimeout(t);
-  }, []);
+  }, [threadId]);
 
   const agentRef = useRef(agent);
   useEffect(() => {
@@ -78,7 +81,7 @@ export function ChatSidebar() {
   const handleReset = useCallback(async () => {
     await handleStop();
     // Generate a fresh thread and persist it — old thread stays in DB but is no longer used.
-    setThreadId(createAndPersistThreadId());
+    setThreadId(generateUUID());
   }, [handleStop, setThreadId]);
 
   const Header = useCallback(
@@ -88,27 +91,35 @@ export function ChatSidebar() {
     [handleReset],
   );
 
+  useEffect(() => {
+    if (!threadId) {
+      setThreadId(generateUUID());
+    }
+  }, [threadId, setThreadId]);
+
   return (
     <>
-      <CopilotSidebar
-        threadId={threadId}
-        defaultOpen={false}
-        header={Header as unknown as typeof CopilotModalHeader}
-        onStop={handleStop}
-        input={ChatInput as unknown as typeof CopilotChatInput}
-        messageView={{
-          assistantMessage:
-            AssistantMessage as typeof CopilotChatAssistantMessage,
-          userMessage: UserMessage as typeof CopilotChatUserMessage,
-          cursor:
-            hasMessages && !hasDisplayToolRunning
-              ? TypingIndicator
-              : HiddenTypingIndicator,
-        }}
-        labels={{
-          modalHeaderTitle: 'CityRide AI',
-        }}
-      />
+      {threadId && (
+        <CopilotSidebar
+          threadId={threadId}
+          defaultOpen={false}
+          header={Header as unknown as typeof CopilotModalHeader}
+          onStop={handleStop}
+          input={ChatInput as unknown as typeof CopilotChatInput}
+          messageView={{
+            assistantMessage:
+              AssistantMessage as typeof CopilotChatAssistantMessage,
+            userMessage: UserMessage as typeof CopilotChatUserMessage,
+            cursor:
+              hasMessages && !hasDisplayToolRunning
+                ? TypingIndicator
+                : HiddenTypingIndicator,
+          }}
+          labels={{
+            modalHeaderTitle: 'CityRide AI',
+          }}
+        />
+      )}
 
       {!hasVisibleMessages &&
         messageListEl &&
