@@ -6,11 +6,11 @@ import {
   useCopilotKit,
   useFrontendTool,
 } from '@copilotkit/react-core/v2';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { z } from 'zod';
 
 import { RideEstimateCard } from '@/components/RideEstimateCard';
-import { COPILOT_TOOLS, VEHICLE_NAMES, COPILOTKIT_AGENT_ID } from '@/constants';
+import { COPILOT_TOOLS, COPILOTKIT_AGENT_ID, VEHICLE_NAMES } from '@/constants';
 
 type RideEstimateFrontendToolProps = {
   onSelectVehicle?: (vehicleType: VehicleType) => void;
@@ -26,13 +26,20 @@ export function RideEstimateFrontendTool({
   // avoiding the stale-closure bug where useFrontendTool only captures
   // the render function once (on mount) and the provisional agent gets frozen in.
   const agentRef = useRef(agent);
-  agentRef.current = agent;
-
   const copilotKitRef = useRef(copilotkit);
-  copilotKitRef.current = copilotkit;
-
   const onSelectVehicleRef = useRef(onSelectVehicle);
-  onSelectVehicleRef.current = onSelectVehicle;
+
+  useEffect(() => {
+    agentRef.current = agent;
+  }, [agent]);
+
+  useEffect(() => {
+    copilotKitRef.current = copilotkit;
+  }, [copilotkit]);
+
+  useEffect(() => {
+    onSelectVehicleRef.current = onSelectVehicle;
+  }, [onSelectVehicle]);
 
   const handleSelectVehicle = useCallback(async (vehicleType: VehicleType) => {
     const currentAgent = agentRef.current;

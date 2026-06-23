@@ -6,21 +6,15 @@ import { useInterrupt } from '@copilotkit/react-core/v2';
 import React, { useEffect, useRef } from 'react';
 import { CancelTripCard } from '@/components/CancelTripCard';
 import { RideConfirmCard } from '@/components/RideConfirmCard';
-import { useAuth } from '@/features/auth/auth-context';
 import { useAgentStore } from '@/store/useAgentStore';
 import { generateTripId } from '@/utils';
 import { AssistantAvatar } from '../chat/AssistantAvatar';
 
 type InterruptFrontendToolProps = {
   trips: Trip[];
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
 };
 
-export function InterruptFrontendTool({
-  trips,
-  setTrips,
-}: InterruptFrontendToolProps) {
-  const { user } = useAuth();
+export function InterruptFrontendTool({ trips }: InterruptFrontendToolProps) {
   const { threadId } = useAgentStore();
 
   const interruptCreatedAtThreadIdRef = useRef<string | null>(null);
@@ -94,24 +88,6 @@ export function InterruptFrontendTool({
             price={data.price || 0}
             onConfirm={() => {
               const newTripId = generateTripId();
-              const newTrip: Trip = {
-                id: newTripId,
-                userId: user?.uid || 'mock-google-user-123',
-                pickup: data.pickup || '',
-                destination: data.destination || '',
-                distance: data.distance || 0,
-                duration: data.duration || 0,
-                vehicleType: data.vehicleType || 'bike',
-                passengerName: data.passengerName || '',
-                passengerPhone: data.passengerPhone || '',
-                price: data.price || 0,
-                status: 'searching',
-                createdAt: new Date().toISOString(),
-              };
-
-              // Add new trip to state
-              setTrips((prev) => [newTrip, ...prev]);
-
               // Resolve interrupt
               wrappedResolve({ approved: true, tripId: newTripId });
             }}
@@ -137,20 +113,6 @@ export function InterruptFrontendTool({
             driverName={driverName}
             cancellationFee={cancellationFee}
             onConfirm={() => {
-              // Cancel trip in state
-              setTrips((prev) =>
-                prev.map((t) =>
-                  t.id === data.tripId
-                    ? {
-                        ...t,
-                        status: 'cancelled',
-                        cancelledAt: new Date().toISOString(),
-                        cancellationFee,
-                      }
-                    : t,
-                ),
-              );
-
               // Resolve interrupt back to agent
               wrappedResolve({ approved: true });
             }}

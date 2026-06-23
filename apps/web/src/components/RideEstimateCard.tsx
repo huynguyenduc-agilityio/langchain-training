@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { RideEstimateCardProps, VehicleType } from '@/types';
 import { ArrowRight, Check, Clock, MapPin, Navigation } from 'lucide-react';
 
@@ -27,8 +27,17 @@ export function RideEstimateCard({
 
   // Sync selection from Zustand store after mounting to prevent hydration mismatches
   useEffect(() => {
+    const syncSelection = async () => {
+      try {
+        await Promise.resolve();
+        setSelectedType(selection);
+      } catch (err) {
+        console.error('Failed to sync selection:', err);
+      }
+    };
+
     if (selection) {
-      setSelectedType(selection);
+      syncSelection();
     }
   }, [selection]);
 

@@ -2,7 +2,7 @@
 
 import type { Trip } from '@/types';
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { TripDashboard } from '@/components/TripDashboard';
 import { API_ROUTES, CANCELLATION_FEES } from '@/constants';
 import { useAuth } from '@/features/auth/auth-context';
@@ -19,7 +19,7 @@ export function RideBookingContainer({
 }: RideBookingContainerProps) {
   const { user } = useAuth();
 
-  const fetchTrips = () => {
+  const fetchTrips = useCallback(() => {
     if (!user?.uid) return;
     http<{ success: boolean; trips: Trip[] }>(
       `${API_ROUTES.TRIPS}?userId=${user.uid}`,
@@ -30,7 +30,7 @@ export function RideBookingContainer({
         }
       })
       .catch((err) => console.error('Error fetching trips:', err));
-  };
+  }, [user, setTrips]);
 
   // Fetch on mount/user change and subscribe to real-time events via Server-Sent Events (SSE)
   useEffect(() => {
@@ -55,7 +55,7 @@ export function RideBookingContainer({
     return () => {
       eventSource.close();
     };
-  }, [user?.uid]);
+  }, [user, fetchTrips]);
 
   const handleCancelTrip = (tripId: string) => {
     if (!user?.uid) return;
