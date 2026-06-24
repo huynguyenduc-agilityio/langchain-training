@@ -34,7 +34,7 @@ Responsibilities:
 - Enforce input guardrails as a dedicated graph node (operating hours 05:00–23:00, max 3 active trips, max 50km distance, phone format validation)
 - Classify user intent via structured output before routing to sub-agents
 - Execute human-in-the-loop workflows using LangGraph `interrupt()` + `Command` pattern for ride confirmations and cancellations
-- Persist conversation state via `MemorySaver` checkpointer
+- Persist conversation state via `PostgresSaver` checkpointer
 - Stream responses to the frontend via CopilotKit SDK and AG-UI protocol
 - Manage trip and driver data in PostgreSQL via Drizzle ORM
 
@@ -76,7 +76,7 @@ supervisor ◄──────────────────────
 | **Human-in-the-Loop**    | `interrupt()` pauses graph at ride confirmation and cancellation steps         |
 | **Guardrails**           | `inputValidation` node validates before LLM invocation                        |
 | **Intent Classification**| Structured output with Zod schema for routing decisions                       |
-| **Checkpointer**         | `MemorySaver` for conversation state persistence                              |
+| **Checkpointer**         | `PostgresSaver` for conversation state persistence                            |
 | **Conditional Edges**    | Dynamic routing from supervisor and validation nodes                          |
 | **Streaming**            | CopilotKit SDK + AG-UI encoder for real-time response streaming               |
 
@@ -128,6 +128,7 @@ cp .env.example .env
 | `AGENT_PORT`          | No       | Agent server port (default: `8123`)         |
 | `ORS_API_KEY`         | Yes      | OpenRouteService API key for geocoding      |
 | `DATABASE_URL`        | Yes      | PostgreSQL connection string                |
+| `DATABASE_DIRECT_URL` | Yes      | Direct PostgreSQL connection string (port 5432, required for PostgresSaver checkpointer) |
 | `LANGSMITH_TRACING`   | No       | Enable LangSmith tracing (`true` / `false`) |
 | `LANGSMITH_API_KEY`   | No       | LangSmith API key                           |
 | `LANGSMITH_PROJECT`   | No       | LangSmith project name                      |
@@ -140,6 +141,7 @@ OPENAI_API_KEY=<your-openai-key>
 AGENT_PORT=8123
 ORS_API_KEY=<your-openrouteservice-key>
 DATABASE_URL=<your-postgresql-connection-string>
+DATABASE_DIRECT_URL=<your-postgresql-direct-connection-string>
 
 # LangSmith Tracing (optional)
 LANGSMITH_TRACING=true
@@ -192,10 +194,27 @@ npx drizzle-kit studio
 
 ---
 
+## 📁 Project Structure
+
+```text
+apps/agent/
+├── docs/                 # Documentation & logs
+├── src/
+│   ├── constants/        # Shared constant values (pricing, rules, locations)
+│   ├── db/               # Drizzle schema, migrations, seed scripts, checkpointer
+│   ├── graphs/           # Subgraph definitions (ride, management, info)
+│   ├── nodes/            # Graph node implementations (supervisor, validation, classifiers)
+│   ├── prompts/          # System prompts for all agents/subgraphs
+│   ├── services/         # External integrations (OpenRouteService)
+│   ├── tools/            # Tool definitions for LangGraph agents
+│   ├── types/            # TypeScript interfaces & types
+│   └── utils/            # Shared helper functions
+```
+
 ### Configuration Files
 
 | File               | Purpose                               |
-| ------------------- | ------------------------------------- |
+| ------------------ | ------------------------------------- |
 | `langgraph.json`    | LangGraph CLI graph registration      |
 | `drizzle.config.ts` | Drizzle ORM / migration configuration |
 | `tsconfig.json`     | TypeScript compiler options           |
