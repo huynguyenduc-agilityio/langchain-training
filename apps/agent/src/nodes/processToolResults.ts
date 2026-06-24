@@ -70,23 +70,6 @@ export async function processToolResults(state: RideBookingState) {
         };
       }
 
-      if (toolName === AGENT_TOOLS.CANCEL_TRIP.name) {
-        const updatedTrips = state.userTrips.map((trip) => {
-          if (trip.id === parsed.tripId) {
-            return {
-              ...trip,
-              status: parsed.status,
-              cancellationFee: parsed.cancellationFee,
-              cancelledAt: parsed.cancelledAt,
-            };
-          }
-          return trip;
-        });
-        return {
-          userTrips: updatedTrips,
-        };
-      }
-
       if (toolName === AGENT_TOOLS.LOOKUP_TRIPS.name) {
         return {
           userTrips: parsed.trips || [],

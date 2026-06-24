@@ -1,3 +1,3 @@
 import { buildGraph } from './graphs/index';
 
-export const graph = buildGraph();
+export const graph = await buildGraph();

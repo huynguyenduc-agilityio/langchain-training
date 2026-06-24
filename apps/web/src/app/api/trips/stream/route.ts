@@ -8,8 +8,9 @@ export async function GET(req: NextRequest) {
   const encoder = new TextEncoder();
 
   // Create a dedicated pg client for this SSE connection
+  // Using direct URL (port 5432) to bypass PgBouncer transaction pooling because LISTEN/NOTIFY is not supported in transaction mode
   const client = new pg.Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_DIRECT_URL,
     ssl: { rejectUnauthorized: false },
   });
 

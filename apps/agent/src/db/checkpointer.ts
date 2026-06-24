@@ -1,9 +1,11 @@
 import { PostgresSaver } from '@langchain/langgraph-checkpoint-postgres';
 
 let _checkpointer: PostgresSaver | null = null;
+let _setupPromise: Promise<PostgresSaver> | null = null;
 
-export function getCheckpointer(): PostgresSaver {
+export async function getCheckpointer(): Promise<PostgresSaver> {
   if (_checkpointer) return _checkpointer;
+  if (_setupPromise) return _setupPromise;
 
   const connString = process.env.DATABASE_DIRECT_URL;
   if (!connString) {
@@ -13,13 +15,17 @@ export function getCheckpointer(): PostgresSaver {
     );
   }
 
-  const checkpointer = PostgresSaver.fromConnString(connString);
+  _setupPromise = (async () => {
+    try {
+      const checkpointer = PostgresSaver.fromConnString(connString);
+      await checkpointer.setup();
+      _checkpointer = checkpointer;
+      return checkpointer;
+    } catch (err) {
+      _setupPromise = null;
+      throw err;
+    }
+  })();
 
-  // Create checkpoint tables if not yet present (idempotent) in the background.
-  checkpointer.setup().catch((err) => {
-    console.error('Failed to setup postgres checkpointer:', err);
-  });
-
-  _checkpointer = checkpointer;
-  return _checkpointer;
+  return _setupPromise;
 }

@@ -75,6 +75,7 @@ Create a `.env` file in this directory (no `.env.example` provided — use the t
 | Variable                                     | Required | Purpose                                |
 | -------------------------------------------- | -------- | -------------------------------------- |
 | `DATABASE_URL`                               | Yes      | PostgreSQL connection string           |
+| `DATABASE_DIRECT_URL`                        | Yes      | Direct PostgreSQL connection string (port 5432, required for LISTEN/NOTIFY SSE) |
 | `LANGGRAPH_DEPLOYMENT_URL`                   | Yes      | LangGraph agent server URL             |
 | `LANGSMITH_API_KEY`                          | No       | LangSmith tracing API key              |
 | `NEXT_PUBLIC_FIREBASE_API_KEY`               | Yes      | Firebase API key                       |
@@ -88,6 +89,7 @@ Typical local values:
 
 ```bash
 DATABASE_URL=<your-postgresql-connection-string>
+DATABASE_DIRECT_URL=<your-postgresql-direct-connection-string>
 LANGGRAPH_DEPLOYMENT_URL=http://localhost:8123
 
 # Firebase Authentication
@@ -128,3 +130,32 @@ pnpm dev:web
 ```
 
 Open http://localhost:3000 in your browser.
+
+---
+
+## 📁 Project Structure
+
+```text
+apps/web/
+├── public/               # Static assets
+├── src/
+│   ├── app/              # Next.js app router pages & API endpoints (SSE, copilotkit proxy)
+│   ├── components/       # React components (GenUI cards, dashboard, auth)
+│   ├── constants/        # UI & Chat constants
+│   ├── features/         # Feature-specific logic (auth, ride-booking)
+│   ├── lib/              # Firebase initialization & HTTP/DB clients
+│   ├── store/            # Zustand stores for state management
+│   ├── types/            # UI-specific TypeScript types
+│   └── utils/            # Frontend utility/helper functions
+```
+
+### Configuration Files
+
+| File               | Purpose                               |
+| ------------------ | ------------------------------------- |
+| `next.config.ts`    | Next.js configuration                 |
+| `components.json`  | shadcn/ui configuration               |
+| `tsconfig.json`     | TypeScript compiler options           |
+| `postcss.config.mjs`| PostCSS configuration                 |
+| `eslint.config.mjs` | ESLint configuration                  |
+| `package.json`      | Dependencies and scripts              |

@@ -77,8 +77,13 @@ export async function rideConfirmNode(
     const userId =
       contextUserId ||
       config?.configurable?.copilotkit_properties?.userId ||
-      config?.configurable?.userId ||
-      'mock-google-user-123';
+      config?.configurable?.userId;
+
+    if (!userId) {
+      throw new Error(
+        'User ID is required but was not found in context or config.',
+      );
+    }
 
     const newTripId = result.tripId || `TRP-${Date.now()}`;
     const newTrip: Trip = {

@@ -55,7 +55,7 @@ web (Next.js)  ──►  agent (LangGraph Server)  ──►  PostgreSQL
   CopilotKit           LangChainJS                   Drizzle ORM
   AG-UI streaming      Supervisor + Subgraphs        Trip / Driver data
   Generative UI        OpenRouteService (ORS)
-  Firebase Auth        MemorySaver checkpointer
+  Firebase Auth        PostgresSaver checkpointer
 ```
 
 1. `web` renders the trip dashboard, login page, and CopilotKit chat sidebar
@@ -140,6 +140,7 @@ OPENAI_API_KEY=<your-openai-key>
 AGENT_PORT=8123
 ORS_API_KEY=<your-openrouteservice-key>
 DATABASE_URL=<your-postgresql-connection-string>
+DATABASE_DIRECT_URL=<your-postgresql-direct-connection-string> # Direct connection (port 5432) for PostgresSaver checkpointer
 
 # LangSmith Tracing (optional)
 LANGSMITH_TRACING=true
@@ -152,6 +153,7 @@ LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 
 ```bash
 DATABASE_URL=<your-postgresql-connection-string>
+DATABASE_DIRECT_URL=<your-postgresql-direct-connection-string> # Direct connection (port 5432) for Server-Sent Events (LISTEN/NOTIFY)
 LANGGRAPH_DEPLOYMENT_URL=http://localhost:8123
 
 # Firebase Authentication
@@ -185,15 +187,15 @@ Open http://localhost:3000 in your browser.
 
 | Command        | Purpose                           |
 | -------------- | --------------------------------- |
-| `pnpm install` | Install all workspace dependencies |
+| `pnpm install` | Install all workspace dependencies|
 
 ### Development
 
 | Command         | Purpose                        | Port                   |
 | --------------- | ------------------------------ | ---------------------- |
 | `pnpm dev`      | Run all apps concurrently      | —                      |
-| `pnpm dev:agent`| Run LangGraph agent server     | http://localhost:8123   |
-| `pnpm dev:web`  | Run Next.js frontend           | http://localhost:3000   |
+| `pnpm dev:agent`| Run LangGraph agent server     | http://localhost:8123  |
+| `pnpm dev:web`  | Run Next.js frontend           | http://localhost:3000  |
 
 ### Build
 
@@ -207,6 +209,42 @@ Open http://localhost:3000 in your browser.
 | -------------------- | ------------------------------------------ |
 | `pnpm lint`          | Lint all apps                              |
 | `pnpm format:check`  | Check formatting with Prettier             |
+
+---
+
+## 📁 Project Structure
+
+This monorepo is structured as follows:
+
+```text
+langchain-training/
+├── apps/
+│   ├── agent/                # LangGraph AI agent server
+│   │   ├── src/
+│   │   │   ├── constants/    # Shared constant values (pricing, rules, locations)
+│   │   │   ├── db/           # Drizzle schema, migrations, seed scripts, Postgres checkpointer
+│   │   │   ├── graphs/       # Subgraph definitions (ride, management, info)
+│   │   │   ├── nodes/        # Graph node implementations (supervisor, validation, classifiers)
+│   │   │   ├── prompts/      # System prompts for all agents/subgraphs
+│   │   │   ├── services/     # External integrations (OpenRouteService)
+│   │   │   ├── tools/        # Tool definitions for LangGraph agents
+│   │   │   ├── types/        # TypeScript interfaces & types
+│   │   │   └── utils/        # Shared helper functions
+│   │   └── package.json
+│   └── web/                  # Next.js frontend application
+│       ├── src/
+│       │   ├── app/          # Next.js app router pages & API endpoints (SSE, copilotkit proxy)
+│       │   ├── components/   # React components (GenUI cards, dashboard, auth)
+│       │   ├── constants/    # UI & Chat constants
+│       │   ├── features/     # Feature-specific logic (auth, ride-booking)
+│       │   ├── lib/          # Firebase initialization & HTTP/DB clients
+│       │   ├── store/        # Zustand stores for state management
+│       │   ├── types/        # UI-specific TypeScript types
+│       │   └── utils/        # Frontend utility/helper functions
+│       └── package.json
+├── package.json              # Monorepo workspaces definition
+└── turbo.json                # Turborepo task pipeline configuration
+```
 
 ---
 

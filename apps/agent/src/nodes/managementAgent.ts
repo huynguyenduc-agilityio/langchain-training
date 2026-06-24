@@ -9,11 +9,7 @@ import {
 } from '@/utils/sanitizeMessages';
 import { RideBookingState } from '@/state';
 import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
-import {
-  cancelTripTool,
-  lookupTripsTool,
-  dummyCancelConfirmTool,
-} from '@/tools/index';
+import { lookupTripsTool, dummyCancelConfirmTool } from '@/tools/index';
 import { LLM_CONFIG } from '@/constants';
 
 export async function managementAgentNode(
@@ -25,11 +21,7 @@ export async function managementAgentNode(
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
-  const backendTools = [
-    cancelTripTool,
-    lookupTripsTool,
-    dummyCancelConfirmTool,
-  ];
+  const backendTools = [lookupTripsTool, dummyCancelConfirmTool];
   const frontendActions = convertActionsToDynamicStructuredTools(
     state.copilotkit?.actions ?? [],
   );

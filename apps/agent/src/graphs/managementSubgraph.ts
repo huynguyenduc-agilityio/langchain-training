@@ -8,11 +8,11 @@ import {
   cancelConfirmNode,
   routeManagementAgent,
 } from '@/nodes/index';
-import { cancelTripTool, lookupTripsTool } from '@/tools/index';
+import { lookupTripsTool } from '@/tools/index';
 
 const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('agent', managementAgentNode)
-  .addNode('tool_node', new ToolNode([cancelTripTool, lookupTripsTool]))
+  .addNode('tool_node', new ToolNode([lookupTripsTool]))
   .addNode('process_results', processToolResults)
   .addNode('cancel_confirm', cancelConfirmNode)
 

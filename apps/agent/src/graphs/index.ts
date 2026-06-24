@@ -17,7 +17,7 @@ import { getCheckpointer } from '@/db/checkpointer';
 /**
  * Build the City Ride Booking chatbot graph.
  */
-export function buildGraph() {
+export async function buildGraph() {
   // Build Parent Graph Workflow
   const workflow = new StateGraph(RideBookingStateAnnotation)
     .addNode('input_validation', inputValidationNode)
@@ -54,7 +54,7 @@ export function buildGraph() {
     .addEdge('info_agent', 'supervisor')
     .addEdge('error_response', '__end__');
 
-  const checkpointer = getCheckpointer();
+  const checkpointer = await getCheckpointer();
 
   return workflow.compile({ checkpointer });
 }

@@ -26,12 +26,7 @@ export async function intentClassifierNode(state: RideBookingState) {
   const model = new ChatOpenAI({
     model: LLM_CONFIG.DEFAULT_MODEL,
     temperature: 0,
-    // Disable streaming: this is an internal utility call (classification only),
-    // not a conversational response. Streaming here causes CopilotKit to forward
-    // the raw JSON tokens ({"category":"request","confidence":0.95}) to the UI.
     streaming: false,
-    // Force JSON mode: response_format must be passed via modelKwargs in
-    // @langchain/openai v1.x (it is not a direct ChatOpenAIFields property).
     modelKwargs: {
       response_format: { type: 'json_object' },
     },

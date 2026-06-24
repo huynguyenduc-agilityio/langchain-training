@@ -2,10 +2,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { VehicleType } from '@/types';
 
-interface RideEstimateState {
+type RideEstimateState = {
   selections: Record<string, VehicleType>;
   setSelection: (toolCallId: string, vehicleType: VehicleType) => void;
-}
+};
 
 export const useRideEstimateStore = create<RideEstimateState>()(
   persist(
@@ -21,6 +21,6 @@ export const useRideEstimateStore = create<RideEstimateState>()(
     }),
     {
       name: 'ride-estimate-store',
-    }
-  )
+    },
+  ),
 );

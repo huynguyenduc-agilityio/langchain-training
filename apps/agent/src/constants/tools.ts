@@ -16,11 +16,6 @@ export const AGENT_TOOLS = {
     description:
       'Start driver matching for an approved trip request. Finds the nearest available driver.',
   },
-  CANCEL_TRIP: {
-    name: 'cancelTrip',
-    description:
-      'Cancel a trip and calculate the cancellation fee if applicable.',
-  },
   LOOKUP_TRIPS: {
     name: 'lookupTrips',
     description:
