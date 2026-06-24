@@ -7,7 +7,7 @@ import {
   boolean,
 } from 'drizzle-orm/pg-core';
 
-import { VEHICLE_TYPES } from '../constants/vehicles';
+import { VEHICLE_TYPES } from '../constants';
 
 export const tripStatusEnum = pgEnum('trip_status', [
   'searching',

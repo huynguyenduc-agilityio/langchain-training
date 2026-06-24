@@ -1,6 +1,6 @@
 'use client';
 
-import type { Trip } from '@/types';
+import type { Trip } from '@repo/shared';
 
 import React, { useState } from 'react';
 import { AppHeader } from '@/components/AppHeader';

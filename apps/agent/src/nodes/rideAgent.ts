@@ -24,6 +24,8 @@ import {
 import { getUserFromState } from '@/utils';
 import { getUserPhoneFromDb } from '@/db/operations';
 
+import { logError } from '@repo/logger';
+
 export async function rideAgentNode(
   state: RideBookingState,
   config: RunnableConfig,
@@ -120,7 +122,7 @@ export async function rideAgentNode(
       messages: response,
     };
   } catch (error) {
-    console.error('[RideAgent] Error during LLM invocation:', error);
+    logError(error, '[RideAgent] Error during LLM invocation:');
     return {
       messages: new AIMessage({
         content:

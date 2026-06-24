@@ -1,7 +1,8 @@
 import { Annotation } from '@langchain/langgraph';
 import { CopilotKitStateAnnotation } from '@copilotkit/sdk-js/langgraph';
 
-import { Trip, RideEstimate, RideIntent } from '@/types';
+import { Trip, RideEstimate } from '@/types';
+import { RideIntent } from '@/types';
 
 export const RideBookingStateAnnotation = Annotation.Root({
   ...CopilotKitStateAnnotation.spec,

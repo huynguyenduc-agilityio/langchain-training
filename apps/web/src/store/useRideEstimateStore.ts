@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { VehicleType } from '@/types';
+import type { VehicleType } from '@repo/shared';
 
 type RideEstimateState = {
   selections: Record<string, VehicleType>;

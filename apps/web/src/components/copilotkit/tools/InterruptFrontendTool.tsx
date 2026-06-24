@@ -1,6 +1,6 @@
 'use client';
 
-import type { Trip } from '@/types';
+import type { Trip } from '@repo/shared';
 import { useInterrupt } from '@copilotkit/react-core/v2';
 
 import React, { useEffect, useRef } from 'react';

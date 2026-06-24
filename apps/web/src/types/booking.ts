@@ -1,4 +1,4 @@
-import type { Driver, Trip, VehicleType } from './ride';
+import type { Driver, Trip, VehicleType } from '@repo/shared';
 
 export type RideConfirmCardProps = {
   pickup: string;

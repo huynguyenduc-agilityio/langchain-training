@@ -22,9 +22,12 @@ import {
   AGENT_TOOLS,
 } from '@/constants';
 
+import { env } from '../config/env';
+import { logger, logError } from '@repo/logger';
+
 export const estimateRideTool = tool(
   async ({ pickup, destination }): Promise<EstimateRideResult> => {
-    const apiKey = process.env.ORS_API_KEY || '';
+    const apiKey = env.ORS_API_KEY;
     let distance = 0;
     let duration = 0;
     let fallbackUsed = false;
@@ -59,13 +62,13 @@ export const estimateRideTool = tool(
             fallbackUsed = true;
           }
         } else {
-          console.error(
+          logger.error(
             `Directions API returned error status: ${response.status}`,
           );
           fallbackUsed = true;
         }
       } catch (error) {
-        console.error('Error fetching directions from ORS:', error);
+        logError(error, 'Error fetching directions from ORS:');
         fallbackUsed = true;
       }
     } else {

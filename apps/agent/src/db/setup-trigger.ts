@@ -1,18 +1,11 @@
-/* eslint-disable no-console */
 import pg from 'pg';
-import * as dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+import { logger, logError } from '@repo/logger';
+import { env } from '../config/env';
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    console.error('DATABASE_URL is not set');
-    process.exit(1);
-  }
+  const connectionString = env.DATABASE_URL;
 
-  console.log('Connecting to database to set up real-time triggers...');
+  logger.info('Connecting to database to set up real-time triggers...');
   const client = new pg.Client({
     connectionString,
     ssl: { rejectUnauthorized: false },
@@ -31,7 +24,7 @@ async function main() {
       END;
       $$ LANGUAGE plpgsql;
     `);
-    console.log('Created/updated notify_trips_changed function.');
+    logger.info('Created/updated notify_trips_changed function.');
 
     // Create trigger
     await client.query(`
@@ -41,11 +34,11 @@ async function main() {
       FOR EACH ROW
       EXECUTE FUNCTION notify_trips_changed();
     `);
-    console.log('Created/updated trips_changed_trigger trigger.');
+    logger.info('Created/updated trips_changed_trigger trigger.');
 
-    console.log('Trigger setup completed successfully.');
+    logger.info('Trigger setup completed successfully.');
   } catch (err) {
-    console.error('Error setting up trigger:', err);
+    logError(err, 'Error setting up trigger:');
   } finally {
     await client.end();
   }

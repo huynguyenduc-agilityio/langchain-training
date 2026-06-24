@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 import { VEHICLE_TYPES, AGENT_TOOLS } from '@/constants';
 
+import { logError } from '@repo/logger';
+
 export const requestRideTool = tool(
   async (args) => {
     try {
@@ -23,7 +25,7 @@ export const requestRideTool = tool(
 
       return result;
     } catch (e) {
-      console.error('[requestRideTool] Error:', e);
+      logError(e, '[requestRideTool] Error:');
       throw e;
     }
   },

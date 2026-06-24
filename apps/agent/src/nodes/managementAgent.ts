@@ -12,6 +12,8 @@ import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
 import { lookupTripsTool, dummyCancelConfirmTool } from '@/tools/index';
 import { LLM_CONFIG } from '@/constants';
 
+import { logError } from '@repo/logger';
+
 export async function managementAgentNode(
   state: RideBookingState,
   config: RunnableConfig,
@@ -47,7 +49,7 @@ export async function managementAgentNode(
       messages: response,
     };
   } catch (error) {
-    console.error('[ManagementAgent] Error during LLM invocation:', error);
+    logError(error, '[ManagementAgent] Error during LLM invocation:');
     return {
       messages: new AIMessage({
         content:

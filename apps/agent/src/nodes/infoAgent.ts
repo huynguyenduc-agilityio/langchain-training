@@ -12,6 +12,8 @@ import { INFO_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
 import { lookupTripsTool } from '@/tools/index';
 import { LLM_CONFIG } from '@/constants';
 
+import { logError } from '@repo/logger';
+
 export async function infoAgentNode(
   state: RideBookingState,
   config: RunnableConfig,
@@ -47,7 +49,7 @@ export async function infoAgentNode(
       messages: response,
     };
   } catch (error) {
-    console.error('[InfoAgent] Error during LLM invocation:', error);
+    logError(error, '[InfoAgent] Error during LLM invocation:');
     return {
       messages: new AIMessage({
         content:

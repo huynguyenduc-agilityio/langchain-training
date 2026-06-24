@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
-import type { Driver, Trip, TripStatus, VehicleType } from '@/types';
+import type { Driver, Trip, TripStatus, VehicleType } from '@repo/shared';
 import { desc, eq } from 'drizzle-orm';
+import { logError } from '@repo/logger';
 
 import { NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, trips: resultTrips });
   } catch (error) {
     const err = error as Error;
-    console.error('[API] Error fetching trips:', err);
+    logError(err, '[API] Error fetching trips:');
     return NextResponse.json(
       { success: false, error: err.message },
       { status: 500 },
@@ -147,7 +148,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     const err = error as Error;
-    console.error('[API] Error creating trip:', err);
+    logError(err, '[API] Error creating trip:');
     return NextResponse.json(
       { success: false, error: err.message },
       { status: 500 },
@@ -239,7 +240,7 @@ export async function PATCH(req: NextRequest) {
     });
   } catch (error) {
     const err = error as Error;
-    console.error('[API] Error updating trip:', err);
+    logError(err, '[API] Error updating trip:');
     return NextResponse.json(
       { success: false, error: err.message },
       { status: 500 },

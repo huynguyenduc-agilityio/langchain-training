@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import type { RideEstimateCardProps, VehicleType } from '@/types';
+import type { RideEstimateCardProps } from '@/types';
+import type { VehicleType } from '@repo/shared';
 import { ArrowRight, Check, Clock, MapPin, Navigation } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';

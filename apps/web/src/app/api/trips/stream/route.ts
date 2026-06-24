@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import process from 'node:process';
 import pg from 'pg';
+import { logError } from '@repo/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
   try {
     await client.connect();
   } catch (err) {
-    console.error('[SSE] Failed to connect to database:', err);
+    logError(err, '[SSE] Failed to connect to database:');
     return new Response('Database connection failed', { status: 500 });
   }
 
@@ -30,9 +31,13 @@ export async function GET(req: NextRequest) {
       try {
         await client.query('LISTEN trips_changed');
       } catch (err) {
-        console.error('[SSE] Failed to execute LISTEN:', err);
+        logError(err, '[SSE] Failed to execute LISTEN:');
         controller.error(err);
-        await client.end().catch(console.error);
+
+        await client
+          .end()
+          .catch((e) => logError(e, '[SSE] Error ending client:'));
+
         return;
       }
 
@@ -43,9 +48,9 @@ export async function GET(req: NextRequest) {
             encoder.encode(`data: ${msg.payload || 'update'}\n\n`),
           );
         } catch (enqueueErr) {
-          console.error(
-            '[SSE] Error enqueuing notification, closing stream:',
+          logError(
             enqueueErr,
+            '[SSE] Error enqueuing notification, closing stream:',
           );
           cleanup();
         }
@@ -64,7 +69,7 @@ export async function GET(req: NextRequest) {
         clearInterval(heartbeatInterval);
         client
           .end()
-          .catch((e) => console.error('[SSE] Error closing pg client:', e));
+          .catch((e) => logError(e, '[SSE] Error closing pg client:'));
         try {
           controller.close();
         } catch {}
@@ -78,9 +83,7 @@ export async function GET(req: NextRequest) {
     async cancel() {
       await client
         .end()
-        .catch((e) =>
-          console.error('[SSE] Error closing pg client on cancel:', e),
-        );
+        .catch((e) => logError(e, '[SSE] Error closing pg client on cancel:'));
     },
   });
 
