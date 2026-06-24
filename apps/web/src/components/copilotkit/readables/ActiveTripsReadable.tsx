@@ -1,8 +1,8 @@
 'use client';
 
-import type { Trip } from '@/types';
-
 import { useAgentContext } from '@copilotkit/react-core/v2';
+
+import type { Trip } from '@repo/shared';
 
 type ActiveTripsReadableProps = {
   trips: Trip[];

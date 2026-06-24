@@ -7,81 +7,97 @@ import { db } from '@/db';
 import { drivers } from '@/db/schema';
 import { VEHICLE_TYPES, BUSINESS_RULES, AGENT_TOOLS } from '@/constants';
 import { haversineDistance } from '@/utils';
+import { logError } from '@repo/logger';
 
 export const matchDriverTool = tool(
   async ({ tripId, vehicleType, pickupLat, pickupLng }) => {
-    // Query all available drivers of the matching vehicle type
-    const availableDrivers = await db
-      .select()
-      .from(drivers)
-      .where(
-        and(
-          eq(drivers.isAvailable, true),
-          eq(drivers.vehicleType, vehicleType),
+    try {
+      // Query all available drivers of the matching vehicle type
+      const availableDrivers = await db
+        .select()
+        .from(drivers)
+        .where(
+          and(
+            eq(drivers.isAvailable, true),
+            eq(drivers.vehicleType, vehicleType),
+          ),
+        );
+
+      if (availableDrivers.length === 0) {
+        return {
+          success: false,
+          tripId,
+          error: 'no_available_drivers',
+          message: `No available ${vehicleType} drivers found at the moment.`,
+        };
+      }
+
+      // Sort drivers by proximity to pickup location (nearest first)
+      const driversWithDistance = availableDrivers.map((d) => ({
+        ...d,
+        distanceFromPickup: haversineDistance(
+          pickupLat,
+          pickupLng,
+          d.latitude,
+          d.longitude,
+        ),
+      }));
+      driversWithDistance.sort(
+        (a, b) => a.distanceFromPickup - b.distanceFromPickup,
+      );
+
+      const matchedDriver = driversWithDistance[0];
+
+      // Mark the selected driver as unavailable (busy)
+      await db
+        .update(drivers)
+        .set({ isAvailable: false })
+        .where(eq(drivers.id, matchedDriver.id));
+
+      const driverInfo = {
+        name: matchedDriver.name,
+        phone: matchedDriver.phone,
+        vehicleInfo: matchedDriver.vehicleInfo,
+        licensePlate: matchedDriver.licensePlate,
+        rating: matchedDriver.rating || 5.0,
+      };
+
+      // Update the trip status to 'matched' and assign the driver in the DB
+      await updateTripInDb(tripId, {
+        status: 'matched',
+        driver: driverInfo,
+      });
+
+      // 5. Calculate ETA based on driver's distance from pickup (avg speed in city)
+      const etaMinutes = Math.max(
+        1,
+        Math.round(
+          (matchedDriver.distanceFromPickup /
+            BUSINESS_RULES.AVERAGE_SPEED_KMH) *
+            60,
         ),
       );
 
-    if (availableDrivers.length === 0) {
+      return {
+        success: true,
+        tripId,
+        status: 'matched' as const,
+        driver: driverInfo,
+        etaMinutes,
+      };
+    } catch (error) {
+      logError(
+        error,
+        `[MatchDriverTool] Error matching driver for trip ${tripId}:`,
+      );
       return {
         success: false,
         tripId,
-        error: 'no_available_drivers',
-        message: `No available ${vehicleType} drivers found at the moment.`,
+        error: 'matching_failed',
+        message:
+          'An internal error occurred while matching a driver for your ride.',
       };
     }
-
-    // Sort drivers by proximity to pickup location (nearest first)
-    const driversWithDistance = availableDrivers.map((d) => ({
-      ...d,
-      distanceFromPickup: haversineDistance(
-        pickupLat,
-        pickupLng,
-        d.latitude,
-        d.longitude,
-      ),
-    }));
-    driversWithDistance.sort(
-      (a, b) => a.distanceFromPickup - b.distanceFromPickup,
-    );
-
-    const matchedDriver = driversWithDistance[0];
-
-    // Mark the selected driver as unavailable (busy)
-    await db
-      .update(drivers)
-      .set({ isAvailable: false })
-      .where(eq(drivers.id, matchedDriver.id));
-
-    const driverInfo = {
-      name: matchedDriver.name,
-      phone: matchedDriver.phone,
-      vehicleInfo: matchedDriver.vehicleInfo,
-      licensePlate: matchedDriver.licensePlate,
-      rating: matchedDriver.rating || 5.0,
-    };
-
-    // Update the trip status to 'matched' and assign the driver in the DB
-    await updateTripInDb(tripId, {
-      status: 'matched',
-      driver: driverInfo,
-    });
-
-    // 5. Calculate ETA based on driver's distance from pickup (avg speed in city)
-    const etaMinutes = Math.max(
-      1,
-      Math.round(
-        (matchedDriver.distanceFromPickup / BUSINESS_RULES.AVERAGE_SPEED_KMH) *
-          60,
-      ),
-    );
-
-    return {
-      success: true,
-      tripId,
-      status: 'matched' as const,
-      driver: driverInfo,
-      etaMinutes,
-    };
   },
   {
     name: AGENT_TOOLS.MATCH_DRIVER.name,

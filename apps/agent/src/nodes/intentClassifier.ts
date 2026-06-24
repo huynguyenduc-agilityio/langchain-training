@@ -22,6 +22,8 @@ const intentSchema = z.object({
   confidence: z.number(),
 });
 
+import { logError } from '@repo/logger';
+
 export async function intentClassifierNode(state: RideBookingState) {
   const model = new ChatOpenAI({
     model: LLM_CONFIG.DEFAULT_MODEL,
@@ -75,7 +77,7 @@ export async function intentClassifierNode(state: RideBookingState) {
       // out of the conversation history and off the CopilotKit stream.
     };
   } catch (error) {
-    console.error('Failed to classify intent:', error);
+    logError(error, 'Failed to classify intent:');
     return {
       intent: {
         category: 'unknown' as const,

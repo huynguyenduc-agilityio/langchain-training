@@ -1,6 +1,7 @@
 import { BaseMessage, ToolMessage } from '@langchain/core/messages';
 import { RideBookingState } from '@/state';
 import { VALIDATION_MESSAGES, ERROR_CODES, AGENT_TOOLS } from '@/constants';
+import { logError } from '@repo/logger';
 
 /**
  * Process Tool Results Node
@@ -76,9 +77,9 @@ export async function processToolResults(state: RideBookingState) {
         };
       }
     } catch (error) {
-      console.error(
-        `[ProcessToolResults] Error parsing tool response from ${toolName}:`,
+      logError(
         error,
+        `[ProcessToolResults] Error parsing tool response from ${toolName}:`,
       );
     }
   }

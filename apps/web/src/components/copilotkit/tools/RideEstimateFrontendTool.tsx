@@ -1,6 +1,6 @@
 'use client';
 
-import type { VehicleType } from '@/types';
+import type { VehicleType } from '@repo/shared';
 import {
   useAgent,
   useCopilotKit,

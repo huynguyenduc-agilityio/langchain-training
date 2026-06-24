@@ -5,6 +5,7 @@ import { trips, drivers, users } from './schema';
 import { Trip, Driver, TripStatus, VehicleType } from '@/types';
 import { COORDINATES } from '@/constants';
 import { sanitizePhone } from '@/utils';
+import { logError } from '@repo/logger';
 
 /**
  * Fetch a trip from the database and resolve driver info if present.
@@ -59,7 +60,7 @@ export async function getTripFromDb(tripId: string): Promise<Trip | undefined> {
       driver,
     };
   } catch (error) {
-    console.error('[DB] Error getting trip:', error);
+    logError(error, '[DB] Error getting trip:');
     return undefined;
   }
 }
@@ -126,7 +127,7 @@ export async function getTripsByUserIdFromDb(
 
     return resultTrips;
   } catch (error) {
-    console.error('[DB] Error getting trips by userId:', error);
+    logError(error, '[DB] Error getting trips by userId:');
     return [];
   }
 }
@@ -195,7 +196,7 @@ export async function getTripsByPhoneFromDb(
 
     return resultTrips;
   } catch (error) {
-    console.error('[DB] Error getting trips by phone:', error);
+    logError(error, '[DB] Error getting trips by phone:');
     return [];
   }
 }
@@ -243,7 +244,7 @@ export async function addTripToDb(
       status: trip.status,
     });
   } catch (error) {
-    console.error('[DB] Error adding trip:', error);
+    logError(error, '[DB] Error adding trip:');
   }
 }
 
@@ -298,7 +299,7 @@ export async function updateTripInDb(
 
     return getTripFromDb(tripId);
   } catch (error) {
-    console.error('[DB] Error updating trip:', error);
+    logError(error, '[DB] Error updating trip:');
     return undefined;
   }
 }
@@ -320,7 +321,7 @@ export async function getUserPhoneFromDb(
       return userResult[0].phone;
     }
   } catch (error) {
-    console.error('[DB] Error getting user phone:', error);
+    logError(error, '[DB] Error getting user phone:');
   }
   return undefined;
 }

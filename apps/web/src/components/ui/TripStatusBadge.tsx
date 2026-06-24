@@ -1,6 +1,6 @@
 'use client';
 
-import type { TripStatus } from '@/types';
+import type { TripStatus } from '@repo/shared';
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';

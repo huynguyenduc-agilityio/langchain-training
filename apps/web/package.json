@@ -12,6 +12,8 @@
     "@copilotkit/react-core": "^1.59.2",
     "@copilotkit/react-ui": "^1.59.2",
     "@copilotkit/runtime": "^1.59.2",
+    "@repo/logger": "workspace:*",
+    "@repo/shared": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist, Inter } from 'next/font/google';
+import '@/config/env';
 
 import CopilotKitRuntime from '@/components/copilotkit/CopilotKitRuntime';
 import { TooltipProvider } from '@/components/ui/tooltip';

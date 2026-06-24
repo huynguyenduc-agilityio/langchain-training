@@ -9,7 +9,7 @@ import { DriverMatchCard } from '@/components/DriverMatchCard';
 import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { COPILOT_TOOLS } from '@/constants';
-import type { Driver, Trip } from '@/types';
+import type { Driver, Trip } from '@repo/shared';
 
 function SearchingDriverCard() {
   return (

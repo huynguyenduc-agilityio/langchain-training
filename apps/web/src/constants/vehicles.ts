@@ -1,4 +1,4 @@
-import type { VehicleType } from '@/types';
+import type { VehicleType } from '@repo/shared';
 
 export const VEHICLE_CONFIG = {
   bike: { label: 'Bike', icon: '🏍️' },

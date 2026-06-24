@@ -1,6 +1,7 @@
 import { API_ENDPOINTS, ACTIVE_CITY } from '@/constants';
 import { isCoordsInServiceArea } from '@/utils';
 import { GeocodeFeature, GeocodeResponse } from '@/types';
+import { logger, logError } from '@repo/logger';
 
 /**
  * Geocode using ORS Pelias API (primary provider).
@@ -29,7 +30,7 @@ async function getCoordsFromORS(
   const url = `${API_ENDPOINTS.ORS_GEOCODE_URL}?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) {
-    console.error(
+    logger.error(
       `[ORS] Geocoding failed for "${query}": ${response.statusText}`,
     );
     return null;
@@ -66,7 +67,7 @@ async function getCoordsFromPhoton(
   const url = `${API_ENDPOINTS.PHOTON_GEOCODE_URL}?${params.toString()}`;
   const response = await fetch(url);
   if (!response.ok) {
-    console.error(
+    logger.error(
       `[Photon] Geocoding failed for "${query}": ${response.statusText}`,
     );
     return null;
@@ -127,27 +128,27 @@ export async function getCoords(
     // 1. Try ORS (primary provider)
     const orsResult = await getCoordsFromORS(query, apiKey);
     if (orsResult) {
-      console.info(
+      logger.info(
         `[Geocode] "${location}" resolved via ORS → [${orsResult[1]}, ${orsResult[0]}]`,
       );
       return orsResult;
     }
 
     // 2. Fallback to Photon if ORS returned no valid results
-    console.info(
+    logger.info(
       `[Geocode] ORS returned no results for "${location}", trying Photon fallback...`,
     );
     const photonResult = await getCoordsFromPhoton(query);
     if (photonResult) {
-      console.info(
+      logger.info(
         `[Geocode] "${location}" resolved via Photon → [${photonResult[1]}, ${photonResult[0]}]`,
       );
       return photonResult;
     }
 
-    console.warn(`[Geocode] No results from any provider for "${location}"`);
+    logger.warn(`[Geocode] No results from any provider for "${location}"`);
   } catch (error) {
-    console.error(`[Geocode] Error geocoding "${location}":`, error);
+    logError(error, `[Geocode] Error geocoding "${location}":`);
   }
   return null;
 }

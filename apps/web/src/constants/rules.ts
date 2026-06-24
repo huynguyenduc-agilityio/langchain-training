@@ -1,4 +1,4 @@
-import type { VehicleType } from '@/types';
+import type { VehicleType } from '@repo/shared';
 
 export const CANCELLATION_FEES: Record<VehicleType, number> = {
   bike: 0.5,

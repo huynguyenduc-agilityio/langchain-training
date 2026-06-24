@@ -1,6 +1,6 @@
 'use client';
 
-import type { Trip } from '@/types';
+import type { Trip } from '@repo/shared';
 import { ArrowRight, Clock, MapPin } from 'lucide-react';
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
