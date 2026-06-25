@@ -14,7 +14,9 @@ const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('agent', managementAgentNode)
   .addNode('tool_node', new ToolNode([lookupTripsTool]))
   .addNode('process_results', processToolResults)
-  .addNode('cancel_confirm', cancelConfirmNode)
+  .addNode('cancel_confirm', cancelConfirmNode, {
+    ends: ['agent'],
+  })
 
   .addEdge(START, 'agent')
   .addConditionalEdges('agent', routeManagementAgent, {
@@ -23,7 +25,6 @@ const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     __end__: '__end__',
   })
   .addEdge('tool_node', 'process_results')
-  .addEdge('process_results', 'agent')
-  .addEdge('cancel_confirm', 'agent');
+  .addEdge('process_results', 'agent');
 
 export const managementSubgraph = managementSubgraphWorkflow.compile();

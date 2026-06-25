@@ -7,6 +7,7 @@ import {
 } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 import { StructuredTool } from '@langchain/core/tools';
+import { BaseStore } from '@langchain/langgraph';
 
 import { RideBookingState } from '@/state';
 import { RIDE_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
@@ -21,7 +22,8 @@ import {
   sanitizeMessages,
   getFrontendActionNames,
 } from '@/utils/sanitizeMessages';
-import { getUserFromState } from '@/utils';
+import { getUserFromState, readUserMemory } from '@/utils';
+import { UserMemory } from '@/types';
 import { getUserPhoneFromDb } from '@/db/operations';
 
 import { logError } from '@repo/logger';
@@ -99,12 +101,21 @@ export async function rideAgentNode(
 
   const { userId } = getUserFromState(state);
   let userPhone: string | undefined = undefined;
+  let userMemory: UserMemory | undefined = undefined;
   if (userId) {
     userPhone = await getUserPhoneFromDb(userId);
+    const store = (config as RunnableConfig & { store?: BaseStore }).store;
+    if (store) {
+      try {
+        userMemory = await readUserMemory(store, userId);
+      } catch (err) {
+        console.error('[RideAgentNode] Error reading user memory:', err);
+      }
+    }
   }
 
   const systemMessage = new SystemMessage({
-    content: RIDE_AGENT_SYSTEM_PROMPT(state, userPhone),
+    content: RIDE_AGENT_SYSTEM_PROMPT(state, userPhone, userMemory),
   });
 
   const sanitizedMessages = sanitizeMessages(

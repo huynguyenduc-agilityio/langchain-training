@@ -1,4 +1,4 @@
-import { Command, interrupt } from '@langchain/langgraph';
+import { Command, interrupt, END } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 
@@ -55,7 +55,7 @@ export async function rideConfirmNode(
         update: {
           validationError: VALIDATION_MESSAGES.OPERATING_HOURS_ERROR,
         },
-        goto: 'error_response',
+        goto: END,
       });
     }
 
@@ -64,7 +64,7 @@ export async function rideConfirmNode(
         update: {
           validationError: VALIDATION_MESSAGES.ACTIVE_TRIPS_LIMIT_ERROR,
         },
-        goto: 'error_response',
+        goto: END,
       });
     }
 
@@ -128,7 +128,7 @@ export async function rideConfirmNode(
         userTrips: [newTrip, ...state.userTrips],
         tripDraft: newTrip,
       },
-      goto: 'agent',
+      goto: 'memory_writer',
     });
   } else {
     return new Command({
