@@ -9,10 +9,11 @@ import {
   errorResponseNode,
   supervisorNode,
 } from '@/nodes/index';
+import { getCheckpointer } from '@/db/checkpointer';
+import { getMemoryStore } from '@/db/memoryStore';
 import { rideSubgraph } from './rideSubgraph';
 import { managementSubgraph } from './managementSubgraph';
 import { infoSubgraph } from './infoSubgraph';
-import { getCheckpointer } from '@/db/checkpointer';
 
 /**
  * Build the City Ride Booking chatbot graph.
@@ -55,6 +56,8 @@ export async function buildGraph() {
     .addEdge('error_response', '__end__');
 
   const checkpointer = await getCheckpointer();
+  const store = await getMemoryStore();
 
-  return workflow.compile({ checkpointer });
+  // Compile graph with the postgres checkpointer and memory store
+  return workflow.compile({ checkpointer, store });
 }

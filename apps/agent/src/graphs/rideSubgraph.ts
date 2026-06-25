@@ -8,6 +8,7 @@ import {
   rideConfirmNode,
   routeRideAgent,
   routeAfterToolResults,
+  memoryWriterNode,
 } from '@/nodes/index';
 import {
   estimateRideTool,
@@ -22,7 +23,10 @@ const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     new ToolNode([estimateRideTool, requestRideTool, matchDriverTool]),
   )
   .addNode('process_results', processToolResults)
-  .addNode('ride_confirm', rideConfirmNode)
+  .addNode('ride_confirm', rideConfirmNode, {
+    ends: ['agent', 'memory_writer', '__end__'],
+  })
+  .addNode('memory_writer', memoryWriterNode)
 
   .addEdge(START, 'agent')
   .addConditionalEdges('agent', routeRideAgent, {
@@ -35,6 +39,6 @@ const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     agent: 'agent',
     __end__: '__end__',
   })
-  .addEdge('ride_confirm', 'agent');
+  .addEdge('memory_writer', 'agent');
 
 export const rideSubgraph = rideSubgraphWorkflow.compile();
