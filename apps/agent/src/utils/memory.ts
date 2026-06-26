@@ -1,24 +1,42 @@
 import { BaseStore } from '@langchain/langgraph';
 import { Trip, UserMemory } from '@/types';
 
+/**
+ * Check if a UserMemory object has any meaningful preference data
+ * (not just empty arrays or missing fields).
+ */
+export function hasUserMemoryData(memory: UserMemory | undefined): boolean {
+  if (!memory) return false;
+  return !!(
+    memory.preferredVehicle ||
+    (memory.frequentPickups && memory.frequentPickups.length > 0) ||
+    (memory.frequentDestinations && memory.frequentDestinations.length > 0) ||
+    memory.passengerName ||
+    memory.passengerPhone
+  );
+}
+
 export async function readUserMemory(
   store: BaseStore,
   userId: string,
-): Promise<UserMemory> {
+): Promise<UserMemory | undefined> {
   if (!store || !userId) {
-    return {};
+    return undefined;
   }
   try {
-    const namespace = ['user_memory', userId];
+    const namespace = ['user-memory', userId];
     const key = 'preferences';
     const item = await store.get(namespace, key);
     if (item && item.value) {
-      return item.value as UserMemory;
+      const memory = item.value as UserMemory;
+      if (hasUserMemoryData(memory)) {
+        return memory;
+      }
     }
   } catch (err) {
     console.error('Failed to read user memory:', err);
   }
-  return {};
+  return undefined;
 }
 
 export async function writeUserMemory(
@@ -30,11 +48,11 @@ export async function writeUserMemory(
     return;
   }
   try {
-    const namespace = ['user_memory', userId];
+    const namespace = ['user-memory', userId];
     const key = 'preferences';
 
-    // Read current memory
-    const currentMemory = await readUserMemory(store, userId);
+    // Read current memory (default to empty object if undefined)
+    const currentMemory = (await readUserMemory(store, userId)) || {};
 
     // Update names and phones
     const passengerName = newTrip.passengerName || currentMemory.passengerName;

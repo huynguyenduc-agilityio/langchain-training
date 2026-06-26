@@ -36,6 +36,12 @@ export const RideBookingStateAnnotation = Annotation.Root({
     reducer: (_, value) => value,
     default: () => null,
   }),
+
+  // Tracks which sub-agent flow is currently active (ride, management, info).
+  activeFlow: Annotation<'ride' | 'management' | 'info' | null>({
+    reducer: (_, value) => value,
+    default: () => null,
+  }),
 });
 
 export type RideBookingState = typeof RideBookingStateAnnotation.State;

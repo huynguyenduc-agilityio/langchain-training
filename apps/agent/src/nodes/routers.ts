@@ -26,20 +26,28 @@ export function supervisorRouter(state: RideBookingState) {
     return 'error_response';
   }
 
-  // State-aware context routing: if we have an active trip draft or ride estimate in progress
-  // and the user input is classified as unknown/chitchat (e.g. providing name, phone, or saying "yes"),
-  // force route it to ride_agent to avoid losing the booking context.
-  if (
-    (state.tripDraft !== null || state.rideEstimate !== null) &&
-    category === 'unknown'
-  ) {
-    category = 'request';
+  const messages = state.messages || [];
+
+  // State-aware context routing: if we have an active flow, trip draft, or ride estimate,
+  // and the user input is classified as unknown/chitchat (e.g. "yes", providing name/phone),
+  // force route it to the appropriate agent to avoid losing the conversation context.
+  if (category === 'unknown') {
+    if (
+      state.activeFlow === 'ride' ||
+      state.tripDraft !== null ||
+      state.rideEstimate !== null
+    ) {
+      category = 'request';
+    } else if (state.activeFlow === 'management') {
+      category = 'cancel';
+    } else if (state.activeFlow === 'info') {
+      category = 'faq';
+    }
   }
 
   // Prevent infinite loops: if the last message is an AI response without tool calls,
   // or with only frontend action tool calls (already handled by CopilotKit client-side),
   // a subgraph has finished responding to the user — end the conversation turn.
-  const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
   if (lastMessage) {
     const msgType =
