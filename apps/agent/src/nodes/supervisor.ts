@@ -54,9 +54,29 @@ export async function supervisorNode(state: RideBookingState) {
     }
   }
 
-  if (syntheticMessages.length > 0) {
-    return { messages: syntheticMessages };
+  // Determine the active flow based on the classified intent.
+  // When intent is explicit, update the flow. When 'unknown', preserve context.
+  const category = state.intent?.category || 'unknown';
+  let activeFlow = state.activeFlow ?? null;
+
+  switch (category) {
+    case 'estimate':
+    case 'request':
+      activeFlow = 'ride';
+      break;
+    case 'cancel':
+      activeFlow = 'management';
+      break;
+    case 'view_trips':
+    case 'faq':
+      activeFlow = 'info';
+      break;
+    // 'unknown' — keep activeFlow unchanged to preserve conversation context
   }
 
-  return {};
+  if (syntheticMessages.length > 0) {
+    return { messages: syntheticMessages, activeFlow };
+  }
+
+  return { activeFlow };
 }
