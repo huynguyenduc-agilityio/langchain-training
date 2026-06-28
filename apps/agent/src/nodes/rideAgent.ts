@@ -16,6 +16,7 @@ import {
   requestRideTool,
   matchDriverTool,
   dummyRideConfirmTool,
+  retrieveKnowledgeTool,
 } from '@/tools/index';
 import { LLM_CONFIG, AGENT_TOOLS } from '@/constants';
 import {
@@ -79,7 +80,11 @@ export async function rideAgentNode(
     }
   }
 
-  const backendTools: StructuredTool[] = [estimateRideTool, requestRideTool];
+  const backendTools: StructuredTool[] = [
+    estimateRideTool,
+    requestRideTool,
+    retrieveKnowledgeTool,
+  ];
 
   if (tripApproved) {
     backendTools.push(matchDriverTool);

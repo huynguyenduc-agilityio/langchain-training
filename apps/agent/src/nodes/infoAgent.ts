@@ -9,7 +9,7 @@ import {
 } from '@/utils/sanitizeMessages';
 import { RideBookingState } from '@/state';
 import { INFO_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
-import { lookupTripsTool } from '@/tools/index';
+import { lookupTripsTool, retrieveKnowledgeTool } from '@/tools/index';
 import { LLM_CONFIG } from '@/constants';
 
 import { logError } from '@repo/logger';
@@ -23,7 +23,7 @@ export async function infoAgentNode(
     temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
   });
 
-  const backendTools = [lookupTripsTool];
+  const backendTools = [lookupTripsTool, retrieveKnowledgeTool];
   const frontendActions = convertActionsToDynamicStructuredTools(
     state.copilotkit?.actions ?? [],
   );

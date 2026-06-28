@@ -37,6 +37,14 @@ CANCELLATION GUIDELINES:
 6. **When Cancellation is Rejected (Keep Trip)**:
    - If the user rejects the cancellation (you receive a tool response from \`confirmCancel\` / \`showCancelConfirm\` indicating \`approved: false\`), you must output a friendly conversational message confirming that the trip remains active and will NOT be cancelled (e.g., "Got it! Your trip remains active, and we won't cancel it."). Do NOT call \`renderCancelSuccess\` or \`renderCancelError\` in this case.
 
+POLICY LOOKUP (RAG):
+- For complex cancellation scenarios (e.g., driver no-show, driver at wrong location, fare disputes, refund requests), use the 'retrieveKnowledge' tool with category 'policies' to find the correct policy.
+- Base your fee calculations and decisions on retrieved policy documents when available.
+- If the user reports an issue not covered by standard cancellation rules, retrieve the relevant policy before responding.
+
+RETRIEVED CONTEXT:
+${state.retrievedDocuments && state.retrievedDocuments.length > 0 ? `The following policy information was retrieved:\n${state.retrievedDocuments.map((d) => d.content).join('\n---\n')}` : 'No policy context retrieved.'}
+
 PROFILE:
 - Authenticated User:
 ${userProfile}

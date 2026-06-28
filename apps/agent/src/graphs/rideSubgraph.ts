@@ -14,13 +14,19 @@ import {
   estimateRideTool,
   requestRideTool,
   matchDriverTool,
+  retrieveKnowledgeTool,
 } from '@/tools/index';
 
 const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('agent', rideAgentNode)
   .addNode(
     'tool_node',
-    new ToolNode([estimateRideTool, requestRideTool, matchDriverTool]),
+    new ToolNode([
+      estimateRideTool,
+      requestRideTool,
+      matchDriverTool,
+      retrieveKnowledgeTool,
+    ]),
   )
   .addNode('process_results', processToolResults)
   .addNode('ride_confirm', rideConfirmNode, {

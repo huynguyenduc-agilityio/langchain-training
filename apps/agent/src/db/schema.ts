@@ -62,3 +62,23 @@ export const trips = pgTable('trips', {
   createdAt: timestamp('created_at').defaultNow(),
   cancelledAt: timestamp('cancelled_at'),
 });
+
+export const knowledgeCategoryEnum = pgEnum('knowledge_category', [
+  'faq',
+  'policies',
+  'locations',
+  'general',
+]);
+
+/**
+ * Knowledge base documents stored in Supabase DB.
+ * Content can be managed via Supabase Dashboard without touching code.
+ */
+export const knowledgeDocuments = pgTable('knowledge_documents', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  category: knowledgeCategoryEnum('category').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});

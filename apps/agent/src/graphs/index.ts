@@ -11,6 +11,7 @@ import {
 } from '@/nodes/index';
 import { getCheckpointer } from '@/db/checkpointer';
 import { getMemoryStore } from '@/db/memoryStore';
+import { ensureIndexed } from '@/rag/index';
 import { rideSubgraph } from './rideSubgraph';
 import { managementSubgraph } from './managementSubgraph';
 import { infoSubgraph } from './infoSubgraph';
@@ -55,8 +56,11 @@ export async function buildGraph() {
     .addEdge('info_agent', 'supervisor')
     .addEdge('error_response', '__end__');
 
-  const checkpointer = await getCheckpointer();
-  const store = await getMemoryStore();
+  const [checkpointer, store] = await Promise.all([
+    getCheckpointer(),
+    getMemoryStore(),
+    ensureIndexed(),
+  ]);
 
   // Compile graph with the postgres checkpointer and memory store
   return workflow.compile({ checkpointer, store });
