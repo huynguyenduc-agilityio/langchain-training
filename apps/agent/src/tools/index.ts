@@ -6,6 +6,7 @@ import {
   dummyRideConfirmTool,
   dummyCancelConfirmTool,
 } from './dummyConfirmTools';
+import { retrieveKnowledgeTool } from './retrieveKnowledge';
 
 export {
   estimateRideTool,
@@ -14,6 +15,7 @@ export {
   lookupTripsTool,
   dummyRideConfirmTool,
   dummyCancelConfirmTool,
+  retrieveKnowledgeTool,
 };
 
 export const tools = [
@@ -23,4 +25,5 @@ export const tools = [
   lookupTripsTool,
   dummyRideConfirmTool,
   dummyCancelConfirmTool,
+  retrieveKnowledgeTool,
 ];

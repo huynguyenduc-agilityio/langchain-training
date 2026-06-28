@@ -43,6 +43,11 @@ export const AGENT_TOOLS = {
     name: 'renderCancelError',
     description: 'Display an error card after a trip cancellation fails.',
   },
+  RETRIEVE_KNOWLEDGE: {
+    name: 'retrieveKnowledge',
+    description:
+      'Search the knowledge base for service FAQ, policies, location guides, and other reference information. Use when the user asks factual questions about the service.',
+  },
 } as const;
 
 // Registry of backend tools that render a self-contained UI card and require

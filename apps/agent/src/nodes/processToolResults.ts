@@ -76,6 +76,13 @@ export async function processToolResults(state: RideBookingState) {
           userTrips: parsed.trips || [],
         };
       }
+
+      if (toolName === AGENT_TOOLS.RETRIEVE_KNOWLEDGE.name) {
+        return {
+          retrievedDocuments: parsed.documents || [],
+          retrievalQuery: parsed.query || null,
+        };
+      }
     } catch (error) {
       logError(
         error,

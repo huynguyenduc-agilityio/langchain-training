@@ -3,6 +3,7 @@ import { CopilotKitStateAnnotation } from '@copilotkit/sdk-js/langgraph';
 
 import { Trip, RideEstimate } from '@/types';
 import { RideIntent } from '@/types';
+import { RetrievedDocument } from '@/types';
 
 export const RideBookingStateAnnotation = Annotation.Root({
   ...CopilotKitStateAnnotation.spec,
@@ -42,6 +43,31 @@ export const RideBookingStateAnnotation = Annotation.Root({
     reducer: (_, value) => value,
     default: () => null,
   }),
+
+  // Documents retrieved from the knowledge base
+  retrievedDocuments: Annotation<RetrievedDocument[]>({
+    reducer: (_, value) => value,
+    default: () => [],
+  }),
+
+  // Current retrieval query (for self-correction tracking)
+  retrievalQuery: Annotation<string | null>({
+    reducer: (_, value) => value,
+    default: () => null,
+  }),
+
+  // Whether retrieved docs are relevant (set by retrieval grader)
+  retrievalRelevant: Annotation<boolean | null>({
+    reducer: (_, value) => value,
+    default: () => null,
+  }),
+
+  // Retry counter for query rewriting (max 2 retries)
+  retrievalRetryCount: Annotation<number>({
+    reducer: (_, value) => value,
+    default: () => 0,
+  }),
 });
 
 export type RideBookingState = typeof RideBookingStateAnnotation.State;
+

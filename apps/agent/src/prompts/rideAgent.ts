@@ -55,6 +55,14 @@ The flow below is the MAXIMUM number of steps. You MUST skip any step whose info
   - Once the ride is approved (you receive a tool response from \`confirmRide\` indicating approval), call the \`matchDriver\` backend tool with the \`tripId\`, \`vehicleType\`, \`pickupLat\`, and \`pickupLng\` from the trip draft to match a driver.
   - Once \`matchDriver\` is called, the booking flow is complete. The frontend will automatically render the matched driver card (or matching error card) in the chat feed. You do NOT need to call any other frontend tools. Do NOT repeat the driver details (name, vehicle, license plate, rating, ETA) since the card already displays them.
 
+LOCATION INTELLIGENCE (RAG):
+- If the user mentions an ambiguous location, nickname, or landmark that the geocoding service might not understand (e.g., "cầu Tình Yêu", "quán bún chả cá nổi tiếng", "gần tượng cá chép"), use the 'retrieveKnowledge' tool with category 'locations' to find the exact address or nearby landmark.
+- Use the retrieved address or coordinates to call estimateRide instead of the ambiguous name.
+- If retrieved context contains a recommended pickup point for a location, suggest it to the user.
+- You can also retrieve location tips (e.g., traffic warnings, vehicle recommendations for specific routes).
+
+RETRIEVED CONTEXT:
+${state.retrievedDocuments && state.retrievedDocuments.length > 0 ? `The following location/service information was retrieved:\n${state.retrievedDocuments.map((d) => d.content).join('\n---\n')}` : 'No location context retrieved.'}
 
 CURRENT WORKFLOW STATE:
 - Logged-in User Profile: ${userName ? `Name: ${userName}, Phone: ${userPhone || 'None'}` : 'None (User not logged in)'}
