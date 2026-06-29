@@ -16,7 +16,7 @@ async function loadDocumentsFromDb(): Promise<Document[]> {
   if (rows.length === 0) {
     logger.warn(
       'No documents found in knowledge_documents table. ' +
-      'Add content via Supabase Dashboard or run the seed script.',
+        'Add content via Supabase Dashboard or run the seed script.',
     );
     return [];
   }
@@ -44,15 +44,21 @@ export async function loadAndSplitDocuments(): Promise<Document[]> {
   if (rawDocs.length === 0) return [];
 
   const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
-    chunkOverlap: 50,
+    chunkSize: 1000,
+    chunkOverlap: 100,
     separators: ['\n---\n', '\n## ', '\n### ', '\n\n', '\n', ' '],
   });
 
   const splitDocs = await splitter.splitDocuments(rawDocs);
 
+  // Filter out empty chunks or chunks that are just dividers like "---"
+  const cleanDocs = splitDocs.filter((doc) => {
+    const trimmed = doc.pageContent.trim();
+    return trimmed.length > 0 && trimmed !== '---' && trimmed !== '***';
+  });
+
   // Preserve category metadata from the source document
-  const enrichedDocs = splitDocs.map((doc) => {
+  const enrichedDocs = cleanDocs.map((doc) => {
     return new Document({
       pageContent: doc.pageContent,
       metadata: {

@@ -61,7 +61,7 @@ export default function LoginPage() {
             </span>
           </h1>
           <p className="text-xs text-gray-400 text-center max-w-[280px] leading-relaxed">
-            Your premium autonomous intra-city ride companion in Đà Nẵng
+            Your premium autonomous intra-city ride companion in Da Nang
           </p>
         </div>
 

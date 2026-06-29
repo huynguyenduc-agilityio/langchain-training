@@ -30,7 +30,7 @@ export async function queryRewriterNode(state: RideBookingState) {
 Your task: Rewrite the query to improve search results. The knowledge base contains:
 - FAQ about a ride-hailing service (operating hours, pricing, vehicle types, booking process)
 - Policies (cancellation, refund, disputes, safety)  
-- Location guides for Đà Nẵng city (landmarks, markets, beaches, restaurants, districts)
+- Location guides for Da Nang city (landmarks, markets, beaches, restaurants, districts)
 
 Strategies:
 - Use more general or alternative terms

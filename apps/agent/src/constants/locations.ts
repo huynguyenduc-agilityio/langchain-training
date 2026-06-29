@@ -1,5 +1,5 @@
 export const ACTIVE_CITY = {
-  name: 'Đà Nẵng',
+  name: 'Da Nang',
   englishName: 'Da Nang',
   timezoneOffset: 7,
   bounds: {

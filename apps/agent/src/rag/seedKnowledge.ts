@@ -90,10 +90,10 @@ async function main() {
     logger.info('\nRe-indexing vector store from database...');
     await indexDocuments();
 
-    console.log(
+    logger.info(
       '\nSeed complete! Knowledge base is now stored in Supabase DB.',
     );
-    console.log(
+    logger.info(
       '   You can manage content via Supabase Dashboard → Table Editor → knowledge_documents',
     );
     process.exit(0);

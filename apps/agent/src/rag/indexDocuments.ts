@@ -1,11 +1,11 @@
 import '../config/env';
-import { logError } from '@repo/logger';
+import { logger, logError } from '@repo/logger';
 import { indexDocuments } from './loader';
 
 async function main() {
   try {
     await indexDocuments();
-    console.log(
+    logger.info(
       '\nRe-indexing complete. Vector store is now up-to-date with database content.',
     );
     process.exit(0);

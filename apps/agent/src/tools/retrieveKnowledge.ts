@@ -7,7 +7,10 @@ import { RetrievedDocument } from '@/types';
 import { logError } from '@repo/logger';
 
 export const retrieveKnowledgeTool = tool(
-  async ({ query, category }): Promise<{
+  async ({
+    query,
+    category,
+  }): Promise<{
     documents: RetrievedDocument[];
     query: string;
     totalResults: number;
@@ -59,7 +62,7 @@ export const retrieveKnowledgeTool = tool(
         .enum(['faq', 'policies', 'locations'])
         .optional()
         .describe(
-          'Optional category to narrow the search: faq (service questions), policies (rules & regulations), locations (Đà Nẵng places & landmarks)',
+          'Optional category to narrow the search: faq (service questions), policies (rules & regulations), locations (Da Nang places & landmarks)',
         ),
     }),
   },

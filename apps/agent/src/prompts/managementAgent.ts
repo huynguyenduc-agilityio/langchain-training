@@ -1,5 +1,5 @@
 import { RideBookingState } from '@/state';
-import { getUserFromState } from '@/utils';
+import { getUserFromState, formatRetrievedDocuments } from '@/utils';
 
 export function MANAGEMENT_AGENT_SYSTEM_PROMPT(
   state: RideBookingState,
@@ -8,6 +8,8 @@ export function MANAGEMENT_AGENT_SYSTEM_PROMPT(
   const userProfile = userId
     ? `ID: ${userId}\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}`
     : 'Not authenticated / Mock User';
+
+  const retrievedContext = formatRetrievedDocuments(state.retrievedDocuments);
 
   return `You are the Trip Management assistant. Your job is to help users cancel active rides.
 
@@ -43,7 +45,7 @@ POLICY LOOKUP (RAG):
 - If the user reports an issue not covered by standard cancellation rules, retrieve the relevant policy before responding.
 
 RETRIEVED CONTEXT:
-${state.retrievedDocuments && state.retrievedDocuments.length > 0 ? `The following policy information was retrieved:\n${state.retrievedDocuments.map((d) => d.content).join('\n---\n')}` : 'No policy context retrieved.'}
+${retrievedContext ? `The following policy information was retrieved:\n${retrievedContext}` : 'No policy context retrieved.'}
 
 PROFILE:
 - Authenticated User:
