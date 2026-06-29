@@ -6,14 +6,15 @@ import { RunnableConfig } from '@langchain/core/runnables';
 import {
   sanitizeMessages,
   getFrontendActionNames,
-} from '@/utils/sanitizeMessages';
+  getCleanConfig,
+} from '@/utils';
 import { RideBookingState } from '@/state';
-import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
+import { MANAGEMENT_AGENT_SYSTEM_PROMPT } from '@/prompts';
 import {
   lookupTripsTool,
   dummyCancelConfirmTool,
   retrieveKnowledgeTool,
-} from '@/tools/index';
+} from '@/tools';
 import { LLM_CONFIG } from '@/constants';
 
 import { logError } from '@repo/logger';
@@ -50,7 +51,7 @@ export async function managementAgentNode(
 
     const response = await modelWithTools.invoke(
       [systemMessage, ...sanitizedMessages],
-      config,
+      getCleanConfig(config),
     );
 
     return {

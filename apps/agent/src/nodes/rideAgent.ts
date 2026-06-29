@@ -17,13 +17,15 @@ import {
   matchDriverTool,
   dummyRideConfirmTool,
   retrieveKnowledgeTool,
-} from '@/tools/index';
+} from '@/tools';
 import { LLM_CONFIG, AGENT_TOOLS } from '@/constants';
 import {
+  getUserFromState,
+  readUserMemory,
+  getCleanConfig,
   sanitizeMessages,
   getFrontendActionNames,
-} from '@/utils/sanitizeMessages';
-import { getUserFromState, readUserMemory } from '@/utils';
+} from '@/utils';
 import { UserMemory } from '@/types';
 import { getUserPhoneFromDb } from '@/db/operations';
 
@@ -131,7 +133,7 @@ export async function rideAgentNode(
   try {
     const response = await modelWithTools.invoke(
       [systemMessage, ...sanitizedMessages],
-      config,
+      getCleanConfig(config),
     );
 
     return {

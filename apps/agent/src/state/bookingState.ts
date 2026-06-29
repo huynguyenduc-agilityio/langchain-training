@@ -70,4 +70,3 @@ export const RideBookingStateAnnotation = Annotation.Root({
 });
 
 export type RideBookingState = typeof RideBookingStateAnnotation.State;
-

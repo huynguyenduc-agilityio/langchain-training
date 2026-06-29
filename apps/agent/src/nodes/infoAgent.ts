@@ -6,10 +6,11 @@ import { RunnableConfig } from '@langchain/core/runnables';
 import {
   sanitizeMessages,
   getFrontendActionNames,
-} from '@/utils/sanitizeMessages';
+  getCleanConfig,
+} from '@/utils';
 import { RideBookingState } from '@/state';
-import { INFO_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
-import { lookupTripsTool, retrieveKnowledgeTool } from '@/tools/index';
+import { INFO_AGENT_SYSTEM_PROMPT } from '@/prompts';
+import { lookupTripsTool, retrieveKnowledgeTool } from '@/tools';
 import { LLM_CONFIG } from '@/constants';
 
 import { logError } from '@repo/logger';
@@ -42,7 +43,7 @@ export async function infoAgentNode(
 
     const response = await modelWithTools.invoke(
       [systemMessage, ...sanitizedMessages],
-      config,
+      getCleanConfig(config),
     );
 
     return {

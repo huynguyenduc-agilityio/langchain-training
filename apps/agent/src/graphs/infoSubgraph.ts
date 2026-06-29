@@ -15,10 +15,7 @@ import { lookupTripsTool, retrieveKnowledgeTool } from '@/tools/index';
 
 const infoSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addNode('agent', infoAgentNode)
-  .addNode(
-    'tool_node',
-    new ToolNode([lookupTripsTool, retrieveKnowledgeTool]),
-  )
+  .addNode('tool_node', new ToolNode([lookupTripsTool, retrieveKnowledgeTool]))
   .addNode('process_results', processToolResults)
   .addNode('retrieval_grader', retrievalGraderNode)
   .addNode('query_rewriter', queryRewriterNode)

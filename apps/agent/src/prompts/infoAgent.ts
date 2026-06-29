@@ -1,6 +1,6 @@
 import { RideBookingState } from '@/state';
 import { ACTIVE_CITY } from '@/constants';
-import { getUserFromState } from '@/utils';
+import { getUserFromState, formatRetrievedDocuments } from '@/utils';
 
 export function INFO_AGENT_SYSTEM_PROMPT(state: RideBookingState): string {
   const { userId, name, email } = getUserFromState(state);
@@ -8,10 +8,7 @@ export function INFO_AGENT_SYSTEM_PROMPT(state: RideBookingState): string {
     ? `ID: ${userId}\nName: ${name || 'N/A'}\nEmail: ${email || 'N/A'}`
     : 'Not authenticated / Mock User';
 
-  const retrievedContext =
-    state.retrievedDocuments && state.retrievedDocuments.length > 0
-      ? state.retrievedDocuments.map((d) => d.content).join('\n---\n')
-      : null;
+  const retrievedContext = formatRetrievedDocuments(state.retrievedDocuments);
 
   return `You are the Information and FAQ assistant for City Ride Booking in ${ACTIVE_CITY.name}.
 Your job is to answer questions about our service and list the user's past trips.
@@ -23,7 +20,7 @@ KNOWLEDGE RETRIEVAL (Agentic RAG):
 - When the user asks about service rules, pricing, policies, vehicle types, locations, cancellation rules, or any factual information about the service, use the 'retrieveKnowledge' tool to search the knowledge base.
 - For very simple, common questions you are confident about (e.g. basic greetings), you may answer directly.
 - For specific or complex questions (detailed policies, refund process, location details, dispute resolution), ALWAYS use 'retrieveKnowledge' to get accurate information.
-- You can filter by category: 'faq' for service questions, 'policies' for rules and regulations, 'locations' for Đà Nẵng places and landmarks.
+- You can filter by category: 'faq' for service questions, 'policies' for rules and regulations, 'locations' for Da Nang places and landmarks.
 - If the retrieved information does not sufficiently answer the question, say so honestly rather than guessing.
 - Always base your answers on retrieved knowledge, not assumptions.
 
@@ -44,4 +41,3 @@ ${userProfile}
 CURRENT STATE:
 - User Trips: ${JSON.stringify(state.userTrips)}`;
 }
-
