@@ -19,15 +19,15 @@ import { LLM_CONFIG } from '@/constants';
 
 import { logError } from '@repo/logger';
 
+const baseModel = new ChatOpenAI({
+  model: LLM_CONFIG.DEFAULT_MODEL,
+  temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
+});
+
 export async function managementAgentNode(
   state: RideBookingState,
   config: RunnableConfig,
 ) {
-  const model = new ChatOpenAI({
-    model: LLM_CONFIG.DEFAULT_MODEL,
-    temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
-  });
-
   const backendTools = [
     lookupTripsTool,
     dummyCancelConfirmTool,
@@ -37,7 +37,10 @@ export async function managementAgentNode(
     state.copilotkit?.actions ?? [],
   );
 
-  const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
+  const modelWithTools = baseModel.bindTools([
+    ...backendTools,
+    ...frontendActions,
+  ]);
 
   const systemMessage = new SystemMessage({
     content: MANAGEMENT_AGENT_SYSTEM_PROMPT(state),

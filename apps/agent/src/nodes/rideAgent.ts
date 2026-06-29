@@ -31,15 +31,15 @@ import { getUserPhoneFromDb } from '@/db/operations';
 
 import { logError } from '@repo/logger';
 
+const baseModel = new ChatOpenAI({
+  model: LLM_CONFIG.DEFAULT_MODEL,
+  temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
+});
+
 export async function rideAgentNode(
   state: RideBookingState,
   config: RunnableConfig,
 ) {
-  const model = new ChatOpenAI({
-    model: LLM_CONFIG.DEFAULT_MODEL,
-    temperature: LLM_CONFIG.DEFAULT_TEMPERATURE,
-  });
-
   // Verify if the current tripDraft has been explicitly approved in the message history
   let tripApproved = false;
   if (state.tripDraft) {
@@ -104,7 +104,10 @@ export async function rideAgentNode(
     state.copilotkit?.actions ?? [],
   );
 
-  const modelWithTools = model.bindTools([...backendTools, ...frontendActions]);
+  const modelWithTools = baseModel.bindTools([
+    ...backendTools,
+    ...frontendActions,
+  ]);
 
   const { userId } = getUserFromState(state);
   let userPhone: string | undefined = undefined;

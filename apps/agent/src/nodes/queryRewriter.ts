@@ -5,6 +5,12 @@ import { RideBookingState } from '@/state';
 import { LLM_CONFIG } from '@/constants';
 import { logError } from '@repo/logger';
 
+const baseModel = new ChatOpenAI({
+  model: LLM_CONFIG.DEFAULT_MODEL,
+  temperature: 0.3,
+  streaming: false,
+});
+
 /**
  * Query Rewriter Node
  *
@@ -19,12 +25,6 @@ export async function queryRewriterNode(state: RideBookingState) {
   const currentRetryCount = state.retrievalRetryCount || 0;
 
   try {
-    const model = new ChatOpenAI({
-      model: LLM_CONFIG.DEFAULT_MODEL,
-      temperature: 0.3,
-      streaming: false,
-    });
-
     const systemPrompt = `You are a query rewriting specialist. The user asked a question, but the initial search did not return relevant results from our knowledge base.
 
 Your task: Rewrite the query to improve search results. The knowledge base contains:
@@ -44,7 +44,7 @@ Return ONLY the rewritten query text, nothing else.`;
 
 Rewrite this query to get better search results:`;
 
-    const response = await model.invoke([
+    const response = await baseModel.invoke([
       new SystemMessage({ content: systemPrompt }),
       new HumanMessage({ content: humanPrompt }),
     ]);
