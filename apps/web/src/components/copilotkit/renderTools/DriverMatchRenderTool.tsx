@@ -50,14 +50,14 @@ type DriverMatchRenderToolProps = {
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
 };
 
-export function DriverMatchRenderTool({ setTrips }: DriverMatchRenderToolProps) {
+export function DriverMatchRenderTool({
+  setTrips,
+}: DriverMatchRenderToolProps) {
   const handleDriverMatched = useCallback(
     (tripId: string, driver: Driver) => {
       setTrips((prev) =>
         prev.map((t) =>
-          t.id === tripId
-            ? { ...t, status: 'matched' as const, driver }
-            : t,
+          t.id === tripId ? { ...t, status: 'matched' as const, driver } : t,
         ),
       );
     },
@@ -88,7 +88,9 @@ export function DriverMatchRenderTool({ setTrips }: DriverMatchRenderToolProps) 
                 tripId={parsed.tripId}
                 driver={parsed.driver}
                 etaMinutes={parsed.etaMinutes}
-                onMount={() => handleDriverMatched(parsed.tripId, parsed.driver)}
+                onMount={() =>
+                  handleDriverMatched(parsed.tripId, parsed.driver)
+                }
               />
             );
           } else {
