@@ -2,10 +2,8 @@ import { estimateRideTool } from './estimateRide';
 import { requestRideTool } from './requestRide';
 import { matchDriverTool } from './matchDriver';
 import { lookupTripsTool } from './lookupTrips';
-import {
-  dummyRideConfirmTool,
-  dummyCancelConfirmTool,
-} from './dummyConfirmTools';
+import { dummyRideConfirmTool } from './dummyConfirmTools';
+import { cancelTripTool } from './cancelTrip';
 import { retrieveKnowledgeTool } from './retrieveKnowledge';
 
 export {
@@ -14,7 +12,7 @@ export {
   matchDriverTool,
   lookupTripsTool,
   dummyRideConfirmTool,
-  dummyCancelConfirmTool,
+  cancelTripTool,
   retrieveKnowledgeTool,
 };
 
@@ -24,6 +22,6 @@ export const tools = [
   matchDriverTool,
   lookupTripsTool,
   dummyRideConfirmTool,
-  dummyCancelConfirmTool,
+  cancelTripTool,
   retrieveKnowledgeTool,
 ];

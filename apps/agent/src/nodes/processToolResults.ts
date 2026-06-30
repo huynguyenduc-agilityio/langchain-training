@@ -49,6 +49,18 @@ export async function processToolResults(state: RideBookingState) {
         };
       }
 
+      if (toolName === AGENT_TOOLS.CANCEL_TRIP.name) {
+        if (parsed.success === false) {
+          return {
+            cancellationResult: {
+              success: false,
+              reason: parsed.reason || 'Cancellation check failed.',
+            },
+          };
+        }
+        return {};
+      }
+
       if (toolName === AGENT_TOOLS.MATCH_DRIVER.name) {
         if (parsed.success === false) {
           // If matching failed, do not update userTrips or clear draft in graph state.

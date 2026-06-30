@@ -2,7 +2,8 @@ import { AIMessage, ToolMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
-import { AGENT_TOOLS, UI_TERMINAL_TOOLS } from '@/constants';
+import { AGENT_TOOLS } from '@/constants';
+import { DISPLAY_TOOL_NAMES } from '@repo/shared';
 
 /**
  * Router function for input validation.
@@ -68,8 +69,9 @@ export function supervisorRouter(state: RideBookingState) {
     if (isAI && hasToolCalls) {
       const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
       const frontendActionNames = new Set(actions.map((a) => a.name));
-      const allAreFrontendActions = toolCalls.every((tc) =>
-        frontendActionNames.has(tc.name),
+      const allAreFrontendActions = toolCalls.every(
+        (tc) =>
+          frontendActionNames.has(tc.name) || DISPLAY_TOOL_NAMES.has(tc.name),
       );
       if (allAreFrontendActions) {
         return '__end__';
@@ -83,13 +85,12 @@ export function supervisorRouter(state: RideBookingState) {
       const toolName = toolMsg.name;
       const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
       const frontendActionNames = new Set(actions.map((a) => a.name));
-      if (toolName && frontendActionNames.has(toolName)) {
+      if (
+        toolName &&
+        (frontendActionNames.has(toolName) || DISPLAY_TOOL_NAMES.has(toolName))
+      ) {
         return '__end__';
       }
-
-      // UI-terminal tools render a self-contained card on the frontend.
-      // Behavior (always vs success-only) is defined in the UI_TERMINAL_TOOLS registry.
-      if (shouldEndAfterTool(toolMsg)) return '__end__';
     }
   }
 
@@ -122,7 +123,10 @@ export function routeAfterChat(state: RideBookingState) {
 
     // If it's a frontend action, CopilotKit will execute it on the client side.
     // We only route to tool_node if it's a backend tool.
-    if (!actions || actions.every((action) => action.name !== toolCallName)) {
+    if (
+      (!actions || actions.every((action) => action.name !== toolCallName)) &&
+      !DISPLAY_TOOL_NAMES.has(toolCallName)
+    ) {
       return 'tool_node';
     }
   }
@@ -147,7 +151,10 @@ export function routeRideAgent(state: RideBookingState) {
     }
 
     const actions = state.copilotkit?.actions;
-    if (!actions || actions.every((action) => action.name !== toolCallName)) {
+    if (
+      (!actions || actions.every((action) => action.name !== toolCallName)) &&
+      !DISPLAY_TOOL_NAMES.has(toolCallName)
+    ) {
       return 'tool_node';
     }
   }
@@ -157,8 +164,7 @@ export function routeRideAgent(state: RideBookingState) {
 
 /**
  * Routing logic for Management Agent:
- * Routes showCancelConfirm to the cancel_confirm interrupt node, backend tools to tool_node,
- * and other actions to __end__.
+ * Routes backend tools to tool_node, and other actions to __end__.
  */
 export function routeManagementAgent(state: RideBookingState) {
   const messages = state.messages || [];
@@ -167,12 +173,11 @@ export function routeManagementAgent(state: RideBookingState) {
   if (lastMessage && lastMessage.tool_calls?.length) {
     const toolCallName = lastMessage.tool_calls[0].name;
 
-    if (toolCallName === AGENT_TOOLS.CONFIRM_CANCEL.name) {
-      return 'cancel_confirm';
-    }
-
     const actions = state.copilotkit?.actions;
-    if (!actions || actions.every((action) => action.name !== toolCallName)) {
+    if (
+      (!actions || actions.every((action) => action.name !== toolCallName)) &&
+      !DISPLAY_TOOL_NAMES.has(toolCallName)
+    ) {
       return 'tool_node';
     }
   }
@@ -181,38 +186,12 @@ export function routeManagementAgent(state: RideBookingState) {
 }
 
 /**
- * Checks whether routing should end immediately after a UI-terminal tool runs.
- * Behavior is driven by the UI_TERMINAL_TOOLS registry (constants/tools.ts):
- * - 'always'  → end regardless of tool result
- * - 'success' → end only when tool result contains { success: true }
- */
-function shouldEndAfterTool(message: ToolMessage): boolean {
-  const config = UI_TERMINAL_TOOLS[message.name ?? ''];
-  if (!config) return false;
-
-  if (config.endOn === 'always') return true;
-
-  try {
-    const content =
-      typeof message.content === 'string'
-        ? JSON.parse(message.content)
-        : message.content;
-    return content?.success === true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Generic router for after tool_node → process_results.
- * Routes to '__end__' if the last tool was a UI-terminal tool that should end,
- * otherwise routes back to 'agent' for LLM to continue the flow.
- *
  * Reusable across ride, management, and info subgraphs.
  */
 export function routeAfterToolResults(
   state: RideBookingState,
-): 'agent' | '__end__' {
+): 'render_estimate' | 'render_match_driver' | 'agent' | '__end__' {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
 
@@ -222,7 +201,45 @@ export function routeAfterToolResults(
     lastMessage?.constructor?.name?.toLowerCase();
 
   if (msgType === 'tool') {
-    if (shouldEndAfterTool(lastMessage as ToolMessage)) return '__end__';
+    const toolMsg = lastMessage as ToolMessage;
+
+    if (toolMsg.name === AGENT_TOOLS.MATCH_DRIVER.name) {
+      return 'render_match_driver';
+    }
+
+    if (
+      toolMsg.name === AGENT_TOOLS.ESTIMATE_RIDE.name &&
+      state.rideEstimate &&
+      state.rideEstimate.options?.length
+    ) {
+      try {
+        const parsed =
+          typeof toolMsg.content === 'string'
+            ? JSON.parse(toolMsg.content)
+            : toolMsg.content;
+
+        if (parsed && !parsed.error) {
+          const aiMessages = messages.filter(
+            (m) =>
+              (m._getType?.() ||
+                m.type ||
+                m.constructor?.name?.toLowerCase()) === 'ai',
+          );
+          const lastAi = aiMessages[aiMessages.length - 1] as
+            | AIMessage
+            | undefined;
+          const calledRequestRideToo = lastAi?.tool_calls?.some(
+            (tc) => tc.name === AGENT_TOOLS.REQUEST_RIDE.name,
+          );
+
+          if (!calledRequestRideToo) {
+            return 'render_estimate';
+          }
+        }
+      } catch {
+        // Ignore JSON parse errors
+      }
+    }
   }
 
   return 'agent';
@@ -233,7 +250,7 @@ export function routeAfterToolResults(
  */
 export function routeAfterInfoToolResults(
   state: RideBookingState,
-): 'retrieval_grader' | 'agent' | '__end__' {
+): 'retrieval_grader' | 'render_trips' | 'agent' | '__end__' {
   const messages = state.messages || [];
   const lastMessage = messages[messages.length - 1];
 
@@ -250,7 +267,46 @@ export function routeAfterInfoToolResults(
       return 'retrieval_grader';
     }
 
-    if (shouldEndAfterTool(toolMsg)) return '__end__';
+    if (toolMsg.name === AGENT_TOOLS.LOOKUP_TRIPS.name) {
+      return 'render_trips';
+    }
+  }
+
+  return 'agent';
+}
+
+/**
+ * Router for Management Agent subgraph after process_results.
+ */
+export function routeAfterManagementToolResults(
+  state: RideBookingState,
+): 'cancel_confirm' | 'render_cancel' | 'agent' {
+  if (state.cancellationResult) {
+    return 'render_cancel';
+  }
+
+  const messages = state.messages || [];
+  const lastMessage = messages[messages.length - 1];
+  const msgType =
+    lastMessage?._getType?.() ||
+    lastMessage?.type ||
+    lastMessage?.constructor?.name?.toLowerCase();
+
+  if (msgType === 'tool') {
+    const toolMsg = lastMessage as ToolMessage;
+    if (toolMsg.name === AGENT_TOOLS.CANCEL_TRIP.name) {
+      try {
+        const parsed =
+          typeof toolMsg.content === 'string'
+            ? JSON.parse(toolMsg.content)
+            : toolMsg.content;
+        if (parsed && parsed.success && parsed.needs_confirm) {
+          return 'cancel_confirm';
+        }
+      } catch {
+        // Ignore
+      }
+    }
   }
 
   return 'agent';

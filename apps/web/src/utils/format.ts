@@ -26,7 +26,9 @@ export function formatTime(isoString: string): string {
   }
 }
 
-export function formatRelativeTime(isoString: string | undefined | null): string {
+export function formatRelativeTime(
+  isoString: string | undefined | null,
+): string {
   if (!isoString) return '';
   try {
     const diff = Date.now() - new Date(isoString).getTime();
@@ -43,4 +45,3 @@ export function formatRelativeTime(isoString: string | undefined | null): string
     return '';
   }
 }
-
