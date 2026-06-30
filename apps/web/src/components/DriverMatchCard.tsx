@@ -16,7 +16,7 @@ export function DriverMatchCard({
   // Notify parent once on mount so it can sync trips state.
   useEffect(() => {
     onMount?.();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

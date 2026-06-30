@@ -3,6 +3,8 @@ import { convertActionsToDynamicStructuredTools } from '@copilotkit/sdk-js/langg
 import { SystemMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 
+import { logError } from '@repo/logger';
+import { COPILOT_TOOLS } from '@repo/shared';
 import {
   sanitizeMessages,
   getFrontendActionNames,
@@ -12,8 +14,6 @@ import { RideBookingState } from '@/state';
 import { INFO_AGENT_SYSTEM_PROMPT } from '@/prompts';
 import { lookupTripsTool, retrieveKnowledgeTool } from '@/tools';
 import { LLM_CONFIG } from '@/constants';
-
-import { logError } from '@repo/logger';
 
 const baseModel = new ChatOpenAI({
   model: LLM_CONFIG.DEFAULT_MODEL,
@@ -29,9 +29,13 @@ export async function infoAgentNode(
     state.copilotkit?.actions ?? [],
   );
 
+  const filteredFrontendActions = frontendActions.filter(
+    (action) => action.name !== COPILOT_TOOLS.TRIPS_LIST.name,
+  );
+
   const modelWithTools = baseModel.bindTools([
     ...backendTools,
-    ...frontendActions,
+    ...filteredFrontendActions,
   ]);
 
   const systemMessage = new SystemMessage({

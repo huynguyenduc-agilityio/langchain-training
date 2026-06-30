@@ -3,7 +3,11 @@ import { ToolMessage, AIMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
 import { updateTripInDb } from '@/db/operations';
-import { CANCELLATION_FEE_CONFIG, VEHICLE_BIKE } from '@/constants';
+import {
+  CANCELLATION_FEE_CONFIG,
+  VEHICLE_BIKE,
+  AGENT_TOOLS,
+} from '@/constants';
 import { CancelConfirmResult } from '@/types';
 
 /**
@@ -13,8 +17,14 @@ import { CancelConfirmResult } from '@/types';
  */
 export async function cancelConfirmNode(state: RideBookingState) {
   const messages = state.messages || [];
-  const lastMessage = messages[messages.length - 1] as AIMessage;
-  const toolCall = lastMessage.tool_calls?.[0];
+  const lastAiMessage = [...messages]
+    .reverse()
+    .find(
+      (m) =>
+        (m._getType?.() || m.type || m.constructor?.name?.toLowerCase()) ===
+          'ai' && (m as AIMessage).tool_calls?.length,
+    ) as AIMessage | undefined;
+  const toolCall = lastAiMessage?.tool_calls?.[0];
   const tripId = toolCall?.args?.tripId;
 
   // Lookup trip details from state
@@ -60,21 +70,28 @@ export async function cancelConfirmNode(state: RideBookingState) {
       update: {
         messages: [
           new ToolMessage({
-            name: toolCall?.name || 'showCancelConfirm',
+            name: toolCall?.name || AGENT_TOOLS.CANCEL_TRIP.name,
             content: JSON.stringify({ approved: true }),
             tool_call_id: toolCall?.id || '',
           }),
         ],
         userTrips: updatedUserTrips,
+        cancellationResult: {
+          success: true,
+          tripId,
+          pickup: trip?.pickup || '',
+          destination: trip?.destination || '',
+          cancellationFee,
+        },
       },
-      goto: 'agent',
+      goto: 'render_cancel',
     });
   } else {
     return new Command({
       update: {
         messages: [
           new ToolMessage({
-            name: toolCall?.name || 'showCancelConfirm',
+            name: toolCall?.name || AGENT_TOOLS.CANCEL_TRIP.name,
             content: JSON.stringify({ approved: false }),
             tool_call_id: toolCall?.id || '',
           }),

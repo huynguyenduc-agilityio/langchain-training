@@ -67,6 +67,19 @@ export const RideBookingStateAnnotation = Annotation.Root({
     reducer: (_, value) => value,
     default: () => 0,
   }),
+
+  // Result of the cancellation to be displayed via frontend tool
+  cancellationResult: Annotation<{
+    success: boolean;
+    tripId?: string;
+    pickup?: string;
+    destination?: string;
+    cancellationFee?: number;
+    reason?: string;
+  } | null>({
+    reducer: (_, value) => value,
+    default: () => null,
+  }),
 });
 
 export type RideBookingState = typeof RideBookingStateAnnotation.State;

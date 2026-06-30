@@ -15,10 +15,10 @@ import {
   useCopilotKit,
 } from '@copilotkit/react-core/v2';
 
+import { DISPLAY_TOOL_NAMES } from '@repo/shared';
 import { checkHasVisibleMessages, generateUUID } from '@/utils';
-import { COPILOTKIT_AGENT_ID, DISPLAY_TOOL_NAMES } from '@/constants';
+import { COPILOTKIT_AGENT_ID } from '@/constants';
 import { useAgentStore } from '@/store/useAgentStore';
-
 import { AssistantMessage } from './chat/AssistantMessage';
 import { UserMessage } from './chat/UserMessage';
 import { HiddenTypingIndicator, TypingIndicator } from './chat/TypingIndicator';

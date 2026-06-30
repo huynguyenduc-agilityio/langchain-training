@@ -9,6 +9,9 @@ import { RunnableConfig } from '@langchain/core/runnables';
 import { StructuredTool } from '@langchain/core/tools';
 import { BaseStore } from '@langchain/langgraph';
 
+import { logError } from '@repo/logger';
+import { COPILOT_TOOLS } from '@repo/shared';
+
 import { RideBookingState } from '@/state';
 import { RIDE_AGENT_SYSTEM_PROMPT } from '@/prompts/index';
 import {
@@ -28,8 +31,6 @@ import {
 } from '@/utils';
 import { UserMemory } from '@/types';
 import { getUserPhoneFromDb } from '@/db/operations';
-
-import { logError } from '@repo/logger';
 
 const baseModel = new ChatOpenAI({
   model: LLM_CONFIG.DEFAULT_MODEL,
@@ -104,9 +105,15 @@ export async function rideAgentNode(
     state.copilotkit?.actions ?? [],
   );
 
+  const filteredFrontendActions = frontendActions.filter(
+    (action) =>
+      action.name !== COPILOT_TOOLS.RIDE_ESTIMATE.name &&
+      action.name !== COPILOT_TOOLS.DRIVER_MATCH.name,
+  );
+
   const modelWithTools = baseModel.bindTools([
     ...backendTools,
-    ...frontendActions,
+    ...filteredFrontendActions,
   ]);
 
   const { userId } = getUserFromState(state);

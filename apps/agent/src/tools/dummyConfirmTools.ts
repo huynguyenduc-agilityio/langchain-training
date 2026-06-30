@@ -17,11 +17,3 @@ export const dummyRideConfirmTool = tool(async () => ({ success: true }), {
     price: z.number().describe('The total ride price'),
   }),
 });
-
-export const dummyCancelConfirmTool = tool(async () => ({ success: true }), {
-  name: AGENT_TOOLS.CONFIRM_CANCEL.name,
-  description: AGENT_TOOLS.CONFIRM_CANCEL.description,
-  schema: z.object({
-    tripId: z.string().describe('The trip ID to cancel'),
-  }),
-});

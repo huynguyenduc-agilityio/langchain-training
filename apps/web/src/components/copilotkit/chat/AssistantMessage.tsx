@@ -7,8 +7,8 @@ import {
   CopilotChatToolCallsView,
 } from '@copilotkit/react-core/v2';
 
+import { DISPLAY_TOOL_NAMES } from '@repo/shared';
 import { cn } from '@/utils/className';
-import { DISPLAY_TOOL_NAMES } from '@/constants';
 import { ErrorBoundary } from '../../ErrorBoundary';
 import { AssistantMessageErrorFallback } from './AssistantMessageErrorFallback';
 import { TypingIndicator } from './TypingIndicator';

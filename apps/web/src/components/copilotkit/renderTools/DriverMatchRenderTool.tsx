@@ -1,15 +1,19 @@
 'use client';
 
 import { useRenderTool } from '@copilotkit/react-core/v2';
-import { Loader2 } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { z } from 'zod';
 
+import { COPILOT_TOOLS } from '@repo/shared';
 import { DriverMatchCard } from '@/components/DriverMatchCard';
 import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 import { Card, CardContent } from '@/components/ui/card';
-import { COPILOT_TOOLS } from '@/constants';
+import { Loader2 } from 'lucide-react';
 import type { Driver, Trip } from '@repo/shared';
+
+type DriverMatchRenderToolProps = {
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+};
 
 function SearchingDriverCard() {
   return (
@@ -21,7 +25,6 @@ function SearchingDriverCard() {
           Finding your driver...
         </span>
       </div>
-
       {/* Content */}
       <CardContent className="p-4 flex flex-col items-center justify-center space-y-4 py-6">
         <div className="relative flex items-center justify-center w-14 h-14">
@@ -46,10 +49,6 @@ function SearchingDriverCard() {
   );
 }
 
-type DriverMatchRenderToolProps = {
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-};
-
 export function DriverMatchRenderTool({
   setTrips,
 }: DriverMatchRenderToolProps) {
@@ -64,49 +63,56 @@ export function DriverMatchRenderTool({
     [setTrips],
   );
 
+  const parametersSchema = z.object({
+    success: z.boolean().describe('Whether the driver match was successful'),
+    tripId: z.string().describe('The trip ID'),
+    driver: z.any().optional().describe('The matched driver details'),
+    etaMinutes: z
+      .number()
+      .optional()
+      .describe('Estimated time of arrival in minutes'),
+    error: z.string().optional().describe('Error code on failure'),
+    message: z.string().optional().describe('Error message on failure'),
+  });
+
+  // Render search state while the backend matchDriver tool is executing
   useRenderTool({
-    name: COPILOT_TOOLS.MATCH_DRIVER.name,
+    name: 'matchDriver',
     parameters: z.object({
-      tripId: z.string().describe('The trip ID to match a driver for'),
-      vehicleType: z
-        .enum(['bike', 'car4', 'car7'])
-        .describe('The vehicle type of the request'),
-      pickupLat: z.number().describe('Latitude of the pickup location'),
-      pickupLng: z.number().describe('Longitude of the pickup location'),
+      tripId: z.string().optional(),
+      vehicleType: z.string().optional(),
+      pickupLat: z.number().optional(),
+      pickupLng: z.number().optional(),
     }),
-    render: ({ status, result }) => {
+    render: ({ status }) => {
       if (status === 'inProgress' || status === 'executing') {
         return <SearchingDriverCard />;
       }
-      if (status === 'complete' && result) {
-        try {
-          const parsed =
-            typeof result === 'string' ? JSON.parse(result) : result;
-          if (parsed.success && parsed.driver) {
-            return (
-              <DriverMatchCard
-                tripId={parsed.tripId}
-                driver={parsed.driver}
-                etaMinutes={parsed.etaMinutes}
-                onMount={() =>
-                  handleDriverMatched(parsed.tripId, parsed.driver)
-                }
-              />
-            );
-          } else {
-            return (
-              <DriverMatchErrorCard
-                tripId={parsed.tripId || ''}
-                reason={parsed.message || parsed.error || ''}
-              />
-            );
-          }
-        } catch (e) {
-          console.error('Failed to parse matchDriver result:', e);
-          return <></>;
-        }
-      }
       return <></>;
+    },
+  });
+
+  useRenderTool({
+    name: COPILOT_TOOLS.DRIVER_MATCH.name,
+    parameters: parametersSchema,
+    render: ({ parameters: args }) => {
+      if (args.success && args.driver) {
+        return (
+          <DriverMatchCard
+            tripId={args.tripId || ''}
+            driver={args.driver}
+            etaMinutes={args.etaMinutes || 0}
+            onMount={() => handleDriverMatched(args.tripId || '', args.driver)}
+          />
+        );
+      } else {
+        return (
+          <DriverMatchErrorCard
+            tripId={args.tripId || ''}
+            reason={args.message || args.error || ''}
+          />
+        );
+      }
     },
   });
 
