@@ -1,4 +1,4 @@
-import { Command, interrupt } from '@langchain/langgraph';
+import { Command, interrupt, END } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
@@ -8,12 +8,13 @@ import {
   VEHICLE_BIKE,
   AGENT_TOOLS,
 } from '@/constants';
-import { CancelConfirmResult } from '@/types';
+import { COPILOT_TOOLS } from '@repo/shared';
+import { CancelConfirmResult } from '@repo/shared';
 
 /**
  * Cancellation Confirmation Node
  * Pauses graph execution using native interrupt, warns about fees,
- * and updates state using the Command pattern.
+ * updates state, and generates render messages directly upon approval.
  */
 export async function cancelConfirmNode(state: RideBookingState) {
   const messages = state.messages || [];
@@ -66,6 +67,31 @@ export async function cancelConfirmNode(state: RideBookingState) {
         : t,
     );
 
+    // Generate render cancel success messages
+    const toolCallId = `call_render_cancel_${Date.now()}`;
+    const renderAiMsg = new AIMessage({
+      content: '',
+      tool_calls: [
+        {
+          id: toolCallId,
+          name: COPILOT_TOOLS.CANCEL_RIDE.name,
+          args: {
+            success: true,
+            tripId,
+            pickup: trip?.pickup || '',
+            destination: trip?.destination || '',
+            cancellationFee,
+            reason: '',
+          },
+        },
+      ],
+    });
+    const renderToolMsg = new ToolMessage({
+      tool_call_id: toolCallId,
+      name: COPILOT_TOOLS.CANCEL_RIDE.name,
+      content: JSON.stringify({ displayed: true }),
+    });
+
     return new Command({
       update: {
         messages: [
@@ -74,17 +100,13 @@ export async function cancelConfirmNode(state: RideBookingState) {
             content: JSON.stringify({ approved: true }),
             tool_call_id: toolCall?.id || '',
           }),
+          renderAiMsg,
+          renderToolMsg,
         ],
         userTrips: updatedUserTrips,
-        cancellationResult: {
-          success: true,
-          tripId,
-          pickup: trip?.pickup || '',
-          destination: trip?.destination || '',
-          cancellationFee,
-        },
+        cancellationResult: null,
       },
-      goto: 'render_cancel',
+      goto: END,
     });
   } else {
     return new Command({

@@ -9,9 +9,7 @@ import {
   routeRideAgent,
   routeAfterToolResults,
   memoryWriterNode,
-  renderEstimateNode,
-  renderMatchDriverNode,
-} from '@/nodes/index';
+} from '@/nodes/ride';
 import {
   estimateRideTool,
   requestRideTool,
@@ -31,8 +29,6 @@ const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     ]),
   )
   .addNode('process_results', processToolResults)
-  .addNode('render_estimate', renderEstimateNode)
-  .addNode('render_match_driver', renderMatchDriverNode)
   .addNode('ride_confirm', rideConfirmNode, {
     ends: ['agent', 'memory_writer', '__end__'],
   })
@@ -46,13 +42,9 @@ const rideSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   })
   .addEdge('tool_node', 'process_results')
   .addConditionalEdges('process_results', routeAfterToolResults, {
-    render_estimate: 'render_estimate',
-    render_match_driver: 'render_match_driver',
     agent: 'agent',
     __end__: '__end__',
   })
-  .addEdge('render_estimate', '__end__')
-  .addEdge('render_match_driver', '__end__')
   .addEdge('memory_writer', 'agent');
 
 export const rideSubgraph = rideSubgraphWorkflow.compile();

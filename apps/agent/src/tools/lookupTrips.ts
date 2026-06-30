@@ -2,7 +2,7 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 import { getTripsByPhoneFromDb, getTripsByUserIdFromDb } from '@/db/operations';
-import { Trip } from '@/types';
+import { Trip } from '@repo/shared';
 import { AGENT_TOOLS, BUSINESS_RULES } from '@/constants';
 
 export const lookupTripsTool = tool(

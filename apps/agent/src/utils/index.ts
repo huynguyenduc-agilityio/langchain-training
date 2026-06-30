@@ -7,3 +7,4 @@ export * from './memory';
 export * from './config';
 export * from './sanitizeMessages';
 export * from './rag';
+export * from './agentFactory';

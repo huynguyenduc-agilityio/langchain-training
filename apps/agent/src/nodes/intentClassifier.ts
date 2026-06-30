@@ -9,6 +9,7 @@ import {
 import { RideBookingState } from '@/state';
 import { INTENT_CLASSIFIER_SYSTEM_PROMPT } from '@/prompts/index';
 import { LLM_CONFIG } from '@/constants';
+import { logError } from '@repo/logger';
 
 const intentSchema = z.object({
   category: z.enum([
@@ -21,8 +22,6 @@ const intentSchema = z.object({
   ]),
   confidence: z.number(),
 });
-
-import { logError } from '@repo/logger';
 
 export async function intentClassifierNode(state: RideBookingState) {
   const model = new ChatOpenAI({

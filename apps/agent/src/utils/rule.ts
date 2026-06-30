@@ -1,4 +1,4 @@
-import { Trip } from '@/types';
+import { Trip } from '@repo/shared';
 import { ACTIVE_CITY, BUSINESS_RULES } from '@/constants';
 
 /**

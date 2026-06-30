@@ -2,7 +2,7 @@ import { eq, desc, like } from 'drizzle-orm';
 
 import { db } from './index';
 import { trips, drivers, users } from './schema';
-import { Trip, Driver, TripStatus, VehicleType } from '@/types';
+import { Trip, Driver, TripStatus, VehicleType } from '@repo/shared';
 import { COORDINATES } from '@/constants';
 import { sanitizePhone } from '@/utils';
 import { logError } from '@repo/logger';

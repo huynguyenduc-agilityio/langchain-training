@@ -8,8 +8,7 @@ import {
   cancelConfirmNode,
   routeManagementAgent,
   routeAfterManagementToolResults,
-  renderCancelNode,
-} from '@/nodes/index';
+} from '@/nodes/management';
 import {
   lookupTripsTool,
   cancelTripTool,
@@ -23,9 +22,8 @@ const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
     new ToolNode([lookupTripsTool, cancelTripTool, retrieveKnowledgeTool]),
   )
   .addNode('process_results', processToolResults)
-  .addNode('render_cancel', renderCancelNode)
   .addNode('cancel_confirm', cancelConfirmNode, {
-    ends: ['agent', 'render_cancel'],
+    ends: ['agent', '__end__'],
   })
 
   .addEdge(START, 'agent')
@@ -37,9 +35,8 @@ const managementSubgraphWorkflow = new StateGraph(RideBookingStateAnnotation)
   .addEdge('tool_node', 'process_results')
   .addConditionalEdges('process_results', routeAfterManagementToolResults, {
     cancel_confirm: 'cancel_confirm',
-    render_cancel: 'render_cancel',
     agent: 'agent',
-  })
-  .addEdge('render_cancel', '__end__');
+    __end__: '__end__',
+  });
 
 export const managementSubgraph = managementSubgraphWorkflow.compile();
