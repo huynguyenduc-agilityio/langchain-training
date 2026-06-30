@@ -1,5 +1,6 @@
 import { BaseStore } from '@langchain/langgraph';
-import { Trip, UserMemory } from '@/types';
+import { Trip } from '@repo/shared';
+import { UserMemory } from '@/types';
 
 /**
  * Check if a UserMemory object has any meaningful preference data

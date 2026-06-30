@@ -1,16 +1,8 @@
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RideBookingState } from '@/state';
 import { CopilotKitAction } from '@/types';
+import { INTENT_TO_FLOW } from '@/constants';
 
-/**
- * Supervisor node that acts as a central control router/anchor.
- *
- * Also patches message history: when a subgraph ends with an AIMessage
- * containing frontend action tool_calls (handled by CopilotKit client-side),
- * those tool_calls have no corresponding ToolMessage. OpenAI API requires
- * every tool_call to have a ToolMessage response. This node injects synthetic
- * ToolMessages to prevent API errors on subsequent invocations.
- */
 export async function supervisorNode(state: RideBookingState) {
   const messages = state.messages || [];
   const actions = (state.copilotkit?.actions || []) as CopilotKitAction[];
@@ -54,24 +46,12 @@ export async function supervisorNode(state: RideBookingState) {
     }
   }
 
-  // Determine the active flow based on the classified intent.
-  // When intent is explicit, update the flow. When 'unknown', preserve context.
   const category = state.intent?.category || 'unknown';
   let activeFlow = state.activeFlow ?? null;
 
-  switch (category) {
-    case 'estimate':
-    case 'request':
-      activeFlow = 'ride';
-      break;
-    case 'cancel':
-      activeFlow = 'management';
-      break;
-    case 'view_trips':
-    case 'faq':
-      activeFlow = 'info';
-      break;
-    // 'unknown' — keep activeFlow unchanged to preserve conversation context
+  const targetFlow = INTENT_TO_FLOW[category];
+  if (targetFlow !== null) {
+    activeFlow = targetFlow;
   }
 
   if (syntheticMessages.length > 0) {

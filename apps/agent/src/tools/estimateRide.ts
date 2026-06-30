@@ -8,7 +8,8 @@ import {
   metersToKm,
   secondsToMinutes,
 } from '@/utils';
-import { EstimateRideResult, ORSDirectionsResponse } from '@/types';
+import { EstimateRideResult } from '@repo/shared';
+import { ORSDirectionsResponse } from '@/types';
 import {
   API_ENDPOINTS,
   PRICING_CONFIG,

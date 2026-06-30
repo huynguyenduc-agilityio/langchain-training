@@ -1,7 +1,7 @@
 import { Annotation } from '@langchain/langgraph';
 import { CopilotKitStateAnnotation } from '@copilotkit/sdk-js/langgraph';
 
-import { Trip, RideEstimate } from '@/types';
+import { Trip, RideEstimate } from '@repo/shared';
 import { RideIntent } from '@/types';
 import { RetrievedDocument } from '@/types';
 

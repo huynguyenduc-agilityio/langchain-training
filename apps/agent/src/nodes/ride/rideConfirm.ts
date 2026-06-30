@@ -1,10 +1,11 @@
+import crypto from 'crypto';
 import { Command, interrupt, END } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 
 import { RideBookingState } from '@/state';
 import { addTripToDb } from '@/db/operations';
-import { Trip, RideConfirmResult, RideRequestArgs } from '@/types';
+import { Trip, RideConfirmResult, RideRequestArgs } from '@repo/shared';
 import {
   isWithinOperatingHours,
   hasTooManyActiveTrips,
@@ -85,7 +86,7 @@ export async function rideConfirmNode(
       );
     }
 
-    const newTripId = result.tripId || `TRP-${Date.now()}`;
+    const newTripId = result.tripId || `TRP-${crypto.randomUUID()}`;
     const newTrip: Trip = {
       id: newTripId,
       userId,
