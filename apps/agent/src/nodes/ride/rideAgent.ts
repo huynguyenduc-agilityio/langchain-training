@@ -1,5 +1,3 @@
-import { RunnableConfig } from '@langchain/core/runnables';
-import { BaseStore } from '@langchain/langgraph';
 import { StructuredTool } from '@langchain/core/tools';
 
 import { COPILOT_TOOLS } from '@repo/shared';
@@ -19,6 +17,7 @@ import {
 } from '@/utils';
 import { UserMemory } from '@/types';
 import { getUserPhoneFromDb } from '@/db/operations';
+import { getMemoryStore } from '@/db/memoryStore';
 
 export const rideAgentNode = createAgentNode({
   logPrefix: '[RideAgent]',
@@ -54,13 +53,17 @@ export const rideAgentNode = createAgentNode({
     return backendTools;
   },
   getSystemPrompt: async (state, config) => {
-    const { userId } = getUserFromState(state);
+    const { userId: contextUserId } = getUserFromState(state);
+    const userId =
+      contextUserId ||
+      config?.configurable?.copilotkit_properties?.userId ||
+      config?.configurable?.userId;
     let userPhone: string | undefined = undefined;
     let userMemory: UserMemory | undefined = undefined;
 
     if (userId) {
       userPhone = await getUserPhoneFromDb(userId);
-      const store = (config as RunnableConfig & { store?: BaseStore }).store;
+      const store = await getMemoryStore();
       if (store) {
         try {
           userMemory = await readUserMemory(store, userId);
@@ -69,7 +72,6 @@ export const rideAgentNode = createAgentNode({
         }
       }
     }
-
     return RIDE_AGENT_SYSTEM_PROMPT(state, userPhone, userMemory);
   },
 });
