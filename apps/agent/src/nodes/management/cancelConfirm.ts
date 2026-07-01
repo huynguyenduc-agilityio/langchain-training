@@ -2,7 +2,7 @@ import { Command, interrupt, END } from '@langchain/langgraph';
 import { ToolMessage, AIMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
-import { updateTripInDb } from '@/db/operations';
+import { updateTripInDb, getTripFromDb } from '@/db/operations';
 import {
   CANCELLATION_FEE_CONFIG,
   VEHICLE_BIKE,
@@ -28,8 +28,11 @@ export async function cancelConfirmNode(state: RideBookingState) {
   const toolCall = lastAiMessage?.tool_calls?.[0];
   const tripId = toolCall?.args?.tripId;
 
-  // Lookup trip details from state
-  const trip = state.userTrips.find((t) => t.id === tripId);
+  // Lookup trip details from state or DB
+  let trip = state.userTrips.find((t) => t.id === tripId);
+  if (!trip && tripId) {
+    trip = await getTripFromDb(tripId);
+  }
   const driverMatched = !!trip?.driver;
   const vehicleType = trip?.vehicleType || VEHICLE_BIKE;
   const cancellationFee = driverMatched

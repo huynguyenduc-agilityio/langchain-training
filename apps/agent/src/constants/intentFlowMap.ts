@@ -1,4 +1,4 @@
-import { RideIntent } from '@/types';
+import { RideIntent } from '../types';
 
 export const INTENT_TO_FLOW: Record<
   RideIntent['category'],

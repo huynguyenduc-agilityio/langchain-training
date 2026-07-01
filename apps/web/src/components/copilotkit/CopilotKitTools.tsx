@@ -4,7 +4,6 @@ import type { Trip } from '@repo/shared';
 
 import React from 'react';
 
-import { ActiveTripsReadable } from './readables/ActiveTripsReadable';
 import { UserReadable } from './readables/UserReadable';
 import { DriverMatchRenderTool } from './renderTools/DriverMatchRenderTool';
 import { CancelRideRenderTool } from './renderTools/CancelRideRenderTool';
@@ -22,7 +21,6 @@ export function CopilotKitTools({ trips, setTrips }: CopilotKitToolsProps) {
     <>
       {/* Readables */}
       <UserReadable />
-      <ActiveTripsReadable trips={trips} />
 
       {/* Render Tools */}
       <RideEstimateRenderTool />
