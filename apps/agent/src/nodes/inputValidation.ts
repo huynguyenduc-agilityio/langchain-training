@@ -1,12 +1,18 @@
+import { RunnableConfig } from '@langchain/core/runnables';
 import { RideBookingState } from '@/state';
 import {
   isValidPhone,
   isWithinOperatingHours,
   hasTooManyActiveTrips,
+  getUserFromState,
 } from '@/utils';
 import { VALIDATION_MESSAGES, BUSINESS_RULES } from '@/constants';
+import { getTripsByUserIdFromDb } from '@/db/operations';
 
-export async function inputValidationNode(state: RideBookingState) {
+export async function inputValidationNode(
+  state: RideBookingState,
+  config?: RunnableConfig,
+) {
   // Determine if this is a booking-related flow.
   // We check intent (if already classified) and the presence of a tripDraft/rideEstimate.
   const intentCategory = state.intent?.category;
@@ -24,10 +30,23 @@ export async function inputValidationNode(state: RideBookingState) {
   }
 
   // 2. Check active trips limit (max 3) — only for booking flows
-  if (isBookingIntent && hasTooManyActiveTrips(state.userTrips)) {
-    return {
-      validationError: VALIDATION_MESSAGES.ACTIVE_TRIPS_LIMIT_ERROR,
-    };
+  if (isBookingIntent) {
+    const { userId } = getUserFromState(state);
+    const finalUserId =
+      userId ||
+      config?.configurable?.copilotkit_properties?.userId ||
+      config?.configurable?.userId;
+
+    let trips = state.userTrips;
+    if (finalUserId) {
+      trips = await getTripsByUserIdFromDb(finalUserId, 10);
+    }
+
+    if (hasTooManyActiveTrips(trips)) {
+      return {
+        validationError: VALIDATION_MESSAGES.ACTIVE_TRIPS_LIMIT_ERROR,
+      };
+    }
   }
 
   // 3. Validate distance limits (max 50 km) — only when estimate/draft exists

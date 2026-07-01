@@ -4,7 +4,7 @@ import { ToolMessage, AIMessage } from '@langchain/core/messages';
 import { RunnableConfig } from '@langchain/core/runnables';
 
 import { RideBookingState } from '@/state';
-import { addTripToDb } from '@/db/operations';
+import { addTripToDb, getTripsByUserIdFromDb } from '@/db/operations';
 import { Trip, RideConfirmResult, RideRequestArgs } from '@repo/shared';
 import {
   isWithinOperatingHours,
@@ -60,15 +60,6 @@ export async function rideConfirmNode(
       });
     }
 
-    if (hasTooManyActiveTrips(state.userTrips)) {
-      return new Command({
-        update: {
-          validationError: VALIDATION_MESSAGES.ACTIVE_TRIPS_LIMIT_ERROR,
-        },
-        goto: END,
-      });
-    }
-
     const {
       userId: contextUserId,
       name: userName,
@@ -84,6 +75,20 @@ export async function rideConfirmNode(
       throw new Error(
         'User ID is required but was not found in context or config.',
       );
+    }
+
+    let trips = state.userTrips;
+    if (userId) {
+      trips = await getTripsByUserIdFromDb(userId, 10);
+    }
+
+    if (hasTooManyActiveTrips(trips)) {
+      return new Command({
+        update: {
+          validationError: VALIDATION_MESSAGES.ACTIVE_TRIPS_LIMIT_ERROR,
+        },
+        goto: END,
+      });
     }
 
     const newTripId = result.tripId || `TRP-${crypto.randomUUID()}`;
