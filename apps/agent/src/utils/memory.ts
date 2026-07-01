@@ -62,24 +62,46 @@ export async function writeUserMemory(
     const preferredVehicle =
       newTrip.vehicleType || currentMemory.preferredVehicle;
 
+    const nowStr = new Date().toISOString();
+
     // Update frequent pickups
     const pickupCounts = { ...(currentMemory.pickupCounts || {}) };
+    const pickupLastUsed = { ...(currentMemory.pickupLastUsed || {}) };
     if (newTrip.pickup) {
       pickupCounts[newTrip.pickup] = (pickupCounts[newTrip.pickup] || 0) + 1;
+      pickupLastUsed[newTrip.pickup] = nowStr;
     }
     const frequentPickups = Object.entries(pickupCounts)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => {
+        if (b[1] !== a[1]) {
+          return b[1] - a[1];
+        }
+        const timeA = new Date(pickupLastUsed[a[0]] || 0).getTime();
+        const timeB = new Date(pickupLastUsed[b[0]] || 0).getTime();
+        return timeB - timeA;
+      })
       .slice(0, 3)
       .map(([loc]) => loc);
 
     // Update frequent destinations
     const destinationCounts = { ...(currentMemory.destinationCounts || {}) };
+    const destinationLastUsed = {
+      ...(currentMemory.destinationLastUsed || {}),
+    };
     if (newTrip.destination) {
       destinationCounts[newTrip.destination] =
         (destinationCounts[newTrip.destination] || 0) + 1;
+      destinationLastUsed[newTrip.destination] = nowStr;
     }
     const frequentDestinations = Object.entries(destinationCounts)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => {
+        if (b[1] !== a[1]) {
+          return b[1] - a[1];
+        }
+        const timeA = new Date(destinationLastUsed[a[0]] || 0).getTime();
+        const timeB = new Date(destinationLastUsed[b[0]] || 0).getTime();
+        return timeB - timeA;
+      })
       .slice(0, 3)
       .map(([loc]) => loc);
 
@@ -91,11 +113,52 @@ export async function writeUserMemory(
       frequentDestinations,
       pickupCounts,
       destinationCounts,
-      lastUpdated: new Date().toISOString(),
+      pickupLastUsed,
+      destinationLastUsed,
+      lastUpdated: nowStr,
     };
 
     await store.put(namespace, key, updatedMemory);
   } catch (err) {
     console.error('Failed to write user memory:', err);
   }
+}
+
+const INTERNAL_FIELDS = new Set([
+  'pickupCounts',
+  'destinationCounts',
+  'pickupLastUsed',
+  'destinationLastUsed',
+  'lastUpdated',
+]);
+
+/**
+ * Format user memory dynamically into a concise, clean bulleted list for LLM prompt context.
+ * Internal fields (raw counts/timestamps) are filtered out, and preference keys are formatted
+ * from camelCase to Title Case automatically.
+ */
+export function formatUserMemory(memory: UserMemory | undefined): string {
+  if (!memory || !hasUserMemoryData(memory)) {
+    return 'None';
+  }
+
+  const lines = Object.entries(memory)
+    .filter(([key, val]) => {
+      if (INTERNAL_FIELDS.has(key)) return false;
+      if (val === undefined || val === null || val === '') return false;
+      if (Array.isArray(val) && val.length === 0) return false;
+      return true;
+    })
+    .map(([key, val]) => {
+      // Convert camelCase to Title Case (e.g. preferredVehicle -> Preferred Vehicle)
+      const title = key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
+
+      const formattedVal = Array.isArray(val) ? val.join(', ') : val;
+      return `  * ${title}: ${formattedVal}`;
+    });
+
+  return lines.length > 0 ? lines.join('\n') : 'None';
 }

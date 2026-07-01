@@ -1,4 +1,5 @@
 import { PostgresSaver } from '@langchain/langgraph-checkpoint-postgres';
+import pg from 'pg';
 import { env } from '../config/env';
 import { logError } from '@repo/logger';
 
@@ -13,7 +14,11 @@ export async function getCheckpointer(): Promise<PostgresSaver> {
 
   _setupPromise = (async () => {
     try {
-      const checkpointer = PostgresSaver.fromConnString(connString);
+      const pool = new pg.Pool({
+        connectionString: connString,
+        max: 3,
+      });
+      const checkpointer = new PostgresSaver(pool);
 
       await checkpointer.setup();
 

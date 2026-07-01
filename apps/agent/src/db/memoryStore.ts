@@ -14,7 +14,12 @@ export async function getMemoryStore(): Promise<PostgresStore> {
 
   _setupPromise = (async () => {
     try {
-      const store = PostgresStore.fromConnString(connString);
+      const store = new PostgresStore({
+        connectionOptions: {
+          connectionString: connString,
+          max: 3,
+        },
+      });
 
       await store.setup();
 
