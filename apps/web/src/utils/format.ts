@@ -1,8 +1,3 @@
-export function formatPrice(amount: number | undefined | null): string {
-  if (amount == null || Number.isNaN(amount)) return '$0.00';
-  return `$${amount.toFixed(2)}`;
-}
-
 export function formatDate(isoString: string): string {
   try {
     return new Date(isoString).toLocaleDateString('en-US', {

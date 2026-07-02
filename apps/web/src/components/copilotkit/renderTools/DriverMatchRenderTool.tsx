@@ -8,7 +8,7 @@ import { COPILOT_TOOLS } from '@repo/shared';
 import { DriverMatchCard } from '@/components/DriverMatchCard';
 import { DriverMatchErrorCard } from '@/components/DriverMatchErrorCard';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Car, Loader2 } from 'lucide-react';
 import type { Driver, Trip } from '@repo/shared';
 
 type DriverMatchRenderToolProps = {
@@ -31,8 +31,8 @@ function SearchingDriverCard() {
           {/* Waves animation */}
           <div className="absolute w-full h-full rounded-full border border-indigo-500/20 animate-ping" />
           <div className="absolute w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/30 animate-pulse" />
-          <div className="relative w-8 h-8 rounded-full bg-indigo-600/90 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-500/30">
-            🏍️
+          <div className="relative w-8 h-8 rounded-full bg-indigo-600/90 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+            <Car className="w-4 h-4 text-white" />
           </div>
         </div>
         <div className="text-center space-y-1">

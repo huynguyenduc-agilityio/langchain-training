@@ -8,11 +8,8 @@ import { useAgent } from '@copilotkit/react-core/v2';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  COPILOTKIT_AGENT_ID,
-  VEHICLE_EMOJIS,
-  VEHICLE_NAMES,
-} from '@/constants';
+import { VehicleIcon } from '@/components/ui/index';
+import { COPILOTKIT_AGENT_ID, VEHICLE_NAMES } from '@/constants';
 import { cn, formatPrice } from '@/utils';
 import { useRideEstimateStore } from '@/store/useRideEstimateStore';
 
@@ -215,8 +212,11 @@ export function RideEstimateCard({
             <CardContent className="p-3.5 flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
                 {/* Vehicle icon */}
-                <div className="w-10 h-10 rounded-xl bg-gray-955 border border-gray-855 flex items-center justify-center text-lg shrink-0 border-solid">
-                  {VEHICLE_EMOJIS[opt.vehicleType] || '🚗'}
+                <div className="w-10 h-10 rounded-xl bg-gray-955 border border-gray-855 flex items-center justify-center shrink-0 border-solid">
+                  <VehicleIcon
+                    type={opt.vehicleType}
+                    className="w-5 h-5 text-emerald-400"
+                  />
                 </div>
 
                 {/* Vehicle type & details */}

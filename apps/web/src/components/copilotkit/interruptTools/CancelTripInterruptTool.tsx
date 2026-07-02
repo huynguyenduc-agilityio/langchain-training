@@ -14,7 +14,7 @@ import type {
 import { getEventData, getEventType } from '@/utils';
 import { AssistantMessageLayout } from '../chat/AssistantMessage';
 
-type CancelTripInterruptProps = {
+type CancelTripInterruptToolProps = {
   trips: Trip[];
 };
 
@@ -78,7 +78,9 @@ function InterruptCancelConfirmRenderer({
   );
 }
 
-export function CancelTripInterrupt({ trips }: CancelTripInterruptProps) {
+export function CancelTripInterruptTool({
+  trips,
+}: CancelTripInterruptToolProps) {
   const { agent } = useAgent({ agentId: COPILOTKIT_AGENT_ID });
   const messages = agent?.messages || [];
 
