@@ -69,48 +69,48 @@ supervisor ◄──────────────────────
 
 ### Key Concepts
 
-| Concept                  | Implementation                                                                |
-| ------------------------ | ----------------------------------------------------------------------------- |
-| **Multi-Agent**          | Supervisor pattern with 3 specialized subgraphs                               |
-| **Subgraphs**            | `rideSubgraph`, `managementSubgraph`, `infoSubgraph` as composable units      |
-| **Human-in-the-Loop**    | `interrupt()` pauses graph at ride confirmation and cancellation steps         |
-| **Guardrails**           | `inputValidation` node validates before LLM invocation                        |
-| **Intent Classification**| Structured output with Zod schema for routing decisions                       |
-| **Checkpointer**         | `PostgresSaver` for conversation state persistence                            |
-| **Conditional Edges**    | Dynamic routing from supervisor and validation nodes                          |
-| **Streaming**            | CopilotKit SDK + AG-UI encoder for real-time response streaming               |
+| Concept                   | Implementation                                                           |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Multi-Agent**           | Supervisor pattern with 3 specialized subgraphs                          |
+| **Subgraphs**             | `rideSubgraph`, `managementSubgraph`, `infoSubgraph` as composable units |
+| **Human-in-the-Loop**     | `interrupt()` pauses graph at ride confirmation and cancellation steps   |
+| **Guardrails**            | `inputValidation` node validates before LLM invocation                   |
+| **Intent Classification** | Structured output with Zod schema for routing decisions                  |
+| **Checkpointer**          | `PostgresSaver` for conversation state persistence                       |
+| **Conditional Edges**     | Dynamic routing from supervisor and validation nodes                     |
+| **Streaming**             | CopilotKit SDK + AG-UI encoder for real-time response streaming          |
 
 ---
 
 ## 🛠 Technical Stacks
 
-| Technology                                                        | Version  | Purpose                                           |
-| ----------------------------------------------------------------- | -------- | ------------------------------------------------- |
-| [LangGraph](https://langchain-ai.github.io/langgraphjs/)         | `1.3.x`  | Stateful graph orchestration (StateGraph, nodes, edges) |
-| [LangChainJS Core](https://js.langchain.com/)                    | `1.1.x`  | LLM framework (tools, structured output, messages)      |
-| [@langchain/openai](https://js.langchain.com/)                   | `1.4.x`  | OpenAI ChatGPT integration                              |
-| [CopilotKit SDK](https://docs.copilotkit.ai/)                    | `1.59.x` | Server-side CopilotKit integration                      |
-| [AG-UI Core](https://docs.ag-ui.com/)                            | `0.0.55` | Agentic UI event types                                  |
-| [AG-UI Encoder](https://docs.ag-ui.com/)                         | `0.0.55` | Event stream encoding                                   |
-| [AG-UI LangGraph](https://docs.ag-ui.com/)                       | `0.0.36` | LangGraph ↔ AG-UI adapter                               |
-| [Drizzle ORM](https://orm.drizzle.team/)                         | `0.45.2` | TypeScript ORM for PostgreSQL                            |
-| [pg](https://node-postgres.com/)                                 | `8.21.x` | PostgreSQL client driver                                 |
-| [Zod](https://zod.dev/)                                          | `3.25.x` | Schema validation and structured output                  |
-| [dotenv](https://github.com/motdotla/dotenv)                     | `16.5.x` | Environment variable loading                             |
-| [TypeScript](https://www.typescriptlang.org/)                    | `5.x`    | Static typing                                            |
+| Technology                                               | Version  | Purpose                                                 |
+| -------------------------------------------------------- | -------- | ------------------------------------------------------- |
+| [LangGraph](https://langchain-ai.github.io/langgraphjs/) | `1.3.x`  | Stateful graph orchestration (StateGraph, nodes, edges) |
+| [LangChainJS Core](https://js.langchain.com/)            | `1.1.x`  | LLM framework (tools, structured output, messages)      |
+| [@langchain/openai](https://js.langchain.com/)           | `1.4.x`  | OpenAI ChatGPT integration                              |
+| [CopilotKit SDK](https://docs.copilotkit.ai/)            | `1.59.x` | Server-side CopilotKit integration                      |
+| [AG-UI Core](https://docs.ag-ui.com/)                    | `0.0.55` | Agentic UI event types                                  |
+| [AG-UI Encoder](https://docs.ag-ui.com/)                 | `0.0.55` | Event stream encoding                                   |
+| [AG-UI LangGraph](https://docs.ag-ui.com/)               | `0.0.36` | LangGraph ↔ AG-UI adapter                               |
+| [Drizzle ORM](https://orm.drizzle.team/)                 | `0.45.2` | TypeScript ORM for PostgreSQL                           |
+| [pg](https://node-postgres.com/)                         | `8.21.x` | PostgreSQL client driver                                |
+| [Zod](https://zod.dev/)                                  | `3.25.x` | Schema validation and structured output                 |
+| [dotenv](https://github.com/motdotla/dotenv)             | `16.5.x` | Environment variable loading                            |
+| [TypeScript](https://www.typescriptlang.org/)            | `5.x`    | Static typing                                           |
 
 ---
 
 ## 🔧 Development Tools
 
-| Tool                                                    | Version  | Purpose                              |
-| ------------------------------------------------------- | -------- | ------------------------------------ |
-| [@langchain/langgraph-cli](https://langchain-ai.github.io/langgraphjs/) | `1.2.1` | LangGraph dev server CLI    |
-| [tsup](https://tsup.egoist.dev/)                        | `8.4.x`  | TypeScript bundler for production    |
-| [tsx](https://github.com/privatenumber/tsx)              | `4.19.x` | TypeScript execution for scripts     |
-| [Drizzle Kit](https://orm.drizzle.team/)                | `0.31.x` | Database migration management        |
-| [ESLint](https://eslint.org/)                           | `9.x`    | Static code analysis                 |
-| [Prettier](https://prettier.io/)                        | (root)   | Code formatter                       |
+| Tool                                                                    | Version  | Purpose                           |
+| ----------------------------------------------------------------------- | -------- | --------------------------------- |
+| [@langchain/langgraph-cli](https://langchain-ai.github.io/langgraphjs/) | `1.2.1`  | LangGraph dev server CLI          |
+| [tsup](https://tsup.egoist.dev/)                                        | `8.4.x`  | TypeScript bundler for production |
+| [tsx](https://github.com/privatenumber/tsx)                             | `4.19.x` | TypeScript execution for scripts  |
+| [Drizzle Kit](https://orm.drizzle.team/)                                | `0.31.x` | Database migration management     |
+| [ESLint](https://eslint.org/)                                           | `9.x`    | Static code analysis              |
+| [Prettier](https://prettier.io/)                                        | (root)   | Code formatter                    |
 
 ---
 
@@ -122,17 +122,17 @@ Copy the example file:
 cp .env.example .env
 ```
 
-| Variable              | Required | Purpose                                    |
-| --------------------- | -------- | ------------------------------------------ |
-| `OPENAI_API_KEY`      | Yes      | OpenAI API key for LLM calls               |
-| `AGENT_PORT`          | No       | Agent server port (default: `8123`)         |
-| `ORS_API_KEY`         | Yes      | OpenRouteService API key for geocoding      |
-| `DATABASE_URL`        | Yes      | PostgreSQL connection string                |
+| Variable              | Required | Purpose                                                                                  |
+| --------------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`      | Yes      | OpenAI API key for LLM calls                                                             |
+| `AGENT_PORT`          | No       | Agent server port (default: `8123`)                                                      |
+| `ORS_API_KEY`         | Yes      | OpenRouteService API key for geocoding                                                   |
+| `DATABASE_URL`        | Yes      | PostgreSQL connection string                                                             |
 | `DATABASE_DIRECT_URL` | Yes      | Direct PostgreSQL connection string (port 5432, required for PostgresSaver checkpointer) |
-| `LANGSMITH_TRACING`   | No       | Enable LangSmith tracing (`true` / `false`) |
-| `LANGSMITH_API_KEY`   | No       | LangSmith API key                           |
-| `LANGSMITH_PROJECT`   | No       | LangSmith project name                      |
-| `LANGSMITH_ENDPOINT`  | No       | LangSmith API endpoint                      |
+| `LANGSMITH_TRACING`   | No       | Enable LangSmith tracing (`true` / `false`)                                              |
+| `LANGSMITH_API_KEY`   | No       | LangSmith API key                                                                        |
+| `LANGSMITH_PROJECT`   | No       | LangSmith project name                                                                   |
+| `LANGSMITH_ENDPOINT`  | No       | LangSmith API endpoint                                                                   |
 
 Typical local values:
 
@@ -213,8 +213,8 @@ apps/agent/
 
 ### Configuration Files
 
-| File               | Purpose                               |
-| ------------------ | ------------------------------------- |
+| File                | Purpose                               |
+| ------------------- | ------------------------------------- |
 | `langgraph.json`    | LangGraph CLI graph registration      |
 | `drizzle.config.ts` | Drizzle ORM / migration configuration |
 | `tsconfig.json`     | TypeScript compiler options           |

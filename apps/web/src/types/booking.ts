@@ -1,4 +1,5 @@
 import type { Driver, Trip, VehicleType } from '@repo/shared';
+import type { CARD_STATUS } from '@/constants';
 
 export type RideConfirmCardProps = {
   pickup: string;
@@ -9,8 +10,14 @@ export type RideConfirmCardProps = {
   passengerName: string;
   passengerPhone: string;
   price: number;
+  disabled?: boolean;
   onConfirm?: () => void;
   onCancel?: () => void;
+  status?:
+    | typeof CARD_STATUS.PENDING
+    | typeof CARD_STATUS.CONFIRMED
+    | typeof CARD_STATUS.CANCELLED
+    | typeof CARD_STATUS.BYPASSED;
 };
 
 export type RideEstimateCardProps = {
@@ -61,4 +68,21 @@ export type TripDetailDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onCancel?: (tripId: string) => void;
+};
+
+export type RideConfirmEventData = {
+  pickup?: string;
+  destination?: string;
+  distance?: number;
+  duration?: number;
+  vehicleType?: 'bike' | 'car4' | 'car7';
+  passengerName?: string;
+  passengerPhone?: string;
+  price?: number;
+};
+
+export type RideConfirmResolveValue = {
+  approved: boolean;
+  tripId?: string;
+  cancelled?: boolean;
 };

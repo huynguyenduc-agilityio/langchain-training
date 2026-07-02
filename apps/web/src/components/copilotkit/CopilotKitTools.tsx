@@ -7,9 +7,12 @@ import React from 'react';
 import { UserReadable } from './readables/UserReadable';
 import { DriverMatchRenderTool } from './renderTools/DriverMatchRenderTool';
 import { CancelRideRenderTool } from './renderTools/CancelRideRenderTool';
-import { InterruptFrontendTool } from './tools/InterruptFrontendTool';
+import { ConfirmRideInterrupt } from './interrupts/ConfirmRideInterrupt';
+import { CancelTripInterrupt } from './interrupts/CancelTripInterrupt';
 import { TripsListRenderTool } from './renderTools/TripsListRenderTool';
 import { RideEstimateRenderTool } from './renderTools/RideEstimateRenderTool';
+import { ConfirmRideRenderTool } from './renderTools/ConfirmRideRenderTool';
+import { CancelTripRenderTool } from './renderTools/CancelTripRenderTool';
 
 type CopilotKitToolsProps = {
   trips: Trip[];
@@ -27,9 +30,12 @@ export function CopilotKitTools({ trips, setTrips }: CopilotKitToolsProps) {
       <DriverMatchRenderTool setTrips={setTrips} />
       <CancelRideRenderTool />
       <TripsListRenderTool />
+      <ConfirmRideRenderTool />
+      <CancelTripRenderTool trips={trips} />
 
-      {/* Frontend Tools */}
-      <InterruptFrontendTool trips={trips} />
+      {/* Interrupt Tools */}
+      <ConfirmRideInterrupt />
+      <CancelTripInterrupt trips={trips} />
     </>
   );
 }

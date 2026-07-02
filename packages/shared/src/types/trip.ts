@@ -39,11 +39,13 @@ export interface Trip {
 
 export interface CancelConfirmResult {
   approved: boolean;
+  cancelled?: boolean;
 }
 
 export interface RideConfirmResult {
   approved: boolean;
   tripId?: string;
+  cancelled?: boolean;
 }
 
 export interface RideRequestArgs {

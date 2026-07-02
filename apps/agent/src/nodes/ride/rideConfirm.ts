@@ -137,19 +137,24 @@ export async function rideConfirmNode(
       goto: 'memory_writer',
     });
   } else {
+    const isExplicitCancel = Boolean(result && result.cancelled);
+
     return new Command({
       update: {
         messages: [
           new ToolMessage({
             name: toolCall?.name || AGENT_TOOLS.CONFIRM_RIDE.name,
-            content: JSON.stringify({ approved: false }),
+            content: JSON.stringify({
+              approved: false,
+              cancelled: isExplicitCancel,
+            }),
             tool_call_id: toolCall?.id || '',
           }),
         ],
-        tripDraft: null,
-        rideEstimate: null,
+        tripDraft: isExplicitCancel ? null : state.tripDraft,
+        rideEstimate: isExplicitCancel ? null : state.rideEstimate,
       },
-      goto: 'agent',
+      goto: isExplicitCancel ? 'agent' : END,
     });
   }
 }

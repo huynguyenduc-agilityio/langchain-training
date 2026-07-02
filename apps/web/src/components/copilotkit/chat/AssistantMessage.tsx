@@ -14,6 +14,30 @@ import { AssistantMessageErrorFallback } from './AssistantMessageErrorFallback';
 import { TypingIndicator } from './TypingIndicator';
 import { AssistantAvatar } from './AssistantAvatar';
 
+type AssistantMessageLayoutProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+export function AssistantMessageLayout({
+  children,
+  className,
+}: AssistantMessageLayoutProps) {
+  return (
+    <div
+      className={cn(
+        'flex items-start gap-2.5 py-3 select-text w-full',
+        className,
+      )}
+    >
+      <AssistantAvatar />
+      <div className="flex-1 flex flex-col gap-2 w-full max-w-[85%]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 type CopilotChatAssistantMessageProps = ComponentProps<
   typeof CopilotChatAssistantMessage
 >;
@@ -46,43 +70,38 @@ function InnerAssistantMessage({
   );
   const showTyping =
     isRunning && !hasContent && !hasToolCalls && !anyDisplayToolRunning;
-  const showTextBubble = hasContent || showTyping;
+  const showTextBubble = (hasContent && !hasDisplayToolCalls) || showTyping;
 
   if (!showTextBubble && !hasDisplayToolCalls) return null;
 
   return (
-    <div className={cn('flex items-start gap-2.5 py-3 select-text', className)}>
-      <AssistantAvatar />
-
-      {/* Content Bubble & Tool Calls */}
-      <div className="flex-1 flex flex-col gap-2 w-full max-w-[85%]">
-        {showTextBubble && (
-          <div className="bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] rounded-[14px] rounded-tl-[4px] px-3.5 py-2 font-sans text-sm text-[var(--text-primary)]">
-            <div className="prose prose-sm dark:prose-invert max-w-full break-words text-[var(--text-primary)]">
-              {showTyping ? (
-                <TypingIndicator />
-              ) : (
-                <CopilotChatAssistantMessage.MarkdownRenderer
-                  content={message.content ?? ''}
-                />
-              )}
-            </div>
+    <AssistantMessageLayout className={className}>
+      {showTextBubble && (
+        <div className="bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] rounded-[14px] rounded-tl-[4px] px-3.5 py-2 font-sans text-sm text-[var(--text-primary)]">
+          <div className="prose prose-sm dark:prose-invert max-w-full break-words text-[var(--text-primary)]">
+            {showTyping ? (
+              <TypingIndicator />
+            ) : (
+              <CopilotChatAssistantMessage.MarkdownRenderer
+                content={message.content ?? ''}
+              />
+            )}
           </div>
-        )}
+        </div>
+      )}
 
-        {hasDisplayToolCalls && (
-          <CopilotChatToolCallsView
-            message={{
-              ...message,
-              toolCalls: message.toolCalls?.filter((tc) =>
-                DISPLAY_TOOL_NAMES.has(tc.function.name),
-              ),
-            }}
-            messages={messages}
-          />
-        )}
-      </div>
-    </div>
+      {hasDisplayToolCalls && (
+        <CopilotChatToolCallsView
+          message={{
+            ...message,
+            toolCalls: message.toolCalls?.filter((tc) =>
+              DISPLAY_TOOL_NAMES.has(tc.function.name),
+            ),
+          }}
+          messages={messages}
+        />
+      )}
+    </AssistantMessageLayout>
   );
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import type { CancelTripCardProps } from '@/types';
+import { CARD_STATUS } from '@/constants';
 import {
   AlertTriangle,
   ArrowRight,
@@ -21,22 +22,103 @@ export function CancelTripCard({
   destination,
   driverName,
   cancellationFee = 0,
+  disabled = false,
   onConfirm,
   onReject,
+  status = CARD_STATUS.PENDING,
 }: CancelTripCardProps) {
-  const [decided, setDecided] = useState<'confirmed' | 'rejected' | null>(null);
+  const [decided, setDecided] = useState<
+    typeof CARD_STATUS.CONFIRMED | typeof CARD_STATUS.REJECTED | null
+  >(null);
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = () => {
     setLoading(true);
-    setDecided('confirmed');
+    setDecided(CARD_STATUS.CONFIRMED);
     onConfirm?.();
   };
 
   const handleReject = () => {
-    setDecided('rejected');
+    setDecided(CARD_STATUS.REJECTED);
     onReject?.();
   };
+
+  if (status && status !== CARD_STATUS.PENDING) {
+    return (
+      <Card className="rounded-xl overflow-hidden my-1 bg-gray-900/30 border border-gray-855 border-solid max-w-full font-sans">
+        {/* Compact Header */}
+        <div className="px-3.5 py-2 flex items-center justify-between bg-gray-950/20 border-b border-gray-855/50 border-solid">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400">
+            <AlertTriangle className="w-3.5 h-3.5 text-red-500/80 shrink-0" />
+            <span>Trip Cancellation</span>
+          </div>
+
+          {/* Status Pill */}
+          <div
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border border-solid flex items-center gap-1 uppercase tracking-wider ${
+              status === CARD_STATUS.CONFIRMED
+                ? 'bg-red-950/40 text-red-400 border-red-900/40'
+                : status === CARD_STATUS.REJECTED
+                  ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40'
+                  : 'bg-gray-800/40 text-gray-400 border-gray-700/50'
+            }`}
+          >
+            {status === CARD_STATUS.CONFIRMED ? (
+              <>
+                <Trash2 className="w-2.5 h-2.5" />
+                <span>Cancelled</span>
+              </>
+            ) : status === CARD_STATUS.REJECTED ? (
+              <>
+                <Undo2 className="w-2.5 h-2.5" />
+                <span>Kept Active</span>
+              </>
+            ) : (
+              <>
+                <span>⏭️</span>
+                <span>Bypassed</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Compact Content */}
+        <div className="p-3 text-[11px] space-y-2 text-gray-300">
+          <div className="flex items-start gap-1 flex-wrap">
+            <span className="font-semibold text-gray-500 shrink-0">Trip:</span>
+            <span className="font-mono text-gray-450 font-bold shrink-0">
+              #{tripId.split('-').pop()}
+            </span>
+            <span className="text-gray-700 font-bold shrink-0">•</span>
+            <span className="font-bold flex items-center gap-1 leading-normal flex-wrap">
+              <span>{pickup}</span>
+              <ArrowRight className="w-3 h-3 text-gray-650 shrink-0" />
+              <span>{destination}</span>
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-400 leading-normal">
+            {driverName && (
+              <>
+                <div>
+                  <span className="font-semibold text-gray-500">Driver:</span>{' '}
+                  <span className="text-gray-200">{driverName}</span>
+                </div>
+                <span className="text-gray-700 font-bold">•</span>
+              </>
+            )}
+            <div>
+              <span className="font-semibold text-gray-500">
+                Cancellation Fee:
+              </span>{' '}
+              <span className="text-red-450 font-bold">
+                {formatPrice(cancellationFee)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="rounded-2xl overflow-hidden my-2 border-solid bg-gray-900 border-red-950/40 shadow-lg shadow-red-950/5">
@@ -92,12 +174,12 @@ export function CancelTripCard({
         {decided ? (
           <div
             className={`w-full text-center py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${
-              decided === 'confirmed'
+              decided === CARD_STATUS.CONFIRMED
                 ? 'bg-red-950/40 text-red-400 border border-red-900/20'
                 : 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/20'
             } border-solid`}
           >
-            {decided === 'confirmed' ? (
+            {decided === CARD_STATUS.CONFIRMED ? (
               <>
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin text-red-400" />
@@ -118,7 +200,8 @@ export function CancelTripCard({
             <Button
               id="btn-confirm-cancel"
               onClick={handleConfirm}
-              className="flex-1 bg-red-650 hover:bg-red-550 text-white! font-semibold rounded-xl h-10 border-0 flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-red-950/10"
+              disabled={disabled}
+              className="flex-1 bg-red-650 hover:bg-red-550 text-white! font-semibold rounded-xl h-10 border-0 flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-red-950/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 className="w-4 h-4" />
               Cancel Trip
@@ -127,7 +210,8 @@ export function CancelTripCard({
               id="btn-keep-trip"
               onClick={handleReject}
               variant="outline"
-              className="flex-1 bg-gray-955 border-gray-850 hover:bg-gray-850 text-gray-400 hover:text-emerald-400 rounded-xl h-10 border-solid flex items-center justify-center gap-1.5 cursor-pointer"
+              disabled={disabled}
+              className="flex-1 bg-gray-955 border-gray-850 hover:bg-gray-850 text-gray-400 hover:text-emerald-400 rounded-xl h-10 border-solid flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Undo2 className="w-4 h-4" />
               Keep Trip
