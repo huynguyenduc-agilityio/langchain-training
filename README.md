@@ -30,10 +30,10 @@
 
 This is a **Turborepo monorepo** with two runtime surfaces managed by `pnpm`.
 
-| Package                          | Role                                                    | Default URL            |
-| -------------------------------- | ------------------------------------------------------- | ---------------------- |
-| [`apps/web`](apps/web)           | User-facing trip dashboard, login, and chat experience  | http://localhost:3000   |
-| [`apps/agent`](apps/agent)       | LangGraph AI agent server (CopilotKit + AG-UI runtime)  | http://localhost:8123   |
+| Package                    | Role                                                   | Default URL           |
+| -------------------------- | ------------------------------------------------------ | --------------------- |
+| [`apps/web`](apps/web)     | User-facing trip dashboard, login, and chat experience | http://localhost:3000 |
+| [`apps/agent`](apps/agent) | LangGraph AI agent server (CopilotKit + AG-UI runtime) | http://localhost:8123 |
 
 ### Key Features
 
@@ -67,33 +67,33 @@ web (Next.js)  ──►  agent (LangGraph Server)  ──►  PostgreSQL
 
 ## 🛠 Technical Stacks
 
-| Technology                                                        | Version   | Purpose                                                |
-| ----------------------------------------------------------------- | --------- | ------------------------------------------------------ |
-| [TypeScript](https://www.typescriptlang.org/)                     | `5.x`     | Strongly typed language across all apps                |
-| [React](https://react.dev/)                                       | `19.2.4`  | Frontend UI library                                    |
-| [Next.js](https://nextjs.org/)                                    | `16.2.7`  | React framework with SSR and API routes                |
-| [CopilotKit](https://docs.copilotkit.ai/)                        | `1.59.x`  | Framework for in-app AI copilots and agents            |
-| [AG-UI](https://docs.ag-ui.com/)                                 | `0.0.55`  | Protocol for streaming agentic UI events               |
-| [LangChainJS](https://js.langchain.com/)                         | `1.1.x`   | LLM framework for building AI chains and agents        |
-| [LangGraph](https://langchain-ai.github.io/langgraphjs/)         | `1.3.x`   | Stateful, multi-agent graph orchestration framework    |
-| [OpenAI SDK](https://platform.openai.com/)                       | `1.4.x`   | LLM provider (via `@langchain/openai`)                 |
-| [TailwindCSS](https://tailwindcss.com/)                          | `4.x`     | Utility-first CSS framework                            |
-| [shadcn/ui](https://ui.shadcn.com/)                              | `4.10.0`  | Radix-based UI component library                       |
-| [Drizzle ORM](https://orm.drizzle.team/)                         | `0.45.2`  | TypeScript ORM for PostgreSQL                          |
-| [Firebase](https://firebase.google.com/)                         | `12.14.0` | Authentication provider                                |
-| [Zod](https://zod.dev/)                                          | `3.25.x`  | Schema validation for structured outputs               |
+| Technology                                               | Version   | Purpose                                             |
+| -------------------------------------------------------- | --------- | --------------------------------------------------- |
+| [TypeScript](https://www.typescriptlang.org/)            | `5.x`     | Strongly typed language across all apps             |
+| [React](https://react.dev/)                              | `19.2.4`  | Frontend UI library                                 |
+| [Next.js](https://nextjs.org/)                           | `16.2.7`  | React framework with SSR and API routes             |
+| [CopilotKit](https://docs.copilotkit.ai/)                | `1.59.x`  | Framework for in-app AI copilots and agents         |
+| [AG-UI](https://docs.ag-ui.com/)                         | `0.0.55`  | Protocol for streaming agentic UI events            |
+| [LangChainJS](https://js.langchain.com/)                 | `1.1.x`   | LLM framework for building AI chains and agents     |
+| [LangGraph](https://langchain-ai.github.io/langgraphjs/) | `1.3.x`   | Stateful, multi-agent graph orchestration framework |
+| [OpenAI SDK](https://platform.openai.com/)               | `1.4.x`   | LLM provider (via `@langchain/openai`)              |
+| [TailwindCSS](https://tailwindcss.com/)                  | `4.x`     | Utility-first CSS framework                         |
+| [shadcn/ui](https://ui.shadcn.com/)                      | `4.10.0`  | Radix-based UI component library                    |
+| [Drizzle ORM](https://orm.drizzle.team/)                 | `0.45.2`  | TypeScript ORM for PostgreSQL                       |
+| [Firebase](https://firebase.google.com/)                 | `12.14.0` | Authentication provider                             |
+| [Zod](https://zod.dev/)                                  | `3.25.x`  | Schema validation for structured outputs            |
 
 ---
 
 ## 🔧 Development Tools
 
-| Tool                                       | Version  | Purpose                                  |
-| ------------------------------------------ | -------- | ---------------------------------------- |
-| [Turborepo](https://turbo.build/)          | `2.5.x`  | Monorepo task runner with caching        |
-| [ESLint](https://eslint.org/)              | `9.x`    | Static code analysis                     |
-| [Prettier](https://prettier.io/)           | `3.5.x`  | Opinionated code formatter               |
-| [tsup](https://tsup.egoist.dev/)           | `8.4.x`  | TypeScript bundler for agent build       |
-| [Drizzle Kit](https://orm.drizzle.team/)   | `0.31.x` | Database migration and schema management |
+| Tool                                     | Version  | Purpose                                  |
+| ---------------------------------------- | -------- | ---------------------------------------- |
+| [Turborepo](https://turbo.build/)        | `2.5.x`  | Monorepo task runner with caching        |
+| [ESLint](https://eslint.org/)            | `9.x`    | Static code analysis                     |
+| [Prettier](https://prettier.io/)         | `3.5.x`  | Opinionated code formatter               |
+| [tsup](https://tsup.egoist.dev/)         | `8.4.x`  | TypeScript bundler for agent build       |
+| [Drizzle Kit](https://orm.drizzle.team/) | `0.31.x` | Database migration and schema management |
 
 ---
 
@@ -185,17 +185,17 @@ Open http://localhost:3000 in your browser.
 
 ### Installation
 
-| Command        | Purpose                           |
-| -------------- | --------------------------------- |
-| `pnpm install` | Install all workspace dependencies|
+| Command        | Purpose                            |
+| -------------- | ---------------------------------- |
+| `pnpm install` | Install all workspace dependencies |
 
 ### Development
 
-| Command         | Purpose                        | Port                   |
-| --------------- | ------------------------------ | ---------------------- |
-| `pnpm dev`      | Run all apps concurrently      | —                      |
-| `pnpm dev:agent`| Run LangGraph agent server     | http://localhost:8123  |
-| `pnpm dev:web`  | Run Next.js frontend           | http://localhost:3000  |
+| Command          | Purpose                    | Port                  |
+| ---------------- | -------------------------- | --------------------- |
+| `pnpm dev`       | Run all apps concurrently  | —                     |
+| `pnpm dev:agent` | Run LangGraph agent server | http://localhost:8123 |
+| `pnpm dev:web`   | Run Next.js frontend       | http://localhost:3000 |
 
 ### Build
 
@@ -205,10 +205,10 @@ Open http://localhost:3000 in your browser.
 
 ### Lint & Format
 
-| Command              | Purpose                                    |
-| -------------------- | ------------------------------------------ |
-| `pnpm lint`          | Lint all apps                              |
-| `pnpm format:check`  | Check formatting with Prettier             |
+| Command             | Purpose                        |
+| ------------------- | ------------------------------ |
+| `pnpm lint`         | Lint all apps                  |
+| `pnpm format:check` | Check formatting with Prettier |
 
 ---
 

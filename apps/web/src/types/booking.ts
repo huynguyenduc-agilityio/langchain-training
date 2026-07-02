@@ -11,7 +11,11 @@ export type RideConfirmCardProps = {
   passengerPhone: string;
   price: number;
   disabled?: boolean;
-  onConfirm?: () => void;
+  onConfirm?: (editedData: {
+    passengerName: string;
+    passengerPhone: string;
+    vehicleType: VehicleType;
+  }) => void;
   onCancel?: () => void;
   status?:
     | typeof CARD_STATUS.PENDING
@@ -85,4 +89,7 @@ export type RideConfirmResolveValue = {
   approved: boolean;
   tripId?: string;
   cancelled?: boolean;
+  passengerName?: string;
+  passengerPhone?: string;
+  vehicleType?: VehicleType;
 };

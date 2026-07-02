@@ -54,9 +54,15 @@ function InterruptRideConfirmRenderer({
         passengerPhone={data.passengerPhone || ''}
         price={data.price || 0}
         disabled={disabled}
-        onConfirm={() => {
+        onConfirm={(editedData) => {
           const newTripId = generateTripId();
-          resolve({ approved: true, tripId: newTripId });
+          resolve({
+            approved: true,
+            tripId: newTripId,
+            passengerName: editedData.passengerName,
+            passengerPhone: editedData.passengerPhone,
+            vehicleType: editedData.vehicleType,
+          });
         }}
         onCancel={() => {
           resolve({ approved: false, cancelled: true });
@@ -66,7 +72,7 @@ function InterruptRideConfirmRenderer({
   );
 }
 
-export function ConfirmRideInterrupt() {
+export function ConfirmRideInterruptTool() {
   const { agent } = useAgent({ agentId: COPILOTKIT_AGENT_ID });
   const messages = agent?.messages || [];
 

@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Loader2,
+  SkipForward,
   Trash2,
   Undo2,
 } from 'lucide-react';
@@ -75,7 +76,7 @@ export function CancelTripCard({
               </>
             ) : (
               <>
-                <span>⏭️</span>
+                <SkipForward className="w-2.5 h-2.5" />
                 <span>Bypassed</span>
               </>
             )}

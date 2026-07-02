@@ -5,7 +5,12 @@ import { RunnableConfig } from '@langchain/core/runnables';
 
 import { RideBookingState } from '@/state';
 import { addTripToDb, getTripsByUserIdFromDb } from '@/db/operations';
-import { Trip, RideConfirmResult, RideRequestArgs } from '@repo/shared';
+import {
+  Trip,
+  RideConfirmResult,
+  RideRequestArgs,
+  PRICING_CONFIG,
+} from '@repo/shared';
 import {
   isWithinOperatingHours,
   hasTooManyActiveTrips,
@@ -91,6 +96,23 @@ export async function rideConfirmNode(
       });
     }
 
+    const finalPassengerName =
+      result.passengerName || draft?.passengerName || '';
+    const finalPassengerPhone =
+      result.passengerPhone || draft?.passengerPhone || '';
+    const finalVehicleType =
+      result.vehicleType || draft?.vehicleType || VEHICLE_BIKE;
+
+    let finalPrice = draft?.price || 0;
+    if (result.vehicleType && result.vehicleType !== draft?.vehicleType) {
+      const distance = draft?.distance || 0;
+      const config =
+        PRICING_CONFIG[result.vehicleType] || PRICING_CONFIG[VEHICLE_BIKE];
+      finalPrice = Number.parseFloat(
+        (config.base + distance * config.perKm).toFixed(2),
+      );
+    }
+
     const newTripId = result.tripId || `TRP-${crypto.randomUUID()}`;
     const newTrip: Trip = {
       id: newTripId,
@@ -99,10 +121,10 @@ export async function rideConfirmNode(
       destination: draft?.destination || '',
       distance: draft?.distance || 0,
       duration: draft?.duration || 0,
-      vehicleType: draft?.vehicleType || VEHICLE_BIKE,
-      passengerName: draft?.passengerName || '',
-      passengerPhone: draft?.passengerPhone || '',
-      price: draft?.price || 0,
+      vehicleType: finalVehicleType,
+      passengerName: finalPassengerName,
+      passengerPhone: finalPassengerPhone,
+      price: finalPrice,
       status: 'searching',
       createdAt: new Date().toISOString(),
       pickupLat:
@@ -127,7 +149,14 @@ export async function rideConfirmNode(
         messages: [
           new ToolMessage({
             name: toolCall?.name || AGENT_TOOLS.CONFIRM_RIDE.name,
-            content: JSON.stringify({ approved: true, tripId: newTripId }),
+            content: JSON.stringify({
+              approved: true,
+              tripId: newTripId,
+              passengerName: finalPassengerName,
+              passengerPhone: finalPassengerPhone,
+              vehicleType: finalVehicleType,
+              price: finalPrice,
+            }),
             tool_call_id: toolCall?.id || '',
           }),
         ],

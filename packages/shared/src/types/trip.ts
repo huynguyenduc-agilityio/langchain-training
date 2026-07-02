@@ -46,6 +46,9 @@ export interface RideConfirmResult {
   approved: boolean;
   tripId?: string;
   cancelled?: boolean;
+  passengerName?: string;
+  passengerPhone?: string;
+  vehicleType?: VehicleType;
 }
 
 export interface RideRequestArgs {

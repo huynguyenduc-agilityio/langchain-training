@@ -5,6 +5,7 @@ import React from 'react';
 import { z } from 'zod';
 
 import { CARD_STATUS } from '@/constants';
+import type { VehicleType } from '@repo/shared';
 import { COPILOT_TOOLS } from '@repo/shared';
 import { RideConfirmCard } from '@/components/RideConfirmCard';
 
@@ -41,10 +42,21 @@ export function ConfirmRideRenderTool() {
           // ignore
         }
       }
+      let finalPassengerName = args.passengerName || '';
+      let finalPassengerPhone = args.passengerPhone || '';
+      let finalVehicleType = args.vehicleType || 'bike';
+      let finalPrice = args.price || 0;
+
       if (parsedResult && typeof parsedResult === 'object') {
         const obj = parsedResult as Record<string, unknown>;
         approved = obj.approved === true;
         cancelled = obj.cancelled === true;
+
+        if (obj.passengerName) finalPassengerName = obj.passengerName as string;
+        if (obj.passengerPhone)
+          finalPassengerPhone = obj.passengerPhone as string;
+        if (obj.vehicleType) finalVehicleType = obj.vehicleType as VehicleType;
+        if (typeof obj.price === 'number') finalPrice = obj.price;
       }
 
       const cardStatus = approved
@@ -59,10 +71,10 @@ export function ConfirmRideRenderTool() {
           destination={args.destination || ''}
           distance={args.distance || 0}
           duration={args.duration || 0}
-          vehicleType={args.vehicleType || 'bike'}
-          passengerName={args.passengerName || ''}
-          passengerPhone={args.passengerPhone || ''}
-          price={args.price || 0}
+          vehicleType={finalVehicleType}
+          passengerName={finalPassengerName}
+          passengerPhone={finalPassengerPhone}
+          price={finalPrice}
           disabled={true}
           status={cardStatus}
           onConfirm={() => {}}

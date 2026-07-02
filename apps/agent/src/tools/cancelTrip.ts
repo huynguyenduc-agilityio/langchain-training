@@ -2,7 +2,8 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 import { getTripFromDb } from '@/db/operations';
-import { CANCELLATION_FEE_CONFIG, AGENT_TOOLS } from '@/constants';
+import { CANCELLATION_FEE_CONFIG } from '@repo/shared';
+import { AGENT_TOOLS } from '@/constants';
 import { logError } from '@repo/logger';
 
 export const cancelTripTool = tool(
