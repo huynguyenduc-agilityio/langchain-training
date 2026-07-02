@@ -387,8 +387,6 @@ body {
   box-shadow: 0 0 10px var(--accent-glow);
 }
 
-
-
 /* ── Suggestion pills: left-aligned chips above input ── */
 /* Align suggestions flush-left with the input field */
 .copilotKitSidebar [data-testid='copilot-suggestions'] {

@@ -112,17 +112,21 @@ export async function cancelConfirmNode(state: RideBookingState) {
       goto: END,
     });
   } else {
+    const isExplicitCancel = Boolean(result && result.cancelled);
     return new Command({
       update: {
         messages: [
           new ToolMessage({
             name: toolCall?.name || AGENT_TOOLS.CANCEL_TRIP.name,
-            content: JSON.stringify({ approved: false }),
+            content: JSON.stringify({
+              approved: false,
+              cancelled: isExplicitCancel,
+            }),
             tool_call_id: toolCall?.id || '',
           }),
         ],
       },
-      goto: 'agent',
+      goto: isExplicitCancel ? 'agent' : END,
     });
   }
 }

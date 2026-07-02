@@ -39,32 +39,32 @@ Responsibilities:
 
 ## 🛠 Technical Stacks
 
-| Technology                                            | Version   | Purpose                                    |
-| ----------------------------------------------------- | --------- | ------------------------------------------ |
-| [Next.js](https://nextjs.org/)                        | `16.2.7`  | React framework with SSR and API routes    |
-| [React](https://react.dev/)                           | `19.2.4`  | UI library                                 |
-| [CopilotKit React Core](https://docs.copilotkit.ai/) | `1.59.2`  | In-app AI copilot hooks and state          |
-| [CopilotKit React UI](https://docs.copilotkit.ai/)   | `1.59.2`  | Pre-built copilot UI components            |
-| [CopilotKit Runtime](https://docs.copilotkit.ai/)    | `1.59.2`  | Server-side CopilotKit runtime             |
-| [TailwindCSS](https://tailwindcss.com/)               | `4.x`     | Utility-first CSS framework                |
-| [shadcn/ui](https://ui.shadcn.com/)                  | `4.10.0`  | Radix-based UI component library           |
-| [Radix UI](https://www.radix-ui.com/)                | `1.5.0`   | Accessible, unstyled UI primitives         |
-| [Firebase](https://firebase.google.com/)              | `12.14.0` | Authentication provider                    |
-| [Drizzle ORM](https://orm.drizzle.team/)              | `0.45.2`  | TypeScript ORM for PostgreSQL queries      |
-| [Zod](https://zod.dev/)                              | `3.25.x`  | Runtime schema validation                  |
-| [Lucide React](https://lucide.dev/)                  | `1.17.0`  | Icon library                               |
-| [TypeScript](https://www.typescriptlang.org/)         | `5.x`     | Static typing                              |
+| Technology                                           | Version   | Purpose                                 |
+| ---------------------------------------------------- | --------- | --------------------------------------- |
+| [Next.js](https://nextjs.org/)                       | `16.2.7`  | React framework with SSR and API routes |
+| [React](https://react.dev/)                          | `19.2.4`  | UI library                              |
+| [CopilotKit React Core](https://docs.copilotkit.ai/) | `1.59.2`  | In-app AI copilot hooks and state       |
+| [CopilotKit React UI](https://docs.copilotkit.ai/)   | `1.59.2`  | Pre-built copilot UI components         |
+| [CopilotKit Runtime](https://docs.copilotkit.ai/)    | `1.59.2`  | Server-side CopilotKit runtime          |
+| [TailwindCSS](https://tailwindcss.com/)              | `4.x`     | Utility-first CSS framework             |
+| [shadcn/ui](https://ui.shadcn.com/)                  | `4.10.0`  | Radix-based UI component library        |
+| [Radix UI](https://www.radix-ui.com/)                | `1.5.0`   | Accessible, unstyled UI primitives      |
+| [Firebase](https://firebase.google.com/)             | `12.14.0` | Authentication provider                 |
+| [Drizzle ORM](https://orm.drizzle.team/)             | `0.45.2`  | TypeScript ORM for PostgreSQL queries   |
+| [Zod](https://zod.dev/)                              | `3.25.x`  | Runtime schema validation               |
+| [Lucide React](https://lucide.dev/)                  | `1.17.0`  | Icon library                            |
+| [TypeScript](https://www.typescriptlang.org/)        | `5.x`     | Static typing                           |
 
 ---
 
 ## 🔧 Development Tools
 
-| Tool                                                                | Version   | Purpose                |
-| ------------------------------------------------------------------- | --------- | ---------------------- |
-| [ESLint](https://eslint.org/)                                       | `9.x`     | Static code analysis   |
-| [eslint-config-next](https://nextjs.org/docs/app/api-reference/config/eslint) | `16.2.7` | Next.js ESLint rules  |
-| [Prettier](https://prettier.io/)                                    | (root)    | Code formatter         |
-| [TypeScript](https://www.typescriptlang.org/)                       | `5.x`     | Type checking          |
+| Tool                                                                          | Version  | Purpose              |
+| ----------------------------------------------------------------------------- | -------- | -------------------- |
+| [ESLint](https://eslint.org/)                                                 | `9.x`    | Static code analysis |
+| [eslint-config-next](https://nextjs.org/docs/app/api-reference/config/eslint) | `16.2.7` | Next.js ESLint rules |
+| [Prettier](https://prettier.io/)                                              | (root)   | Code formatter       |
+| [TypeScript](https://www.typescriptlang.org/)                                 | `5.x`    | Type checking        |
 
 ---
 
@@ -72,18 +72,18 @@ Responsibilities:
 
 Create a `.env` file in this directory (no `.env.example` provided — use the template below):
 
-| Variable                                     | Required | Purpose                                |
-| -------------------------------------------- | -------- | -------------------------------------- |
-| `DATABASE_URL`                               | Yes      | PostgreSQL connection string           |
-| `DATABASE_DIRECT_URL`                        | Yes      | Direct PostgreSQL connection string (port 5432, required for LISTEN/NOTIFY SSE) |
-| `LANGGRAPH_DEPLOYMENT_URL`                   | Yes      | LangGraph agent server URL             |
-| `LANGSMITH_API_KEY`                          | No       | LangSmith tracing API key              |
-| `NEXT_PUBLIC_FIREBASE_API_KEY`               | Yes      | Firebase API key                       |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`           | Yes      | Firebase Auth domain                   |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`            | Yes      | Firebase project ID                    |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`        | Yes      | Firebase storage bucket                |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`   | Yes      | Firebase messaging sender ID           |
-| `NEXT_PUBLIC_FIREBASE_APP_ID`                | Yes      | Firebase app ID                        |
+| Variable                                   | Required | Purpose                                                                         |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------------------- |
+| `DATABASE_URL`                             | Yes      | PostgreSQL connection string                                                    |
+| `DATABASE_DIRECT_URL`                      | Yes      | Direct PostgreSQL connection string (port 5432, required for LISTEN/NOTIFY SSE) |
+| `LANGGRAPH_DEPLOYMENT_URL`                 | Yes      | LangGraph agent server URL                                                      |
+| `LANGSMITH_API_KEY`                        | No       | LangSmith tracing API key                                                       |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Yes      | Firebase API key                                                                |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Yes      | Firebase Auth domain                                                            |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Yes      | Firebase project ID                                                             |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Yes      | Firebase storage bucket                                                         |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Yes      | Firebase messaging sender ID                                                    |
+| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Yes      | Firebase app ID                                                                 |
 
 Typical local values:
 
@@ -116,12 +116,12 @@ NEXT_PUBLIC_FIREBASE_APP_ID=<your-firebase-app-id>
 
 Inside the package:
 
-| Command      | Description               |
-| ------------ | ------------------------- |
-| `pnpm dev`   | Start Next.js dev server  |
-| `pnpm build` | Build for production      |
-| `pnpm start` | Start production server   |
-| `pnpm lint`  | Run ESLint                |
+| Command      | Description              |
+| ------------ | ------------------------ |
+| `pnpm dev`   | Start Next.js dev server |
+| `pnpm build` | Build for production     |
+| `pnpm start` | Start production server  |
+| `pnpm lint`  | Run ESLint               |
 
 From the repository root:
 
@@ -151,11 +151,11 @@ apps/web/
 
 ### Configuration Files
 
-| File               | Purpose                               |
-| ------------------ | ------------------------------------- |
-| `next.config.ts`    | Next.js configuration                 |
-| `components.json`  | shadcn/ui configuration               |
-| `tsconfig.json`     | TypeScript compiler options           |
-| `postcss.config.mjs`| PostCSS configuration                 |
-| `eslint.config.mjs` | ESLint configuration                  |
-| `package.json`      | Dependencies and scripts              |
+| File                 | Purpose                     |
+| -------------------- | --------------------------- |
+| `next.config.ts`     | Next.js configuration       |
+| `components.json`    | shadcn/ui configuration     |
+| `tsconfig.json`      | TypeScript compiler options |
+| `postcss.config.mjs` | PostCSS configuration       |
+| `eslint.config.mjs`  | ESLint configuration        |
+| `package.json`       | Dependencies and scripts    |

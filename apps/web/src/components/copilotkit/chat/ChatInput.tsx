@@ -8,6 +8,7 @@ import { Send, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils';
 import { ChatSuggestions } from './ChatSuggestions';
+import { useAgentStore } from '@/store/useAgentStore';
 
 const MAX_INPUT_HEIGHT = 120;
 const PLACEHOLDER_INPUT = 'Type a message...';
@@ -22,14 +23,71 @@ export const ChatInput = ({
   placeholder = PLACEHOLDER_INPUT,
   className,
 }: CopilotChatInputProps & { placeholder?: string }) => {
+  const activeResolve = useAgentStore((state) => state.activeResolve);
+  const setActiveResolve = useAgentStore((state) => state.setActiveResolve);
+  const { threadId } = useAgentStore();
+
+  const [pendingMessage, setPendingMessage] = useState('');
+  const [awaitingRunCompletion, setAwaitingRunCompletion] = useState(false);
+  const wasRunningRef = useRef(false);
+  const resolvingRef = useRef(false);
+  const messageSubmittedRef = useRef(false);
+  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Reset states on thread reset
+  useEffect(() => {
+    resolvingRef.current = false;
+    messageSubmittedRef.current = false;
+    setAwaitingRunCompletion(false);
+    setPendingMessage('');
+    if (fallbackTimeoutRef.current) {
+      clearTimeout(fallbackTimeoutRef.current);
+      fallbackTimeoutRef.current = null;
+    }
+  }, [threadId]);
+
+  // Monitor isRunning to coordinate sending message after resolve completes
+  useEffect(() => {
+    if (isRunning) {
+      wasRunningRef.current = true;
+    } else if (wasRunningRef.current) {
+      wasRunningRef.current = false;
+      if (
+        awaitingRunCompletion &&
+        pendingMessage &&
+        !messageSubmittedRef.current
+      ) {
+        messageSubmittedRef.current = true;
+        if (fallbackTimeoutRef.current) {
+          clearTimeout(fallbackTimeoutRef.current);
+          fallbackTimeoutRef.current = null;
+        }
+        resolvingRef.current = false;
+        setAwaitingRunCompletion(false);
+        onSubmitMessage?.(pendingMessage);
+        setPendingMessage('');
+      }
+    }
+  }, [isRunning, awaitingRunCompletion, pendingMessage, onSubmitMessage]);
+
   const isControlled = controlledValue !== undefined;
   const [internalValue, setInternalValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const value = isControlled ? controlledValue : internalValue;
   const isProcessing = mode !== 'transcribe' && isRunning;
-  const isInputDisabled = isProcessing;
-  const shouldDisableSendButton = isProcessing
+  const isInputDisabled =
+    isProcessing || awaitingRunCompletion || resolvingRef.current;
+  const shouldDisableSendButton = isInputDisabled
     ? !onStop
     : !value.trim() || !onSubmitMessage;
 
@@ -54,9 +112,40 @@ export const ChatInput = ({
   const submitMessage = (message: string) => {
     const trimmedMessage = message.trim();
 
-    if (isInputDisabled || !trimmedMessage || !onSubmitMessage) return;
+    if (
+      isInputDisabled ||
+      !trimmedMessage ||
+      !onSubmitMessage ||
+      resolvingRef.current
+    )
+      return;
 
-    onSubmitMessage(trimmedMessage);
+    if (activeResolve) {
+      resolvingRef.current = true;
+      messageSubmittedRef.current = false;
+      activeResolve({ approved: false });
+      setActiveResolve(null);
+      setPendingMessage(trimmedMessage);
+      setAwaitingRunCompletion(true);
+
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+      fallbackTimeoutRef.current = setTimeout(() => {
+        setAwaitingRunCompletion((currentAwaiting) => {
+          if (currentAwaiting && !messageSubmittedRef.current) {
+            messageSubmittedRef.current = true;
+            resolvingRef.current = false;
+            onSubmitMessage?.(trimmedMessage);
+            setPendingMessage('');
+            return false;
+          }
+          return currentAwaiting;
+        });
+      }, 5000);
+    } else {
+      onSubmitMessage?.(trimmedMessage);
+    }
     updateValue('');
   };
 
