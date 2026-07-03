@@ -53,7 +53,8 @@ export function routeAfterManagementToolResults(
           typeof toolMsg.content === 'string'
             ? JSON.parse(toolMsg.content)
             : toolMsg.content;
-        if (parsed && parsed.success && parsed.needs_confirm) {
+
+        if (parsed && parsed.success) {
           return 'cancel_confirm';
         }
       } catch {

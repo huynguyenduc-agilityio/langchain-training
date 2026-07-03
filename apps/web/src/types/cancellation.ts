@@ -1,4 +1,5 @@
 import type { CARD_STATUS } from '@/constants';
+import type { Trip } from '@repo/shared';
 
 export type CancelSuccessCardProps = {
   tripId: string;
@@ -23,6 +24,18 @@ export type CancelTripCardProps = {
     | typeof CARD_STATUS.BYPASSED;
 };
 
+export type CancellableTripsSelectorCardProps = {
+  trips: Trip[];
+  disabled?: boolean;
+  onSelectCancel: (tripId: string) => void;
+  onBypass?: () => void;
+  status?:
+    | typeof CARD_STATUS.PENDING
+    | typeof CARD_STATUS.CONFIRMED
+    | typeof CARD_STATUS.REJECTED
+    | typeof CARD_STATUS.BYPASSED;
+};
+
 export type CancelTripErrorCardProps = {
   tripId?: string;
   reason: string;
@@ -34,9 +47,12 @@ export type CancelConfirmEventData = {
   destination?: string;
   driverName?: string;
   cancellationFee?: number;
+  is_selection?: boolean;
+  trips?: Trip[];
 };
 
 export type CancelConfirmResolveValue = {
   approved: boolean;
   cancelled?: boolean;
+  selectedTripId?: string;
 };
