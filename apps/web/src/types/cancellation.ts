@@ -1,11 +1,15 @@
 import type { CARD_STATUS } from '@/constants';
-import type { Trip } from '@repo/shared';
+import type { Trip, VehicleType } from '@repo/shared';
 
 export type CancelSuccessCardProps = {
   tripId: string;
   pickup: string;
   destination: string;
-  cancellationFee: number;
+  driverName?: string;
+  price?: number;
+  vehicleType?: VehicleType;
+  passengerName?: string;
+  passengerPhone?: string;
 };
 
 export type CancelTripCardProps = {
@@ -13,7 +17,6 @@ export type CancelTripCardProps = {
   pickup: string;
   destination: string;
   driverName?: string;
-  cancellationFee?: number;
   disabled?: boolean;
   onConfirm?: () => void;
   onReject?: () => void;
@@ -46,7 +49,6 @@ export type CancelConfirmEventData = {
   pickup?: string;
   destination?: string;
   driverName?: string;
-  cancellationFee?: number;
   is_selection?: boolean;
   trips?: Trip[];
 };

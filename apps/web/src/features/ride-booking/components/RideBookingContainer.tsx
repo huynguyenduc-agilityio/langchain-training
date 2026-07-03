@@ -4,7 +4,7 @@ import type { Trip } from '@repo/shared';
 
 import React, { useCallback, useEffect } from 'react';
 import { TripDashboard } from '@/components/TripDashboard';
-import { API_ROUTES, CANCELLATION_FEES } from '@/constants';
+import { API_ROUTES } from '@/constants';
 import { useAuth } from '@/features/auth/auth-context';
 import { http } from '@/lib/http';
 
@@ -59,10 +59,6 @@ export function RideBookingContainer({
 
   const handleCancelTrip = (tripId: string) => {
     if (!user?.uid) return;
-    const trip = trips.find((t) => t.id === tripId);
-    const cancellationFee = trip?.driver
-      ? (CANCELLATION_FEES[trip.vehicleType] ?? 1.0)
-      : 0;
     const cancelledAt = new Date().toISOString();
 
     http<{ success: boolean }>(API_ROUTES.TRIPS, {
@@ -72,7 +68,6 @@ export function RideBookingContainer({
         userId: user.uid,
         updates: {
           status: 'cancelled',
-          cancellationFee,
           cancelledAt,
         },
       }),
@@ -86,7 +81,6 @@ export function RideBookingContainer({
                     ...t,
                     status: 'cancelled',
                     cancelledAt,
-                    cancellationFee,
                   }
                 : t,
             ),

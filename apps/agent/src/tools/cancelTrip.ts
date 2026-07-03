@@ -2,7 +2,6 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 import { getTripFromDb, getTripsByUserIdFromDb } from '@/db/operations';
-import { CANCELLATION_FEE_CONFIG } from '@repo/shared';
 import { AGENT_TOOLS } from '@/constants';
 import { logError } from '@repo/logger';
 
@@ -43,11 +42,6 @@ export const cancelTripTool = tool(
 
         if (activeTrips.length === 1) {
           const trip = activeTrips[0];
-          const driverMatched = !!trip.driver;
-          const cancellationFee = driverMatched
-            ? (CANCELLATION_FEE_CONFIG[trip.vehicleType] ?? 1.0)
-            : 0;
-
           return {
             success: true,
             needs_confirm: true,
@@ -55,7 +49,6 @@ export const cancelTripTool = tool(
             tripId: trip.id,
             pickup: trip.pickup,
             destination: trip.destination,
-            cancellationFee,
             driverName: trip.driver?.name || null,
           };
         }
@@ -94,11 +87,6 @@ export const cancelTripTool = tool(
         };
       }
 
-      const driverMatched = !!trip.driver;
-      const cancellationFee = driverMatched
-        ? (CANCELLATION_FEE_CONFIG[trip.vehicleType] ?? 1.0)
-        : 0;
-
       return {
         success: true,
         needs_confirm: true,
@@ -106,7 +94,6 @@ export const cancelTripTool = tool(
         tripId,
         pickup: trip.pickup,
         destination: trip.destination,
-        cancellationFee,
         driverName: trip.driver?.name || null,
       };
     } catch (error) {

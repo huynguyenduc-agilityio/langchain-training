@@ -30,7 +30,6 @@ export interface Trip {
   driver?: Driver | null;
   createdAt: string;
   cancelledAt?: string;
-  cancellationFee?: number;
   pickupLat?: number;
   pickupLng?: number;
   destLat?: number;

@@ -15,14 +15,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { formatPrice } from '@/utils';
 
 export function CancelTripCard({
   tripId,
   pickup,
   destination,
   driverName,
-  cancellationFee = 0,
   disabled = false,
   onConfirm,
   onReject,
@@ -107,14 +105,6 @@ export function CancelTripCard({
                 <span className="text-gray-700 font-bold">•</span>
               </>
             )}
-            <div>
-              <span className="font-semibold text-gray-500">
-                Cancellation Fee:
-              </span>{' '}
-              <span className="text-red-450 font-bold">
-                {formatPrice(cancellationFee)}
-              </span>
-            </div>
           </div>
         </div>
       </Card>
@@ -153,17 +143,6 @@ export function CancelTripCard({
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-550 font-semibold">Assigned Driver</span>
             <span className="font-semibold text-gray-300">{driverName}</span>
-          </div>
-        )}
-
-        {cancellationFee > 0 && (
-          <div className="bg-red-950/15 border border-red-900/10 rounded-xl p-2.5 flex items-center justify-between text-xs text-red-400">
-            <span className="font-semibold flex items-center gap-1">
-              ⚠️ Cancellation fee applies:
-            </span>
-            <strong className="font-black text-sm">
-              {formatPrice(cancellationFee)}
-            </strong>
           </div>
         )}
       </CardContent>

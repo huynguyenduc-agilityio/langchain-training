@@ -66,7 +66,6 @@ export async function GET(req: NextRequest) {
         cancelledAt: row.cancelledAt
           ? row.cancelledAt.toISOString()
           : undefined,
-        cancellationFee: row.cancellationFee || undefined,
         driver,
       });
     }
@@ -195,13 +194,10 @@ export async function PATCH(req: NextRequest) {
 
     const updateData: {
       status?: TripStatus;
-      cancellationFee?: number;
       cancelledAt?: Date;
       driverId?: string;
     } = {};
     if (updates.status) updateData.status = updates.status;
-    if (updates.cancellationFee !== undefined)
-      updateData.cancellationFee = updates.cancellationFee;
     if (updates.cancelledAt)
       updateData.cancelledAt = new Date(updates.cancelledAt);
 
