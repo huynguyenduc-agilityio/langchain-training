@@ -8,6 +8,7 @@ import {
   COPILOT_TOOLS,
   CancelConfirmResult,
   CANCELLATION_FEE_CONFIG,
+  Trip,
 } from '@repo/shared';
 
 /**
@@ -27,7 +28,33 @@ export async function cancelConfirmNode(state: RideBookingState) {
   const toolCall = lastAiMessage?.tool_calls?.[0];
   const tripId = toolCall?.args?.tripId;
 
-  // Lookup trip details from state or DB
+  // Retrieve last tool message to parse tool results
+  const lastToolMessage = [...messages]
+    .reverse()
+    .find(
+      (m) =>
+        (m._getType?.() || m.type || m.constructor?.name?.toLowerCase()) ===
+          'tool' && (m as ToolMessage).name === AGENT_TOOLS.CANCEL_TRIP.name,
+    ) as ToolMessage | undefined;
+
+  let isSelection = false;
+  let activeTrips: Trip[] = [];
+  if (lastToolMessage) {
+    try {
+      const content =
+        typeof lastToolMessage.content === 'string'
+          ? JSON.parse(lastToolMessage.content)
+          : lastToolMessage.content;
+      if (content && typeof content === 'object') {
+        isSelection = !!content.is_selection;
+        activeTrips = content.trips || [];
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Lookup trip details from state or DB if tripId is provided
   let trip = state.userTrips.find((t) => t.id === tripId);
   if (!trip && tripId) {
     trip = await getTripFromDb(tripId);
@@ -47,23 +74,38 @@ export async function cancelConfirmNode(state: RideBookingState) {
       destination: trip?.destination || '',
       driverName: trip?.driver?.name,
       cancellationFee,
+      is_selection: isSelection,
+      trips: activeTrips,
     },
-  }) as CancelConfirmResult;
+  }) as CancelConfirmResult & { selectedTripId?: string };
 
-  if (result && result.approved && tripId) {
+  const finalTripId = result?.selectedTripId || tripId;
+
+  if (result && result.approved && finalTripId) {
+    let finalTrip = trip;
+    let finalFee = cancellationFee;
+
+    if (finalTripId !== tripId) {
+      finalTrip = await getTripFromDb(finalTripId);
+      const isMatched = !!finalTrip?.driver;
+      finalFee = isMatched
+        ? CANCELLATION_FEE_CONFIG[finalTrip?.vehicleType || VEHICLE_BIKE]
+        : 0;
+    }
+
     // Mutate DB immediately in the node to ensure state consistency
-    await updateTripInDb(tripId, {
+    await updateTripInDb(finalTripId, {
       status: 'cancelled',
-      cancellationFee,
+      cancellationFee: finalFee,
       cancelledAt: new Date().toISOString(),
     });
 
     const updatedUserTrips = state.userTrips.map((t) =>
-      t.id === tripId
+      t.id === finalTripId
         ? {
             ...t,
             status: 'cancelled' as const,
-            cancellationFee,
+            cancellationFee: finalFee,
             cancelledAt: new Date().toISOString(),
           }
         : t,
@@ -79,10 +121,10 @@ export async function cancelConfirmNode(state: RideBookingState) {
           name: COPILOT_TOOLS.CANCEL_RIDE.name,
           args: {
             success: true,
-            tripId,
-            pickup: trip?.pickup || '',
-            destination: trip?.destination || '',
-            cancellationFee,
+            tripId: finalTripId,
+            pickup: finalTrip?.pickup || '',
+            destination: finalTrip?.destination || '',
+            cancellationFee: finalFee,
             reason: '',
           },
         },
@@ -99,7 +141,10 @@ export async function cancelConfirmNode(state: RideBookingState) {
         messages: [
           new ToolMessage({
             name: toolCall?.name || AGENT_TOOLS.CANCEL_TRIP.name,
-            content: JSON.stringify({ approved: true }),
+            content: JSON.stringify({
+              approved: true,
+              selectedTripId: finalTripId,
+            }),
             tool_call_id: toolCall?.id || '',
           }),
           renderAiMsg,

@@ -35,11 +35,13 @@ export interface MatchDriverResult {
 export interface CancelTripResult {
   success: boolean;
   needs_confirm?: boolean;
+  is_selection?: boolean;
   tripId?: string;
   pickup?: string;
   destination?: string;
   cancellationFee?: number;
   driverName?: string | null;
+  trips?: Trip[];
   error?: string;
   reason?: string;
 }

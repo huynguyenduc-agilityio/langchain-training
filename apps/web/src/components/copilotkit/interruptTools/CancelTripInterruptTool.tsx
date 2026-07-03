@@ -1,10 +1,12 @@
 'use client';
 
 import type { Trip } from '@repo/shared';
+import { CANCELLATION_FEE_CONFIG } from '@repo/shared';
 import { useAgent, useInterrupt } from '@copilotkit/react-core/v2';
 import React, { useEffect, useState } from 'react';
 
 import { CancelTripCard } from '@/components/CancelTripCard';
+import { CancellableTripsSelectorCard } from '@/components/CancellableTripsSelectorCard';
 import { useAgentStore } from '@/store/useAgentStore';
 import { COPILOTKIT_AGENT_ID } from '@/constants';
 import type {
@@ -31,6 +33,8 @@ function InterruptCancelConfirmRenderer({
 }) {
   const setActiveResolve = useAgentStore((state) => state.setActiveResolve);
   const [initialMessagesLength] = useState(messages.length);
+  const [selectedTripForConfirm, setSelectedTripForConfirm] =
+    useState<Trip | null>(null);
 
   useEffect(() => {
     const stableResolve = (value: CancelConfirmResolveValue) => {
@@ -52,6 +56,69 @@ function InterruptCancelConfirmRenderer({
     .slice(initialMessagesLength)
     .some((msg) => msg.role === 'user');
 
+  // Case 1: Multiple trips selection — 2-step flow
+  if (data.is_selection) {
+    const activeTripsList =
+      data.trips ||
+      trips.filter(
+        (t) =>
+          t.status === 'searching' ||
+          t.status === 'matched' ||
+          t.status === 'picked_up',
+      );
+
+    // Step 2: User already picked a trip → show CancelTripCard for final confirmation
+    if (selectedTripForConfirm) {
+      const cancellationFee = selectedTripForConfirm.driver
+        ? (CANCELLATION_FEE_CONFIG[selectedTripForConfirm.vehicleType] ?? 1.0)
+        : 0;
+
+      return (
+        <AssistantMessageLayout>
+          <CancelTripCard
+            tripId={selectedTripForConfirm.id}
+            pickup={selectedTripForConfirm.pickup}
+            destination={selectedTripForConfirm.destination}
+            driverName={selectedTripForConfirm.driver?.name}
+            cancellationFee={cancellationFee}
+            disabled={disabled}
+            onConfirm={() => {
+              resolve({
+                approved: true,
+                selectedTripId: selectedTripForConfirm.id,
+              });
+            }}
+            onReject={() => {
+              // Step back to selector
+              setSelectedTripForConfirm(null);
+            }}
+          />
+        </AssistantMessageLayout>
+      );
+    }
+
+    // Step 1: Show list of active trips, user picks one to cancel
+    return (
+      <AssistantMessageLayout>
+        <CancellableTripsSelectorCard
+          trips={activeTripsList}
+          disabled={disabled}
+          onSelectCancel={(tripId) => {
+            // Advance to step 2: show confirm card for the selected trip
+            const trip = activeTripsList.find((t) => t.id === tripId);
+            if (trip) {
+              setSelectedTripForConfirm(trip);
+            }
+          }}
+          onBypass={() => {
+            resolve({ approved: false, cancelled: true });
+          }}
+        />
+      </AssistantMessageLayout>
+    );
+  }
+
+  // Case 2: Single trip confirm card (agent already knows which trip)
   const trip = trips.find((t) => t.id === data.tripId);
   const pickup = trip?.pickup || data.pickup || '';
   const destination = trip?.destination || data.destination || '';

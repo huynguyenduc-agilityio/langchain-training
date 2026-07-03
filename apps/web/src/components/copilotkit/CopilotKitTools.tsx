@@ -12,7 +12,6 @@ import { CancelTripInterruptTool } from './interruptTools/CancelTripInterruptToo
 import { TripsListRenderTool } from './renderTools/TripsListRenderTool';
 import { RideEstimateRenderTool } from './renderTools/RideEstimateRenderTool';
 import { ConfirmRideRenderTool } from './renderTools/ConfirmRideRenderTool';
-import { CancelTripRenderTool } from './renderTools/CancelTripRenderTool';
 
 type CopilotKitToolsProps = {
   trips: Trip[];
@@ -31,7 +30,6 @@ export function CopilotKitTools({ trips, setTrips }: CopilotKitToolsProps) {
       <CancelRideRenderTool />
       <TripsListRenderTool />
       <ConfirmRideRenderTool />
-      <CancelTripRenderTool trips={trips} />
 
       {/* Interrupt Tools */}
       <ConfirmRideInterruptTool />
