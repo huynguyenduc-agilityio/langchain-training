@@ -28,13 +28,16 @@ Responsibilities:
 
 - Run the LangGraph agent graph as a server via `@langchain/langgraph-cli`
 - Implement supervisor pattern with central routing to specialized sub-agents
-- **Ride Agent** — handles ride estimation (ORS geocoding + routing) and ride request with driver matching
-- **Management Agent** — handles trip cancellation with fee calculation
-- **Info Agent** — handles trip history lookup and FAQ responses
+- **Ride Agent** — handles ride estimation (ORS geocoding + routing), ride request with driver matching, and user memory persistence
+- **Management Agent** — handles trip cancellation with multi-trip selection and confirmation workflows
+- **Info Agent** — handles trip history lookup and FAQ responses using Corrective RAG (CRAG) with retrieval grading and query rewriting
 - Enforce input guardrails as a dedicated graph node (operating hours 05:00–23:00, max 3 active trips, max 50km distance, phone format validation)
 - Classify user intent via structured output before routing to sub-agents
+- State-aware context routing in Supervisor to prevent losing conversation context on ambiguous inputs
 - Execute human-in-the-loop workflows using LangGraph `interrupt()` + `Command` pattern for ride confirmations and cancellations
 - Persist conversation state via `PostgresSaver` checkpointer
+- Persist user travel patterns via long-term Memory Store for personalized suggestions
+- Search knowledge base via RAG pipeline with pgvector-based vector store
 - Stream responses to the frontend via CopilotKit SDK and AG-UI protocol
 - Manage trip and driver data in PostgreSQL via Drizzle ORM
 
@@ -69,16 +72,19 @@ supervisor ◄──────────────────────
 
 ### Key Concepts
 
-| Concept                   | Implementation                                                           |
-| ------------------------- | ------------------------------------------------------------------------ |
-| **Multi-Agent**           | Supervisor pattern with 3 specialized subgraphs                          |
-| **Subgraphs**             | `rideSubgraph`, `managementSubgraph`, `infoSubgraph` as composable units |
-| **Human-in-the-Loop**     | `interrupt()` pauses graph at ride confirmation and cancellation steps   |
-| **Guardrails**            | `inputValidation` node validates before LLM invocation                   |
-| **Intent Classification** | Structured output with Zod schema for routing decisions                  |
-| **Checkpointer**          | `PostgresSaver` for conversation state persistence                       |
-| **Conditional Edges**     | Dynamic routing from supervisor and validation nodes                     |
-| **Streaming**             | CopilotKit SDK + AG-UI encoder for real-time response streaming          |
+| Concept                   | Implementation                                                                |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| **Multi-Agent**           | Supervisor pattern with 3 specialized subgraphs                               |
+| **Subgraphs**             | `rideSubgraph`, `managementSubgraph`, `infoSubgraph` as composable units      |
+| **Human-in-the-Loop**     | `interrupt()` pauses graph at ride confirmation and cancellation steps        |
+| **Guardrails**            | `inputValidation` node validates before LLM invocation                        |
+| **Intent Classification** | Structured output with Zod schema for routing decisions                       |
+| **State-Aware Routing**   | Supervisor detects `activeFlow` context to prevent losing conversation state  |
+| **RAG + CRAG**            | Retrieval grading + query rewriting for self-correcting knowledge retrieval   |
+| **Long-term Memory**      | Memory Store persists user travel patterns for personalized suggestions       |
+| **Checkpointer**          | `PostgresSaver` for conversation state persistence                            |
+| **Conditional Edges**     | Dynamic routing from supervisor, validation, and process result nodes         |
+| **Streaming**             | CopilotKit SDK + AG-UI encoder for real-time response streaming               |
 
 ---
 
@@ -200,15 +206,21 @@ npx drizzle-kit studio
 apps/agent/
 ├── docs/                 # Documentation & logs
 ├── src/
-│   ├── constants/        # Shared constant values (pricing, rules, locations)
-│   ├── db/               # Drizzle schema, migrations, seed scripts, checkpointer
+│   ├── config/           # Environment configuration & validation
+│   ├── constants/        # Shared constant values (tools, rules, locations)
+│   ├── db/               # Drizzle schema, migrations, seed scripts, checkpointer, memory store
 │   ├── graphs/           # Subgraph definitions (ride, management, info)
-│   ├── nodes/            # Graph node implementations (supervisor, validation, classifiers)
+│   ├── nodes/            # Graph node implementations (supervisor, validation, classifiers, routers)
+│   │   ├── ride/         # Ride agent nodes (agent, rideConfirm, processToolResults, memoryWriter)
+│   │   ├── management/   # Management agent nodes (agent, cancelConfirm, processToolResults)
+│   │   └── info/         # Info agent nodes (agent, retrievalGrader, queryRewriter, processToolResults)
 │   ├── prompts/          # System prompts for all agents/subgraphs
+│   ├── rag/              # RAG pipeline (document loader, vector store, knowledge seeding)
 │   ├── services/         # External integrations (OpenRouteService)
+│   ├── state/            # LangGraph state annotations (RideBookingStateAnnotation)
 │   ├── tools/            # Tool definitions for LangGraph agents
 │   ├── types/            # TypeScript interfaces & types
-│   └── utils/            # Shared helper functions
+│   └── utils/            # Shared helper functions (memory, validation, agent factory)
 ```
 
 ### Configuration Files

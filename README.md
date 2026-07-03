@@ -42,9 +42,12 @@ This is a **Turborepo monorepo** with two runtime surfaces managed by `pnpm`.
 - ✅ **Human-in-the-Loop** — ride request and cancellation confirmation cards using LangGraph `interrupt()` + `Command` pattern
 - 🧠 **Multi-Agent Architecture** — supervisor pattern routing to specialized Ride Agent, Management Agent, and Info Agent subgraphs
 - 🛡️ **Input Guardrails** — programmatic validation node (operating hours, active trip limit, distance cap, phone format)
-- 🎨 **Generative UI** — interactive cards rendered in chat via `useFrontendTool` and `useRenderTool`
+- 🎨 **Generative UI** — interactive cards rendered in chat via `useRenderTool` and `useInterrupt`
+- 📚 **RAG with Self-Correction** — Corrective RAG (CRAG) pattern with retrieval grading and query rewriting for FAQ & knowledge base
+- 🧲 **Long-term Memory** — persists user travel patterns via Memory Store for personalized suggestions
+- 📡 **Real-time SSE Updates** — PostgreSQL LISTEN/NOTIFY triggers stream trip changes to the dashboard in real-time
 - 🔐 **Firebase Authentication** — user login with Firebase Auth
-- 💾 **PostgreSQL Persistence** — trip data and driver matching via Drizzle ORM
+- 💾 **PostgreSQL Persistence** — trip data, driver matching, checkpointer, and vector store via Drizzle ORM
 
 ---
 
@@ -53,9 +56,10 @@ This is a **Turborepo monorepo** with two runtime surfaces managed by `pnpm`.
 ```
 web (Next.js)  ──►  agent (LangGraph Server)  ──►  PostgreSQL
   CopilotKit           LangChainJS                   Drizzle ORM
-  AG-UI streaming      Supervisor + Subgraphs        Trip / Driver data
-  Generative UI        OpenRouteService (ORS)
-  Firebase Auth        PostgresSaver checkpointer
+  AG-UI streaming      Supervisor + Subgraphs        Trip / Driver / User data
+  Generative UI        OpenRouteService (ORS)         Checkpointer
+  Firebase Auth        RAG + CRAG pattern             Memory Store
+  SSE real-time        Long-term Memory               Vector Store (pgvector)
 ```
 
 1. `web` renders the trip dashboard, login page, and CopilotKit chat sidebar
@@ -221,20 +225,22 @@ langchain-training/
 ├── apps/
 │   ├── agent/                # LangGraph AI agent server
 │   │   ├── src/
-│   │   │   ├── constants/    # Shared constant values (pricing, rules, locations)
-│   │   │   ├── db/           # Drizzle schema, migrations, seed scripts, Postgres checkpointer
+│   │   │   ├── config/       # Environment configuration & validation
+│   │   │   ├── constants/    # Shared constant values (tools, rules, locations)
+│   │   │   ├── db/           # Drizzle schema, migrations, seed scripts, checkpointer, memory store
 │   │   │   ├── graphs/       # Subgraph definitions (ride, management, info)
-│   │   │   ├── nodes/        # Graph node implementations (supervisor, validation, classifiers)
+│   │   │   ├── nodes/        # Graph node implementations (supervisor, validation, classifiers, routers)
 │   │   │   ├── prompts/      # System prompts for all agents/subgraphs
+│   │   │   ├── rag/          # RAG pipeline (document loader, vector store, knowledge seeding)
 │   │   │   ├── services/     # External integrations (OpenRouteService)
 │   │   │   ├── tools/        # Tool definitions for LangGraph agents
 │   │   │   ├── types/        # TypeScript interfaces & types
-│   │   │   └── utils/        # Shared helper functions
+│   │   │   └── utils/        # Shared helper functions (memory, validation, agent factory)
 │   │   └── package.json
 │   └── web/                  # Next.js frontend application
 │       ├── src/
-│       │   ├── app/          # Next.js app router pages & API endpoints (SSE, copilotkit proxy)
-│       │   ├── components/   # React components (GenUI cards, dashboard, auth)
+│       │   ├── app/          # Next.js app router pages & API endpoints (SSE, trips, copilotkit proxy)
+│       │   ├── components/   # React components (GenUI cards, dashboard, copilotkit tools)
 │       │   ├── constants/    # UI & Chat constants
 │       │   ├── features/     # Feature-specific logic (auth, ride-booking)
 │       │   ├── lib/          # Firebase initialization & HTTP/DB clients
@@ -242,6 +248,9 @@ langchain-training/
 │       │   ├── types/        # UI-specific TypeScript types
 │       │   └── utils/        # Frontend utility/helper functions
 │       └── package.json
+├── packages/
+│   ├── shared/               # Shared types, constants, and pricing config
+│   └── logger/               # Shared logging utility
 ├── package.json              # Monorepo workspaces definition
 └── turbo.json                # Turborepo task pipeline configuration
 ```

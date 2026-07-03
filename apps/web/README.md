@@ -28,12 +28,18 @@ Responsibilities:
 - Render the trip dashboard with status filtering (All / Active / Completed / Cancelled), stats cards, and trip detail dialogs
 - Handle user authentication via Firebase Auth (login page + auth context)
 - Render the CopilotKit chat sidebar with streaming AI assistant responses
-- Display Generative UI components in chat: ride estimate cards, driver match cards, trip list cards, success/error cards
-- Implement human-in-the-loop confirmation workflows: ride confirmation card (`RideConfirmCard`) and cancellation confirmation card (`CancelTripCard`)
-- Register frontend tools, render tools, and agent context readables for CopilotKit integration
-- Provide REST API routes for trip data (`/api/trips`) and CopilotKit runtime proxy (`/api/copilotkit`)
+- Display Generative UI components in chat: ride estimate cards, driver match cards, trip list cards, cancel success/error cards
+- Implement human-in-the-loop confirmation workflows:
+  - **Ride confirmation** — `RideConfirmCard` via `ConfirmRideInterruptTool`
+  - **Single trip cancellation** — `CancelTripCard` via `CancelTripInterruptTool`
+  - **Multi-trip cancellation** — `CancellableTripsSelectorCard` → `CancelTripCard` (2-step flow)
+- Register render tools, interrupt tools, and agent context readables for CopilotKit integration
+- Provide REST API routes for trip CRUD (`/api/trips`) and CopilotKit runtime proxy (`/api/copilotkit`)
+- Stream real-time trip updates via Server-Sent Events (SSE) with PostgreSQL LISTEN/NOTIFY (`/api/trips/stream`)
 
 **Depends on:** `agent` (LangGraph server on port `8123`) and PostgreSQL database.
+
+> **Note:** The SSE stream endpoint requires `DATABASE_DIRECT_URL` (direct connection, port 5432) to bypass PgBouncer, as LISTEN/NOTIFY is not supported in transaction pooling mode.
 
 ---
 
@@ -139,8 +145,18 @@ Open http://localhost:3000 in your browser.
 apps/web/
 ├── public/               # Static assets
 ├── src/
-│   ├── app/              # Next.js app router pages & API endpoints (SSE, copilotkit proxy)
-│   ├── components/       # React components (GenUI cards, dashboard, auth)
+│   ├── app/              # Next.js app router pages & API endpoints
+│   │   ├── (home)/       # Home page (dashboard + chat)
+│   │   ├── login/        # Login page
+│   │   └── api/          # API routes (trips CRUD, SSE stream, copilotkit proxy)
+│   ├── components/       # React components
+│   │   ├── copilotkit/   # CopilotKit integration
+│   │   │   ├── chat/             # Custom chat UI (AssistantMessage, ChatInput, etc.)
+│   │   │   ├── interruptTools/   # HITL interrupt handlers (ConfirmRide, CancelTrip)
+│   │   │   ├── renderTools/      # Render tool handlers (Estimate, DriverMatch, Cancel, TripsList)
+│   │   │   └── readables/        # Agent context readables (UserReadable)
+│   │   ├── ui/           # shadcn/ui base components
+│   │   └── *.tsx         # Feature cards (RideConfirmCard, CancelSuccessCard, TripDashboard, etc.)
 │   ├── constants/        # UI & Chat constants
 │   ├── features/         # Feature-specific logic (auth, ride-booking)
 │   ├── lib/              # Firebase initialization & HTTP/DB clients
