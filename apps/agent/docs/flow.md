@@ -11,7 +11,7 @@ graph LR
         ChatSidebar["Chat Sidebar"]
         TripDashboard["Trip Dashboard"]
         SSEListener["SSE Client"]
-        InterruptTool["Interrupt Frontend Tool"]
+        CopilotKitUI["CopilotKit UI Tools"]
     end
 
     subgraph backend["⚙️ Backend - LangGraph Agent"]
@@ -26,9 +26,14 @@ graph LR
             ManagementAgent["Management Agent Subgraph"]
             InfoAgent["Info Agent Subgraph"]
         end
+    end
 
-        PostgresDB[(PostgreSQL Database)]
-        SSEHub["SSE Event Streamer"]
+    subgraph database["🗄️ Database - PostgreSQL"]
+        PostgresDB[(Trips / Drivers / Users)]
+        Checkpointer[(Checkpointer)]
+        MemoryStore[(Memory Store)]
+        VectorStore[(Vector Store / RAG)]
+        SSEHub["SSE Trigger & Streamer"]
     end
 
     subgraph external["🌐 External Services"]
@@ -54,16 +59,20 @@ graph LR
     Supervisor -->|Route Request| InfoAgent
 
     RideAgent -->|Get Route & Distance| ORS_API
-    RideAgent -.->|Fallback Geocoding| Photon_API
-    RideAgent -->|Booking Approval Request| InterruptTool
-    InterruptTool -->|Approve / Reject| RideAgent
+    RideAgent -.-|Fallback Geocoding| Photon_API
+    RideAgent -->|Booking Approval Request| CopilotKitUI
+    CopilotKitUI -->|Approve / Reject| RideAgent
     RideAgent -->|Create Trip & Match Driver| PostgresDB
+    RideAgent -->|Write Travel Patterns| MemoryStore
 
-    ManagementAgent -->|Cancellation Confirmation| InterruptTool
-    InterruptTool -->|Confirm Action| ManagementAgent
-    ManagementAgent -->|Update Booking Status| PostgresDB
+    ManagementAgent -->|Lookup & Cancel Trips| PostgresDB
+    ManagementAgent -->|Cancellation Confirmation| CopilotKitUI
+    CopilotKitUI -->|Confirm / Select Trip| ManagementAgent
 
     InfoAgent -->|Fetch Trip Data| PostgresDB
+    InfoAgent -->|Search Knowledge Base| VectorStore
+
+    MainAgentGraph -->|Persist State Snapshots| Checkpointer
 
     PostgresDB -->|Publish Updates| SSEHub
     SSEHub -->|Stream Events| SSEListener
@@ -85,10 +94,9 @@ graph LR
     class ChatSidebar frontend
     class TripDashboard frontend
     class SSEListener frontend
-    class InterruptTool frontend
+    class CopilotKitUI frontend
 
     class CopilotKitServer apiNode
-    class SSEHub apiNode
 
     class MainAgentGraph backend
     class InputValidation backend
@@ -99,6 +107,10 @@ graph LR
     class InfoAgent backend
 
     class PostgresDB databaseNode
+    class Checkpointer databaseNode
+    class MemoryStore databaseNode
+    class VectorStore databaseNode
+    class SSEHub databaseNode
 
     class FirebaseAuth externalNode
     class ORS_API externalNode
@@ -109,9 +121,9 @@ graph LR
     linkStyle 3 stroke:#00C853
     linkStyle 13 stroke:#00C853
     linkStyle 14 stroke:#00C853
-    linkStyle 16 stroke:#00C853
-    linkStyle 17 stroke:#00C853
-    linkStyle 22 stroke:#00C853
-    linkStyle 24 stroke:#00C853
-    linkStyle 25 stroke:#00C853
+    linkStyle 18 stroke:#00C853
+    linkStyle 19 stroke:#00C853
+    linkStyle 26 stroke:#00C853
+    linkStyle 27 stroke:#00C853
+    linkStyle 28 stroke:#00C853
 ```
