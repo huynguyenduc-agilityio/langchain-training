@@ -1,7 +1,6 @@
 'use client';
 
 import type { Trip } from '@repo/shared';
-import { CANCELLATION_FEE_CONFIG } from '@repo/shared';
 import { useAgent, useInterrupt } from '@copilotkit/react-core/v2';
 import React, { useEffect, useState } from 'react';
 
@@ -69,10 +68,6 @@ function InterruptCancelConfirmRenderer({
 
     // Step 2: User already picked a trip → show CancelTripCard for final confirmation
     if (selectedTripForConfirm) {
-      const cancellationFee = selectedTripForConfirm.driver
-        ? (CANCELLATION_FEE_CONFIG[selectedTripForConfirm.vehicleType] ?? 1.0)
-        : 0;
-
       return (
         <AssistantMessageLayout>
           <CancelTripCard
@@ -80,7 +75,6 @@ function InterruptCancelConfirmRenderer({
             pickup={selectedTripForConfirm.pickup}
             destination={selectedTripForConfirm.destination}
             driverName={selectedTripForConfirm.driver?.name}
-            cancellationFee={cancellationFee}
             disabled={disabled}
             onConfirm={() => {
               resolve({
@@ -123,7 +117,6 @@ function InterruptCancelConfirmRenderer({
   const pickup = trip?.pickup || data.pickup || '';
   const destination = trip?.destination || data.destination || '';
   const driverName = trip?.driver?.name || data.driverName;
-  const cancellationFee = data.cancellationFee ?? 0;
 
   return (
     <AssistantMessageLayout>
@@ -132,7 +125,6 @@ function InterruptCancelConfirmRenderer({
         pickup={pickup}
         destination={destination}
         driverName={driverName}
-        cancellationFee={cancellationFee}
         disabled={disabled}
         onConfirm={() => {
           resolve({ approved: true });

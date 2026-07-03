@@ -3,13 +3,8 @@ import { ToolMessage, AIMessage } from '@langchain/core/messages';
 
 import { RideBookingState } from '@/state';
 import { updateTripInDb, getTripFromDb } from '@/db/operations';
-import { VEHICLE_BIKE, AGENT_TOOLS } from '@/constants';
-import {
-  COPILOT_TOOLS,
-  CancelConfirmResult,
-  CANCELLATION_FEE_CONFIG,
-  Trip,
-} from '@repo/shared';
+import { AGENT_TOOLS } from '@/constants';
+import { COPILOT_TOOLS, CancelConfirmResult, Trip } from '@repo/shared';
 
 /**
  * Cancellation Confirmation Node
@@ -59,12 +54,6 @@ export async function cancelConfirmNode(state: RideBookingState) {
   if (!trip && tripId) {
     trip = await getTripFromDb(tripId);
   }
-  const driverMatched = !!trip?.driver;
-  const vehicleType = trip?.vehicleType || VEHICLE_BIKE;
-  const cancellationFee = driverMatched
-    ? CANCELLATION_FEE_CONFIG[vehicleType]
-    : 0;
-
   // Throws GraphInterrupt to pause execution, returns resume payload when resumed
   const result = interrupt({
     type: 'cancel_confirm',
@@ -73,7 +62,6 @@ export async function cancelConfirmNode(state: RideBookingState) {
       pickup: trip?.pickup || '',
       destination: trip?.destination || '',
       driverName: trip?.driver?.name,
-      cancellationFee,
       is_selection: isSelection,
       trips: activeTrips,
     },
@@ -83,20 +71,14 @@ export async function cancelConfirmNode(state: RideBookingState) {
 
   if (result && result.approved && finalTripId) {
     let finalTrip = trip;
-    let finalFee = cancellationFee;
 
     if (finalTripId !== tripId) {
       finalTrip = await getTripFromDb(finalTripId);
-      const isMatched = !!finalTrip?.driver;
-      finalFee = isMatched
-        ? CANCELLATION_FEE_CONFIG[finalTrip?.vehicleType || VEHICLE_BIKE]
-        : 0;
     }
 
     // Mutate DB immediately in the node to ensure state consistency
     await updateTripInDb(finalTripId, {
       status: 'cancelled',
-      cancellationFee: finalFee,
       cancelledAt: new Date().toISOString(),
     });
 
@@ -105,7 +87,6 @@ export async function cancelConfirmNode(state: RideBookingState) {
         ? {
             ...t,
             status: 'cancelled' as const,
-            cancellationFee: finalFee,
             cancelledAt: new Date().toISOString(),
           }
         : t,
@@ -124,7 +105,11 @@ export async function cancelConfirmNode(state: RideBookingState) {
             tripId: finalTripId,
             pickup: finalTrip?.pickup || '',
             destination: finalTrip?.destination || '',
-            cancellationFee: finalFee,
+            driverName: finalTrip?.driver?.name || undefined,
+            price: finalTrip?.price,
+            vehicleType: finalTrip?.vehicleType,
+            passengerName: finalTrip?.passengerName,
+            passengerPhone: finalTrip?.passengerPhone,
             reason: '',
           },
         },

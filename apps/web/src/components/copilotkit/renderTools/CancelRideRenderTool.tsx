@@ -14,10 +14,20 @@ export function CancelRideRenderTool() {
     tripId: z.string().optional().describe('The trip ID'),
     pickup: z.string().optional().describe('Pickup location name'),
     destination: z.string().optional().describe('Destination location name'),
-    cancellationFee: z
-      .number()
+    driverName: z
+      .string()
       .optional()
-      .describe('Cancellation fee charged (0 if no fee)'),
+      .describe('Assigned driver name of the cancelled trip'),
+    price: z.number().optional().describe('Total price of the ride'),
+    vehicleType: z
+      .enum(['bike', 'car4', 'car7'])
+      .optional()
+      .describe('Vehicle type of the ride'),
+    passengerName: z.string().optional().describe('Passenger name of the ride'),
+    passengerPhone: z
+      .string()
+      .optional()
+      .describe('Passenger phone of the ride'),
     reason: z
       .string()
       .optional()
@@ -34,7 +44,11 @@ export function CancelRideRenderTool() {
             tripId={args.tripId || ''}
             pickup={args.pickup || ''}
             destination={args.destination || ''}
-            cancellationFee={args.cancellationFee || 0}
+            driverName={args.driverName}
+            price={args.price}
+            vehicleType={args.vehicleType}
+            passengerName={args.passengerName}
+            passengerPhone={args.passengerPhone}
           />
         );
       }

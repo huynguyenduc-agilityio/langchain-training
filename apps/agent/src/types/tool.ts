@@ -39,7 +39,6 @@ export interface CancelTripResult {
   tripId?: string;
   pickup?: string;
   destination?: string;
-  cancellationFee?: number;
   driverName?: string | null;
   trips?: Trip[];
   error?: string;

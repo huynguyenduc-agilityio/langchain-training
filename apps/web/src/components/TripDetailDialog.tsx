@@ -209,11 +209,6 @@ export function TripDetailDialog({
             <span className="text-base font-black text-emerald-400">
               {formatPrice(trip.price)}
             </span>
-            {trip.status === 'cancelled' && trip.cancellationFee && (
-              <span className="text-[9px] text-red-400 font-semibold mt-0.5">
-                Cancellation fee: {formatPrice(trip.cancellationFee)}
-              </span>
-            )}
           </div>
         </div>
 
