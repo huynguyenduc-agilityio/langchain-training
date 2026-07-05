@@ -15,5 +15,7 @@ export const COPILOT_SUGGESTIONS = [
 
 export const THREAD_ID_KEY = 'cityride_chat_thread_id';
 
+export const THREAD_VERSION = 'v1';
+
 export const COPILOTKIT_AGENT_ID =
   process.env.NEXT_PUBLIC_COPILOTKIT_AGENT_ID || 'default';

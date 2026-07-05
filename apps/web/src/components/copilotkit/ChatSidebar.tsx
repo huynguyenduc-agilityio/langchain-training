@@ -17,7 +17,7 @@ import {
 
 import { DISPLAY_TOOL_NAMES } from '@repo/shared';
 import { checkHasVisibleMessages, generateUUID } from '@/utils';
-import { COPILOTKIT_AGENT_ID } from '@/constants';
+import { COPILOTKIT_AGENT_ID, THREAD_VERSION } from '@/constants';
 import { useAgentStore } from '@/store/useAgentStore';
 import { AssistantMessage } from './chat/AssistantMessage';
 import { UserMessage } from './chat/UserMessage';
@@ -92,8 +92,12 @@ export function ChatSidebar() {
   );
 
   useEffect(() => {
-    if (!threadId) {
-      setThreadId(generateUUID());
+    // Invalidate old threadIds that don't match the current version prefix.
+    const isValidVersion =
+      threadId && threadId.startsWith(THREAD_VERSION + '_');
+
+    if (!isValidVersion) {
+      setThreadId(`${THREAD_VERSION}_${generateUUID()}`);
     }
   }, [threadId, setThreadId]);
 
