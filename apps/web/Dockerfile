@@ -43,12 +43,10 @@ COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 # Copy public folder (favicon, robots.txt, etc.)
 COPY --from=builder /app/apps/web/public ./apps/web/public
 
-WORKDIR /app/apps/web
-
-# Railway injects PORT automatically
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 EXPOSE 3000
 
-# Use the standalone server entry point directly (no pnpm needed)
-CMD ["node", "server.js"]
+# Next.js standalone server must be run from the root of the standalone folder
+# so that all relative package and dependency resolutions (node_modules) work correctly.
+CMD ["node", "apps/web/server.js"]
