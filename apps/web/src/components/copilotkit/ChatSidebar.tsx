@@ -92,12 +92,13 @@ export function ChatSidebar() {
   );
 
   useEffect(() => {
-    // Invalidate old threadIds that don't match the current version prefix.
-    const isValidVersion =
-      threadId && threadId.startsWith(THREAD_VERSION + '_');
+    // Ensure threadId is a valid pure UUID (without any version prefix like "v1_")
+    // LangGraph Server strictly validates thread_id to be a valid UUID.
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isValidUUID = threadId && uuidRegex.test(threadId);
 
-    if (!isValidVersion) {
-      setThreadId(`${THREAD_VERSION}_${generateUUID()}`);
+    if (!isValidUUID) {
+      setThreadId(generateUUID());
     }
   }, [threadId, setThreadId]);
 
