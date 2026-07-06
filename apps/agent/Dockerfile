@@ -21,6 +21,9 @@ COPY apps/agent/ ./apps/agent/
 # Install all workspace dependencies
 RUN pnpm install --frozen-lockfile
 
+# Build shared packages (@repo/shared, @repo/logger) so the agent can import them
+RUN pnpm build --filter=@repo/shared --filter=@repo/logger
+
 WORKDIR /app/apps/agent
 
 # Railway injects PORT env var. We use shell form (not exec form) so that
