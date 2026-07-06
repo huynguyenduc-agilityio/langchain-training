@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx -y @langchain/langgraph-cli@1.4.0 dev --port 8123 --no-browser",
+    "start": "npx -y @langchain/langgraph-cli@1.4.0 dev --port ${PORT:-8123} --no-browser",
     "build": "tsup src/agent.ts --format esm --dts --outDir dist",
     "lint": "eslint src/",
     "index-kb": "tsx src/rag/indexDocuments.ts",

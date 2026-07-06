@@ -1,26 +1,27 @@
-FROM langchain/langgraphjs-api:20
+FROM node:22-slim
 
 # ── Monorepo setup ──────────────────────────────────────────────────────────
-# Railway build context = monorepo root.
-# We copy the entire monorepo so pnpm can resolve workspace:* packages
-# (@repo/shared, @repo/logger) that the agent depends on.
+# Avoids using langchain/langgraphjs-api base image which locks
+# @langchain/langgraph-checkpoint to ~1.0.0, conflicting with our ^1.1.3.
+# Instead, run the LangGraph CLI directly on a plain Node image.
 
-# Copy monorepo manifests first (for better layer caching)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /deps/langchain-training/
+RUN npm install -g pnpm@9.15.0 --ignore-scripts
+
+WORKDIR /app
+
+# Copy monorepo manifests first (better layer caching)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Copy internal workspace packages
-COPY packages/ /deps/langchain-training/packages/
+COPY packages/ ./packages/
 
 # Copy the agent app
-COPY apps/agent/ /deps/langchain-training/apps/agent/
+COPY apps/agent/ ./apps/agent/
 
-# Install pnpm and all workspace dependencies
-RUN npm install -g pnpm@9.15.0 --ignore-scripts
-WORKDIR /deps/langchain-training
+# Install all workspace dependencies
 RUN pnpm install --frozen-lockfile
 
-# ── LangGraph server config ─────────────────────────────────────────────────
-ENV LANGSERVE_GRAPHS='{"agent":"./apps/agent/src/agent.ts:graph"}'
+WORKDIR /app/apps/agent
 
-WORKDIR /deps/langchain-training/apps/agent
-RUN (test ! -f /api/langgraph_api/js/build.mts && echo "Prebuild script not found, skipping") || tsx /api/langgraph_api/js/build.mts
+# Railway injects PORT automatically — the start script uses ${PORT:-8123}
+CMD ["pnpm", "start"]
