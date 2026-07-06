@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
 // NEXT_PHASE is set to 'phase-production-build' during `next build`.
-// Server-side env vars are only needed at runtime, not at build time.
-// NEXT_PUBLIC_* vars must be validated at build time as they are baked into the client bundle.
+// All env vars (both client and server) are skipped during the Docker build
+// stage because secrets/keys are not available as build args.
+// At runtime, Next.js will re-evaluate this module and validate all vars.
 const isBuildPhase =
   process.env.NEXT_PHASE === 'phase-production-build';
 
@@ -43,24 +44,16 @@ const serverEnvSchema = z.object({
     .default('development'),
 });
 
-// Validate client vars (always)
-const clientParsed = clientEnvSchema.safeParse({
-  NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
-    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-});
-
-if (!clientParsed.success) {
-  console.error('❌ Invalid environment variables for Web:');
-  console.error(JSON.stringify(clientParsed.error.format(), null, 2));
-  throw new Error('Invalid environment variables for Web application');
-}
+// Default values used only during the Docker build phase (vars not available then)
+type ClientEnv = z.infer<typeof clientEnvSchema>;
+let clientEnvData: ClientEnv = {
+  NEXT_PUBLIC_FIREBASE_API_KEY: '',
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: '',
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: '',
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: '',
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '',
+  NEXT_PUBLIC_FIREBASE_APP_ID: '',
+};
 
 // Validate server vars (runtime only — skip during `next build`)
 let serverEnvData: z.infer<typeof serverEnvSchema> = {
@@ -71,6 +64,29 @@ let serverEnvData: z.infer<typeof serverEnvSchema> = {
 };
 
 if (!isBuildPhase) {
+  // Validate client vars at runtime
+  const clientParsed = clientEnvSchema.safeParse({
+    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID:
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:
+      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
+      process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  });
+
+  if (!clientParsed.success) {
+    console.error('❌ Invalid environment variables for Web:');
+    console.error(JSON.stringify(clientParsed.error.format(), null, 2));
+    throw new Error('Invalid environment variables for Web application');
+  }
+
+  clientEnvData = clientParsed.data;
+
+  // Validate server vars
   const serverParsed = serverEnvSchema.safeParse({
     DATABASE_URL: process.env.DATABASE_URL,
     DATABASE_DIRECT_URL: process.env.DATABASE_DIRECT_URL,
@@ -88,7 +104,7 @@ if (!isBuildPhase) {
 }
 
 export const env = {
-  ...clientParsed.data,
+  ...clientEnvData,
   ...serverEnvData,
 };
 
