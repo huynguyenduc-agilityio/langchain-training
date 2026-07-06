@@ -23,5 +23,8 @@ RUN pnpm install --frozen-lockfile
 
 WORKDIR /app/apps/agent
 
-# Railway injects PORT automatically — the start script uses ${PORT:-8123}
-CMD ["pnpm", "start"]
+# Railway injects PORT env var. We use shell form (not exec form) so that
+# $PORT is expanded by /bin/sh before being passed to langgraph-cli.
+# Default to 8123 if PORT is not set (local testing).
+EXPOSE 8123
+CMD ["/bin/sh", "-c", "npx -y @langchain/langgraph-cli@1.4.0 dev --port ${PORT:-8123} --no-browser --host 0.0.0.0"]
