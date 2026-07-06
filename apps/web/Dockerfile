@@ -15,6 +15,13 @@ COPY packages/ ./packages/
 # Copy the web app
 COPY apps/web/ ./apps/web/
 
+# Copy agent source — needed because apps/web/src/lib/db.ts imports
+# the Drizzle schema via relative path: '../../../agent/src/db/schema'
+# Also copy package.json so pnpm workspace does not fail scanning apps/*
+# TODO: move schema to @repo/shared to remove this cross-app dependency
+COPY apps/agent/package.json ./apps/agent/package.json
+COPY apps/agent/src/ ./apps/agent/src/
+
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
