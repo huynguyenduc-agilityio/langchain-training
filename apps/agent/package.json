@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx -y @langchain/langgraph-cli@1.4.0 dev --port 8123 --no-browser",
-    "start": "npx -y @langchain/langgraph-cli@1.4.0 dev --port ${PORT:-8123} --no-browser",
+    "dev": "npx -y @langchain/langgraph-cli@1.4.0 dev --port ${PORT:-8123} --no-browser --host 0.0.0.0",
+    "start": "npx -y @langchain/langgraph-cli@1.4.0 dev --port ${PORT:-8123} --no-browser --host 0.0.0.0",
     "build": "tsup src/agent.ts --format esm --dts --outDir dist",
     "lint": "eslint src/",
     "index-kb": "tsx src/rag/indexDocuments.ts",
