@@ -36,17 +36,25 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy the standalone Next.js server bundle (includes its own node_modules)
-COPY --from=builder /app/apps/web/.next/standalone ./
-# Copy static assets (CSS, JS chunks, images)
-COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
-# Copy public folder (favicon, robots.txt, etc.)
-COPY --from=builder /app/apps/web/public ./apps/web/public
+# Install pnpm for running the app
+RUN npm install -g pnpm@9.15.0 --ignore-scripts
 
+# Copy monorepo structure needed at runtime
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/packages/ ./packages/
+
+# Copy built Next.js app
+COPY --from=builder /app/apps/web/package.json ./apps/web/
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=builder /app/node_modules ./node_modules
+
+WORKDIR /app/apps/web
+
+# Railway injects PORT automatically
 ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
 EXPOSE 3000
 
-# Next.js standalone server must be run from the root of the standalone folder
-# so that all relative package and dependency resolutions (node_modules) work correctly.
-CMD ["node", "apps/web/server.js"]
+CMD ["pnpm", "start"]
