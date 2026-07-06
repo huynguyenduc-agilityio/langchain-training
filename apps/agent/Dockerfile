@@ -10,7 +10,7 @@ RUN npm install -g pnpm@9.15.0 --ignore-scripts
 WORKDIR /app
 
 # Copy monorepo manifests first (better layer caching)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 
 # Copy internal workspace packages
 COPY packages/ ./packages/
